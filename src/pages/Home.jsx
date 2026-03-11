@@ -92,7 +92,7 @@ export default function Home() {
                 to="/about-our-team"
                 className="inline-flex items-center px-7 py-3 rounded-full bg-brand text-white font-bold hover:bg-brand-light hover:shadow-lg hover:shadow-brand-glow transition-all duration-200"
               >
-                Get Started →
+                Learn More →
               </Link>
             </motion.div>
           </motion.div>

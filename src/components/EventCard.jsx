@@ -38,12 +38,6 @@ export default function EventCard({ title, date, location, accent, imageLabel, t
           >
             More info →
           </Link>
-          <Link
-            to={to}
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-brand text-white text-sm font-bold hover:bg-brand-light hover:shadow-lg hover:shadow-brand-glow transition-all duration-200"
-          >
-            Details
-          </Link>
         </div>
       </div>
     </motion.article>

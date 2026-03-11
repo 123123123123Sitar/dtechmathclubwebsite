@@ -13,7 +13,7 @@ export default function Footer() {
           <div className="shrink-0">
             <img
               className="h-12 w-auto object-contain block"
-              src="/dtechmathclublogolarger.avif"
+              src="/dtechmathclublogolarger.jpg"
               alt="Design Tech Math Club logo"
             />
           </div>
