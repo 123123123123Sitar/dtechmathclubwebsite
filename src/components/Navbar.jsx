@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -13,39 +14,38 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="navbar">
-      <div className="container navbar-inner">
-        <NavLink className="brand" to="/" onClick={() => setOpen(false)}>
+    <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-xl bg-surface-glass border-b border-border-subtle">
+      <div className="w-[min(calc(100%-2rem),1180px)] mx-auto flex items-center justify-between gap-4 min-h-[72px]">
+        {/* Brand */}
+        <NavLink
+          className="flex items-center gap-3 group"
+          to="/"
+          onClick={() => setOpen(false)}
+        >
           <img
-            className="brand-logo"
+            className="w-11 h-11 rounded-xl object-cover shrink-0 ring-2 ring-brand/20 group-hover:ring-brand/50 transition-all duration-200"
             src="/dtechmathclublogo.avif"
             alt="Design Tech Math Club logo"
           />
-          <div>
-            <p className="brand-title">Design Tech Math Club</p>
-            <p className="brand-subtitle">Mu Alpha Theta</p>
+          <div className="hidden sm:block">
+            <p className="m-0 font-extrabold text-txt text-xl leading-tight">
+              Design Tech Math Club
+            </p>
           </div>
         </NavLink>
 
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-expanded={open}
-          aria-label="Toggle navigation"
-          onClick={() => setOpen((value) => !value)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-
-        <nav className={`nav-links ${open ? "nav-links-open" : ""}`}>
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `nav-link ${isActive ? "nav-link-active" : ""}`
+                `px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  isActive
+                    ? "bg-brand text-white shadow-md shadow-brand-glow"
+                    : "text-txt-muted hover:text-brand hover:bg-brand/10"
+                }`
               }
               onClick={() => setOpen(false)}
             >
@@ -53,7 +53,64 @@ export default function Navbar() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden w-10 h-10 rounded-xl bg-surface-3 border border-border-subtle grid place-items-center cursor-pointer"
+          type="button"
+          aria-expanded={open}
+          aria-label="Toggle navigation"
+          onClick={() => setOpen((v) => !v)}
+        >
+          <div className="flex flex-col gap-[5px]">
+            <span
+              className={`block w-5 h-0.5 bg-brand transition-all duration-200 ${
+                open ? "rotate-45 translate-y-[7px]" : ""
+              }`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-brand transition-all duration-200 ${
+                open ? "opacity-0" : ""
+              }`}
+            />
+            <span
+              className={`block w-5 h-0.5 bg-brand transition-all duration-200 ${
+                open ? "-rotate-45 -translate-y-[7px]" : ""
+              }`}
+            />
+          </div>
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {open && (
+          <motion.nav
+            className="md:hidden absolute top-full left-4 right-4 mt-2 p-3 rounded-2xl bg-surface-2 border border-border-subtle shadow-2xl shadow-black/40 flex flex-col gap-1"
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                    isActive
+                      ? "bg-brand text-white"
+                      : "text-txt-muted hover:text-brand hover:bg-brand/10"
+                  }`
+                }
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

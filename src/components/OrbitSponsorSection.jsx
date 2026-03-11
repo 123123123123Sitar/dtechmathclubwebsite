@@ -1,264 +1,93 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function easeOutCubic(t) {
-  return 1 - (1 - t) ** 3;
-}
-
-function rangeProgress(progress, start, end) {
-  return clamp((progress - start) / (end - start), 0, 1);
-}
-
-const desktopLayout = {
-  cards: {
-    Platinum: { x: 50, y: 30 },
-    Diamond: { x: 22, y: 74 },
-    Gold: { x: 78, y: 74 },
-  },
-  logos: {
-    AoPS: { startX: 10, startY: 14, endX: 50, endY: 33, tier: "Platinum", slot: 0 },
-    "Random Math": {
-      startX: 88,
-      startY: 20,
-      endX: 50,
-      endY: 40,
-      tier: "Platinum",
-      slot: 1,
-    },
-    "Texas Instruments": {
-      startX: 12,
-      startY: 52,
-      endX: 22,
-      endY: 78,
-      tier: "Diamond",
-      slot: 0,
-    },
-    "Math Kangaroo": {
-      startX: 14,
-      startY: 86,
-      endX: 78,
-      endY: 78,
-      tier: "Gold",
-      slot: 0,
-    },
-    "Atomic Grader": {
-      startX: 92,
-      startY: 82,
-      endX: 78,
-      endY: 85,
-      tier: "Gold",
-      slot: 1,
-    },
-  },
-};
-
-const mobileLayout = {
-  cards: {
-    Platinum: { x: 50, y: 20 },
-    Diamond: { x: 50, y: 50 },
-    Gold: { x: 50, y: 82 },
-  },
-  logos: {
-    AoPS: { startX: 12, startY: 10, endX: 50, endY: 23, tier: "Platinum", slot: 0 },
-    "Random Math": {
-      startX: 84,
-      startY: 14,
-      endX: 50,
-      endY: 31,
-      tier: "Platinum",
-      slot: 1,
-    },
-    "Texas Instruments": {
-      startX: 10,
-      startY: 52,
-      endX: 50,
-      endY: 53,
-      tier: "Diamond",
-      slot: 0,
-    },
-    "Math Kangaroo": {
-      startX: 86,
-      startY: 82,
-      endX: 50,
-      endY: 85,
-      tier: "Gold",
-      slot: 0,
-    },
-    "Atomic Grader": {
-      startX: 16,
-      startY: 90,
-      endX: 50,
-      endY: 93,
-      tier: "Gold",
-      slot: 1,
-    },
-  },
-};
+import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 export default function OrbitSponsorSection({ title, description, tiers }) {
-  const ref = useRef(null);
-  const [progress, setProgress] = useState(0);
-  const [time, setTime] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    function onResize() {
-      setIsMobile(window.innerWidth < 900);
-    }
-
-    onResize();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return undefined;
-
-    let ticking = false;
-
-    function updateProgress() {
-      const rect = node.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const total = Math.max(rect.height - viewportHeight, 1);
-      const raw = (-rect.top + viewportHeight * 0.15) / total;
-      setProgress(clamp(raw, 0, 1));
-      ticking = false;
-    }
-
-    function onScroll() {
-      if (!ticking) {
-        window.requestAnimationFrame(updateProgress);
-        ticking = true;
-      }
-    }
-
-    updateProgress();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
-    let raf = 0;
-
-    function tick() {
-      frame += 1;
-      setTime(frame / 60);
-      raf = window.requestAnimationFrame(tick);
-    }
-
-    raf = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(raf);
-  }, []);
-
-  const layout = isMobile ? mobileLayout : desktopLayout;
-
-  const orderedTiers = useMemo(() => {
-    const order = ["Platinum Sponsors", "Diamond Sponsors", "Gold Sponsors"];
-    return [...tiers].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
-  }, [tiers]);
+  const allSponsors = useMemo(
+    () => tiers.flatMap((t) => t.sponsors.map((s) => ({ ...s, tier: t.name }))),
+    [tiers],
+  );
 
   return (
-    <section className="section orbit-sponsor-section" ref={ref}>
-      <div className="container">
-        <div className="section-heading section-heading-center">
-          <p className="eyebrow">Partners</p>
-          <h2>{title}</h2>
-          <p>{description}</p>
+    <section className="py-20 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand/8 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="w-[min(calc(100%-2rem),1180px)] mx-auto relative z-10">
+        <motion.div
+          className="max-w-3xl mx-auto text-center mb-12"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="mb-3 text-xs font-extrabold tracking-[0.2em] uppercase text-brand">
+            Partners
+          </p>
+          <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-tight text-txt">
+            {title}
+          </h2>
+          <p className="mt-4 text-txt-muted leading-relaxed">{description}</p>
+        </motion.div>
+
+        {/* Tier cards */}
+        <div className="grid gap-6">
+          {tiers.map((tier, i) => (
+            <motion.div
+              key={tier.name}
+              className="rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-6 hover:border-brand/30 transition-all duration-300"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+            >
+              <h3 className="text-center text-lg font-bold text-brand mb-5">
+                {tier.name}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
+                {tier.sponsors.map((sponsor, j) => (
+                  <motion.a
+                    key={sponsor.name}
+                    href={sponsor.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block text-center p-5 rounded-2xl border border-border-accent bg-surface-3 hover:bg-brand hover:border-brand transition-all duration-200"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 + j * 0.08 }}
+                    whileHover={{ y: -2 }}
+                  >
+                    <span className="block font-extrabold text-brand group-hover:text-white mb-1">
+                      {sponsor.name}
+                    </span>
+                    <span className="text-sm text-txt-muted group-hover:text-white/80 leading-snug">
+                      {sponsor.copy}
+                    </span>
+                  </motion.a>
+                ))}
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
 
-      <div className="orbit-scroll-area">
-        <div className="orbit-stage">
-          <div className="orbit-stage-inner">
-          {orderedTiers.map((tier) => {
-            const key = tier.name.replace(" Sponsors", "");
-            const position = layout.cards[key];
-            const tierProgress =
-              key === "Diamond"
-                ? easeOutCubic(rangeProgress(progress, 0.58, 0.96))
-                : easeOutCubic(rangeProgress(progress, 0.34, 0.84));
-
-            return (
-              <article
-                  key={tier.name}
-                  className={`orbit-tier orbit-tier-${key.toLowerCase()}`}
-                  style={{
-                    left: `${position.x}%`,
-                    top: `${position.y}%`,
-                    opacity: tierProgress,
-                    transform: `translate(-50%, -50%) scale(${
-                      key === "Diamond" ? 0.92 + tierProgress * 0.08 : 0.96 + tierProgress * 0.04
-                    })`,
-                  }}
-                >
-                <h3>{tier.name}</h3>
-                <div className="orbit-tier-list">
-                  {tier.sponsors.map((sponsor) => (
-                    <a
-                      key={sponsor.name}
-                      className="orbit-tier-item"
-                      href={sponsor.href}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <span className="orbit-tier-item-name">{sponsor.name}</span>
-                      <span className="orbit-tier-item-copy">{sponsor.copy}</span>
-                    </a>
-                  ))}
-                </div>
-              </article>
-            );
-          })}
-
-          {orderedTiers.flatMap((tier) =>
-            tier.sponsors.map((sponsor) => {
-              const config = layout.logos[sponsor.name];
-              const perLogoProgress =
-                config.tier === "Diamond"
-                  ? easeOutCubic(rangeProgress(progress, 0.54, 0.96))
-                  : easeOutCubic(rangeProgress(progress, 0.2, 0.82));
-
-              const curve = Math.sin(perLogoProgress * Math.PI) * (config.tier === "Diamond" ? 8 : 6);
-              const driftX = Math.sin(time * 0.85 + config.startX) * 1.3 * (1 - perLogoProgress);
-              const driftY = Math.cos(time * 0.7 + config.startY) * 1.1 * (1 - perLogoProgress);
-              const x =
-                config.startX + (config.endX - config.startX) * perLogoProgress + driftX;
-              const y =
-                config.startY +
-                (config.endY - config.startY) * perLogoProgress +
-                (config.tier === "Platinum" ? -curve : config.tier === "Gold" ? curve : -curve * 0.75) +
-                driftY;
-
-              return (
-                <a
-                  key={sponsor.name}
-                  href={sponsor.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`orbit-logo orbit-logo-${config.tier.toLowerCase()}`}
-                  style={{
-                    left: `${x}%`,
-                    top: `${y}%`,
-                    transform: `translate(-50%, -50%) scale(${0.76 + perLogoProgress * 0.24})`,
-                    opacity: 0.9 - perLogoProgress * 0.95,
-                  }}
-                >
-                  {sponsor.name}
-                </a>
-              );
-            }),
-          )}
-          </div>
+        {/* Floating sponsor pills */}
+        <div className="flex flex-wrap justify-center gap-3 mt-10">
+          {allSponsors.map((s, i) => (
+            <motion.a
+              key={s.name}
+              href={s.href}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center px-5 py-2.5 rounded-full border border-border-accent bg-surface-3 text-brand font-bold text-sm hover:bg-brand hover:text-white hover:border-brand transition-all duration-200"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              {s.name}
+            </motion.a>
+          ))}
         </div>
       </div>
     </section>

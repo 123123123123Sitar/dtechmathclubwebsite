@@ -1,34 +1,55 @@
+import { motion } from "framer-motion";
+
 export default function SponsorSection({ title, description, tiers, centered = false }) {
   return (
-    <section className="section">
-      <div className="container">
-        <div className={`section-heading ${centered ? "section-heading-center" : ""}`}>
-          <p className="eyebrow">Partners</p>
-          <h2>{title}</h2>
-          <p>{description}</p>
-        </div>
+    <section className="py-20">
+      <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
+        <motion.div
+          className={`max-w-3xl mb-8 ${centered ? "mx-auto text-center" : ""}`}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="mb-3 text-xs font-extrabold tracking-[0.2em] uppercase text-brand">
+            Partners
+          </p>
+          <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-tight text-txt">
+            {title}
+          </h2>
+          <p className="mt-4 text-txt-muted leading-relaxed">{description}</p>
+        </motion.div>
 
-        <div className="sponsor-tiers">
-          {tiers.map((tier) => (
-            <div className="card sponsor-tier" key={tier.name}>
-              <div className="tier-header">
-                <h3>{tier.name}</h3>
-              </div>
-              <div className="sponsor-grid">
+        <div className="grid gap-4">
+          {tiers.map((tier, i) => (
+            <motion.div
+              key={tier.name}
+              className="rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-6 hover:border-brand/30 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <h3 className="text-lg font-bold text-brand mb-4">{tier.name}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
                 {tier.sponsors.map((sponsor) => (
                   <a
                     key={sponsor.name}
-                    className="sponsor-tile"
+                    className="block p-4 rounded-2xl border border-border-accent bg-surface-3 hover:bg-brand hover:border-brand group transition-all duration-200"
                     href={sponsor.href}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <span className="sponsor-name">{sponsor.name}</span>
-                    <span className="sponsor-copy">{sponsor.copy}</span>
+                    <span className="block font-extrabold text-brand group-hover:text-white mb-1">
+                      {sponsor.name}
+                    </span>
+                    <span className="text-sm text-txt-muted group-hover:text-white/80 leading-snug">
+                      {sponsor.copy}
+                    </span>
                   </a>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
