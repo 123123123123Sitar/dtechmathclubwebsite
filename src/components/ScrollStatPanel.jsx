@@ -46,7 +46,7 @@ export default function ScrollStatPanel({ value, label, direction = "left" }) {
   return (
     <div
       ref={ref}
-      className="w-screen ml-[calc(50%-50vw)] min-h-[42vh] sm:min-h-[40vh] lg:min-h-[44vh] flex items-center justify-center overflow-hidden bg-linear-to-r from-brand-dark via-brand to-brand-light text-white"
+      className="w-screen ml-[calc(50%-50vw)] min-h-[32vh] sm:min-h-[30vh] lg:min-h-[32vh] flex items-center justify-center overflow-hidden bg-linear-to-r from-brand-dark via-brand to-brand-light text-white"
       style={{
         transform: `translateX(${translateX}%) scale(${scale})`,
         opacity,
@@ -54,11 +54,11 @@ export default function ScrollStatPanel({ value, label, direction = "left" }) {
         willChange: "transform, opacity",
       }}
     >
-      <div className="grid gap-1.5 sm:gap-2 text-center px-5 py-10 sm:px-8 md:px-10">
-        <span className="text-[clamp(3rem,14vw,8rem)] font-extrabold leading-[0.9]">
+      <div className="grid gap-1 sm:gap-1.5 text-center px-5 py-6 sm:px-8 md:px-10">
+        <span className="text-[clamp(2.5rem,12vw,7rem)] font-extrabold leading-[0.9]">
           {value}
         </span>
-        <span className="max-w-[16ch] mx-auto text-[clamp(1rem,4vw,2rem)] font-bold tracking-[0.14em] sm:tracking-wider uppercase leading-tight text-balance">
+        <span className="max-w-[16ch] mx-auto text-[clamp(0.9rem,3.5vw,1.8rem)] font-bold tracking-[0.14em] sm:tracking-wider uppercase leading-tight text-balance">
           {label}
         </span>
       </div>

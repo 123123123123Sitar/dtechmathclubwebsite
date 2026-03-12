@@ -87,11 +87,10 @@ export default function About() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
-            <SectionHeader
-              eyebrow="About"
-              title="About Design Tech Math Club"
-              description="Welcome to the Design Tech Math Club! We're a community of math enthusiasts who come together to explore the beauty of mathematics. Whether it's through engaging competitions, problem-solving, or collaborative projects, we strive to inspire and empower the math community."
-            />
+              <SectionHeader
+                title="About Design Tech Math Club"
+                description="Welcome to the Design Tech Math Club! We're a community of math enthusiasts who come together to explore the beauty of mathematics. Whether it's through engaging competitions, problem-solving, or collaborative projects, we strive to inspire and empower the math community."
+              />
           </motion.div>
 
           <motion.div
@@ -142,7 +141,7 @@ export default function About() {
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-10">
           <div>
-            <SectionHeader eyebrow="Events" title="Competitions We Participate In" />
+              <SectionHeader title="Competitions We Participate In" />
             <div className="grid gap-3">
               {competitions.map((c, i) => (
                 <motion.div
@@ -158,7 +157,7 @@ export default function About() {
             </div>
           </div>
           <div>
-            <SectionHeader eyebrow="Hosted" title="Competitions We Host" />
+              <SectionHeader title="Competitions We Host" />
             <div className="grid gap-3">
               {hosted.map((e, i) => (
                 <motion.div
@@ -182,41 +181,50 @@ export default function About() {
         <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader
-            eyebrow="Team"
             title="Club Leadership"
             description="The leadership of our club is essential in the operations of our club. The president and vice presidents work together, coordinating various activities, while the director of competitions is responsible for organizing and promoting our events."
             align="center"
           />
         </div>
-        <div className="grid gap-0 mt-10">
+        <div className="w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-3 gap-6">
           {leaders.map((leader, index) => (
-            <div
-              className="w-screen ml-[calc(50%-50vw)] px-4 md:px-8 py-3 md:py-4"
+            <motion.article
+              className="flex flex-col items-center rounded-2xl overflow-hidden bg-surface-2 cursor-default"
               key={leader.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.15 }}
+              style={{
+                boxShadow: `inset 0 0 0 2px ${
+                  leader.gradient === "from-[#f6a56d] to-[#f05a28]"
+                    ? "#f05a28"
+                    : leader.gradient === "from-[#6aaae4] to-[#2d79b7]"
+                    ? "#2d79b7"
+                    : "#3d9a70"
+                }`,
+              }}
             >
-              <ScrollReveal direction={index % 2 === 0 ? "left" : "right"}>
-                <article className="min-h-[calc(100svh-94px)] md:min-h-[calc(100svh-94px)] flex items-center rounded-none md:rounded-[32px] overflow-hidden bg-linear-to-r from-brand to-brand-dark p-1">
-                  <div className="w-full min-h-[calc(100svh-102px)] md:min-h-[calc(100svh-102px)] rounded-none md:rounded-[28px] bg-surface-2 p-6 md:p-10 grid md:grid-cols-[0.72fr_1.28fr] gap-8 items-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div
-                        className={`w-full max-w-[280px] aspect-square rounded-3xl bg-linear-to-br ${leader.gradient}`}
-                      />
-                      <h3 className="text-2xl md:text-3xl font-bold text-txt text-center">
-                        {leader.name}
-                      </h3>
-                      <p className="text-brand font-bold text-base md:text-lg text-center">
-                        {leader.role}
-                      </p>
-                    </div>
-                    <div className="md:max-w-[56ch] mx-auto">
-                      <p className="text-txt-muted leading-relaxed text-lg md:text-[1.35rem]">
-                        {leader.description}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              </ScrollReveal>
-            </div>
+              <div className="w-full p-6 flex flex-col items-center text-center gap-4">
+                <div>
+                  <div
+                    className={`w-[120px] h-[120px] rounded-2xl bg-linear-to-br ${leader.gradient}`}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg md:text-xl font-bold text-txt">
+                    {leader.name}
+                  </h3>
+                  <p className="text-brand font-bold text-sm md:text-base mb-2">
+                    {leader.role}
+                  </p>
+                  <p className="text-txt-muted leading-relaxed text-sm md:text-base">
+                    {leader.description}
+                  </p>
+                </div>
+              </div>
+            </motion.article>
           ))}
         </div>
         </section>

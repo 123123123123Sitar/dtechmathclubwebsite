@@ -35,7 +35,6 @@ export default function DTMT() {
 
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto text-center">
           <SectionHeader
-            eyebrow="Signature Competition"
             title="Design Tech Math Tournament"
             description="The Design Tech Math Club is hosting our biggest competition of the year, the Design Tech Math Tournament (DTMT), on March 8th. This is a competitive yet welcoming event for middle school students in the Bay Area."
             align="center"
@@ -108,7 +107,6 @@ export default function DTMT() {
         >
           <div>
             <SectionHeader
-              eyebrow="Format"
               title="Tournament Details"
               description="Students compete in subject rounds covering Algebra, Geometry, Discrete, and a 6th Grade Test, followed by a Team Round and Sequence Round. The activities session includes Professor Ciprian Manolescu's presentation on Knot Theory, random math problem sets, math jeopardy, and a relay round. Tiebreakers use a Mathcounts-style Countdown round."
             />
@@ -130,8 +128,8 @@ export default function DTMT() {
         <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader eyebrow="Day Of" title="Schedule" />
-          <div className="grid gap-3">
+          <SectionHeader title="Schedule" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {schedule.map(([time, detail], i) => (
               <motion.div
                 key={`${time}-${detail}`}
@@ -152,7 +150,7 @@ export default function DTMT() {
       <FlowSection>
         <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader eyebrow="Archive" title="Problems and Solutions" />
+          <SectionHeader title="Problems and Solutions" />
           <div className="grid md:grid-cols-2 gap-5">
             <ArchiveCard title="DTMT 2026 Problems and Solutions" entries={archives2026} />
             <ArchiveCard title="DTMT 2025 Problems and Solutions" entries={archives2025} />

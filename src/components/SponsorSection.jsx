@@ -11,9 +11,6 @@ export default function SponsorSection({ title, description, tiers, centered = f
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <p className="mb-3 text-xs font-extrabold tracking-[0.2em] uppercase text-brand">
-            Partners
-          </p>
           <h2 className="text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-tight text-txt">
             {title}
           </h2>

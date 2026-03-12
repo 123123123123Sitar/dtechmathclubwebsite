@@ -153,7 +153,7 @@ export default function Home() {
       <FlowSection>
         <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader eyebrow="Contact" title="Contact Us" align="center" />
+          <SectionHeader title="Contact Us" align="center" />
           <motion.div
             className="max-w-[1000px] mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-8 md:p-10"
             {...fadeUp}

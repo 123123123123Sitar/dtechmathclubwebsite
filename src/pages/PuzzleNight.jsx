@@ -60,7 +60,6 @@ export default function PuzzleNight() {
 
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto text-center">
           <SectionHeader
-            eyebrow="Community Event"
             title="Design Tech Puzzle Night"
             description="The Design Math Club hosts an exploration-focused Puzzle Night for Middle Schoolers in the Bay Area during late November. The Puzzle Night features a variety of interactive puzzle stations, each offering a different way to explore the fun side of mathematics."
             align="center"
@@ -109,7 +108,6 @@ export default function PuzzleNight() {
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-10">
           <div>
             <SectionHeader
-              eyebrow="Activities"
               title="Activities and Stations"
               description="We are offering the following activities and stations."
             />
@@ -158,8 +156,8 @@ export default function PuzzleNight() {
         <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader eyebrow="Timeline" title="Schedule" />
-          <div className="grid gap-3">
+          <SectionHeader title="Schedule" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {schedule.map(([time, detail], i) => (
               <motion.div
                 key={`${time}-${detail}`}

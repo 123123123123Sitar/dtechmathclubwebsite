@@ -33,7 +33,6 @@ export default function Competitions() {
     <section className="section section-top">
       <div className="container">
         <SectionHeader
-          eyebrow="Calendar"
           title="Upcoming Events"
           description="Explore the club's upcoming public events and competition offerings."
         />
