@@ -9,10 +9,10 @@
   --color-brand-glow: rgba(234, 109, 74, 0.18);
 
   --color-surface: #e3e3e3;
-  --color-surface-2: #f7f7f7;
-  --color-surface-3: #fff;
-  --color-surface-card: #fff;
-  --color-surface-glass: rgba(255,255,255,0.82);
+  --color-surface-2: #e3e3e3;
+  --color-surface-3: #e3e3e3;
+  --color-surface-card: #f1f1f1;
+  --color-surface-glass: rgba(227,227,227,0.9);
 
   --color-txt: #333333;
   --color-txt-muted: #666666;

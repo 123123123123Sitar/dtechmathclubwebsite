@@ -6,13 +6,13 @@ const quickLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border-subtle mt-8">
+    <footer className="border-t border-brand mt-8 bg-[#f1f1f1]">
       <div className="w-[min(calc(100%-2rem),1260px)] mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 py-10 px-6 md:px-12">
           {/* Logo */}
           <div className="shrink-0">
             <img
-              className="h-12 w-auto object-contain block"
+              className="h-[4.2rem] w-auto object-contain block"
               src="/dtechmathclublogolarger.jpg"
               alt="Design Tech Math Club logo"
             />

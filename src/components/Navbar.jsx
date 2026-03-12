@@ -14,7 +14,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-xl bg-surface-glass border-b border-border-subtle">
+    <header className="fixed inset-x-0 top-0 z-50 backdrop-blur-xl bg-surface-glass border-b border-brand">
       <div className="w-[min(calc(100%-2rem),1180px)] mx-auto flex items-center justify-between gap-4 min-h-[72px]">
         {/* Brand */}
         <NavLink
@@ -23,7 +23,7 @@ export default function Navbar() {
           onClick={() => setOpen(false)}
         >
           <img
-            className="w-11 h-11 rounded-xl object-cover shrink-0 ring-2 ring-brand/20 group-hover:ring-brand/50 transition-all duration-200"
+            className="w-11 h-11 rounded-xl object-cover shrink-0 transition-all duration-200"
             src="/dtechmathclublogo.avif"
             alt="Design Tech Math Club logo"
           />

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import FlowSection from "../components/FlowSection";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
 
@@ -88,7 +89,8 @@ export default function PuzzleNight() {
       </section>
 
       {/* ── Message ───────────────────────────────────────── */}
-      <section className="py-12">
+      <FlowSection>
+        <section className="py-12">
         <motion.div
           className="w-[min(calc(100%-2rem),1180px)] mx-auto text-center"
           {...fadeUp}
@@ -98,10 +100,12 @@ export default function PuzzleNight() {
             We hope you had a good time at Puzzle Night!
           </h2>
         </motion.div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Activities ────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-10">
           <div>
             <SectionHeader
@@ -146,10 +150,12 @@ export default function PuzzleNight() {
             </motion.div>
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Schedule ──────────────────────────────────────── */}
-      <section className="py-20 relative">
+      <FlowSection glow="muted">
+        <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader eyebrow="Timeline" title="Schedule" />
@@ -167,7 +173,8 @@ export default function PuzzleNight() {
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Sponsors ──────────────────────────────────────── */}
       <SponsorSection

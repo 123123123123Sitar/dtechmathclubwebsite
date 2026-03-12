@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import FlowSection from "../components/FlowSection";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
@@ -63,7 +64,8 @@ export default function DTMT() {
       </section>
 
       {/* ── Stats ─────────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <div className="grid grid-cols-3 gap-4 justify-items-center max-w-[600px] mx-auto">
             <StatBadge value="4" label="Rounds" />
@@ -93,10 +95,12 @@ export default function DTMT() {
             </a>
           </motion.div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Details ───────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <motion.div
           className="w-[min(calc(100%-2rem),1180px)] mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-8 grid md:grid-cols-2 gap-8 items-center"
           {...fadeUp}
@@ -118,10 +122,12 @@ export default function DTMT() {
             <p className="text-txt-muted text-sm">Fee: $10</p>
           </div>
         </motion.div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Schedule ──────────────────────────────────────── */}
-      <section className="py-20 relative">
+      <FlowSection glow="muted">
+        <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader eyebrow="Day Of" title="Schedule" />
@@ -139,10 +145,12 @@ export default function DTMT() {
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Archives ──────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader eyebrow="Archive" title="Problems and Solutions" />
           <div className="grid md:grid-cols-2 gap-5">
@@ -150,7 +158,8 @@ export default function DTMT() {
             <ArchiveCard title="DTMT 2025 Problems and Solutions" entries={archives2025} />
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Sponsors ──────────────────────────────────────── */}
       <SponsorSection

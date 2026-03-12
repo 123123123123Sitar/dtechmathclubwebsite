@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import BrandWordmark from "../components/BrandWordmark";
 import ContactForm from "../components/ContactForm";
 import EventCard from "../components/EventCard";
+import FlowSection from "../components/FlowSection";
 import ScrollStatPanel from "../components/ScrollStatPanel";
 import SectionHeader from "../components/SectionHeader";
 
@@ -100,7 +101,8 @@ export default function Home() {
       </section>
 
       {/* ── About Section ─────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection className="mt-[-1px]">
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),800px)] mx-auto text-center">
           <SectionHeader
             eyebrow="About Us"
@@ -117,7 +119,8 @@ export default function Home() {
             </Link>
           </motion.div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Stats ─────────────────────────────────────────── */}
       <section className="grid gap-0 my-4" aria-label="Club statistics">
@@ -127,7 +130,8 @@ export default function Home() {
       </section>
 
       {/* ── Events ────────────────────────────────────────── */}
-      <section className="py-20 relative">
+      <FlowSection glow="muted">
+        <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader
@@ -142,10 +146,12 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Contact ───────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader eyebrow="Contact" title="Contact Us" align="center" />
           <motion.div
@@ -155,7 +161,8 @@ export default function Home() {
             <ContactForm />
           </motion.div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import FlowSection from "../components/FlowSection";
 import SectionHeader from "../components/SectionHeader";
 import OrbitSponsorSection from "../components/OrbitSponsorSection";
 import ScrollReveal from "../components/ScrollReveal";
@@ -108,7 +109,8 @@ export default function About() {
       </section>
 
       {/* ── What We Do / Meetings ─────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-5">
           {[
             {
@@ -131,10 +133,12 @@ export default function About() {
             </motion.div>
           ))}
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Competitions ──────────────────────────────────── */}
-      <section className="py-20 relative">
+      <FlowSection glow="muted">
+        <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-10">
           <div>
@@ -170,10 +174,12 @@ export default function About() {
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Leadership ────────────────────────────────────── */}
-      <section className="py-20">
+      <FlowSection>
+        <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader
             eyebrow="Team"
@@ -182,33 +188,39 @@ export default function About() {
             align="center"
           />
         </div>
-        <div className="grid gap-6 mt-8">
+        <div className="grid gap-0 mt-10">
           {leaders.map((leader, index) => (
-            <div className="w-[min(calc(100%-2rem),1180px)] mx-auto" key={leader.name}>
+            <div
+              className="w-screen ml-[calc(50%-50vw)] px-4 md:px-8 py-3 md:py-4"
+              key={leader.name}
+            >
               <ScrollReveal direction={index % 2 === 0 ? "left" : "right"}>
-                <motion.article className="rounded-3xl overflow-hidden bg-linear-to-r from-brand to-brand-dark p-1">
-                  <div className="rounded-[22px] bg-surface-2 p-6 md:p-8 grid md:grid-cols-[0.7fr_1.3fr] gap-6 items-center">
-                    {/* Avatar */}
-                    <div className="flex flex-col items-center gap-3">
+                <article className="min-h-[calc(100svh-94px)] md:min-h-[calc(100svh-94px)] flex items-center rounded-none md:rounded-[32px] overflow-hidden bg-linear-to-r from-brand to-brand-dark p-1">
+                  <div className="w-full min-h-[calc(100svh-102px)] md:min-h-[calc(100svh-102px)] rounded-none md:rounded-[28px] bg-surface-2 p-6 md:p-10 grid md:grid-cols-[0.72fr_1.28fr] gap-8 items-center">
+                    <div className="flex flex-col items-center gap-4">
                       <div
-                        className={`w-full max-w-[240px] aspect-square rounded-2xl bg-linear-to-br ${leader.gradient}`}
+                        className={`w-full max-w-[280px] aspect-square rounded-3xl bg-linear-to-br ${leader.gradient}`}
                       />
-                      <h3 className="text-xl font-bold text-txt text-center">{leader.name}</h3>
-                      <p className="text-brand font-bold text-sm text-center">{leader.role}</p>
+                      <h3 className="text-2xl md:text-3xl font-bold text-txt text-center">
+                        {leader.name}
+                      </h3>
+                      <p className="text-brand font-bold text-base md:text-lg text-center">
+                        {leader.role}
+                      </p>
                     </div>
-                    {/* Bio */}
-                    <div className="md:max-w-[50ch]">
-                      <p className="text-txt-muted leading-relaxed text-base md:text-lg">
+                    <div className="md:max-w-[56ch] mx-auto">
+                      <p className="text-txt-muted leading-relaxed text-lg md:text-[1.35rem]">
                         {leader.description}
                       </p>
                     </div>
                   </div>
-                </motion.article>
+                </article>
               </ScrollReveal>
             </div>
           ))}
         </div>
-      </section>
+        </section>
+      </FlowSection>
 
       {/* ── Sponsors ──────────────────────────────────────── */}
       <OrbitSponsorSection
