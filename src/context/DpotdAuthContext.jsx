@@ -174,7 +174,8 @@ function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration
     dpotdRegistrationCompletedAt:
       siteProfile?.dpotdRegistrationCompletedAt || portalProfile?.dpotdRegisteredAt || null,
     puzzleNightRegistered: Boolean(puzzleNightRegistration),
-    dtmtCoachActive: Boolean(dtmtCoachProfile),
+    puzzleNightRegistrationType: puzzleNightRegistration?.registrationType || "student",
+    dtmtCoachActive: Boolean(siteProfile?.dtmtCoachActive || dtmtCoachProfile || accountType === "coach"),
     dtmtSchoolRegistered: Boolean(dtmtSchool),
     dtmtStudentRegistered: Boolean(dtmtStudentRegistration),
     dtmtTeamLabel: dtmtStudentRegistration?.teamLabel || "",
@@ -321,6 +322,20 @@ export function DpotdAuthProvider({ children }) {
 
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
+      const optimisticCoachProfile =
+        accountType === "coach"
+          ? {
+              id: credential.user.uid,
+              accountUid: credential.user.uid,
+              coachName: name,
+              email,
+              eventKey: DTMT_EVENT_KEY,
+              phone: "",
+              schoolAffiliation: school,
+              status: "active",
+              title: "",
+            }
+          : null;
       const optimisticSiteProfile = {
         id: credential.user.uid,
         accountType,
@@ -331,29 +346,51 @@ export function DpotdAuthProvider({ children }) {
         school,
         grade,
         dpotdRegistered: false,
-        dtmtCoachActive: false,
+        dtmtCoachActive: accountType === "coach",
         dtmtSchoolRegistered: false,
         dtmtStudentRegistered: false,
         puzzleNightRegistered: false,
         source: "dtechmathclub-site",
       };
 
-      await setDoc(doc(db, SITE_PROFILE_COLLECTION, credential.user.uid), {
-        ...optimisticSiteProfile,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+      const writes = [
+        setDoc(doc(db, SITE_PROFILE_COLLECTION, credential.user.uid), {
+          ...optimisticSiteProfile,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        }),
+      ];
+
+      if (optimisticCoachProfile) {
+        writes.push(
+          setDoc(doc(db, DTMT_COACH_COLLECTION, credential.user.uid), {
+            ...optimisticCoachProfile,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }),
+        );
+      }
+
+      await Promise.all(writes);
 
       setAuthReady(true);
       setUser(credential.user);
       setSiteProfile(optimisticSiteProfile);
       setPortalProfile(null);
       setPuzzleNightRegistration(null);
-      setDtmtCoachProfile(null);
+      setDtmtCoachProfile(optimisticCoachProfile);
       setDtmtSchool(null);
       setDtmtStudentRegistration(null);
       setProfile(
-        mergeProfiles(credential.user, optimisticSiteProfile, null, null, null, null, null),
+        mergeProfiles(
+          credential.user,
+          optimisticSiteProfile,
+          null,
+          null,
+          optimisticCoachProfile,
+          null,
+          null,
+        ),
       );
 
       try {
@@ -374,6 +411,13 @@ export function DpotdAuthProvider({ children }) {
   async function submitDpotdRegistration(values) {
     if (!auth.currentUser) {
       return { ok: false, error: "You need to be signed in before registering for D.PotD." };
+    }
+
+    if ((profile?.accountType || siteProfile?.accountType) === "coach") {
+      return {
+        ok: false,
+        error: "Coach accounts cannot register for D.PotD. Use a student account for D.PotD registration.",
+      };
     }
 
     const name = values.name.trim();
@@ -458,16 +502,25 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "You need to be signed in before registering for Puzzle Night." };
     }
 
+    const registrationType = values.registrationType === "coach" ? "coach" : "student";
     const name = values.name.trim();
     const email = values.email.trim().toLowerCase();
     const school = values.school.trim();
     const grade = values.grade.trim();
     const parentName = values.parentName.trim();
     const parentEmail = values.parentEmail.trim().toLowerCase();
+    const phone = values.phone.trim();
     const notes = values.notes.trim();
     const accountUid = auth.currentUser.uid;
 
-    if (!name || !email || !school || !grade || !parentName || !parentEmail) {
+    if (registrationType === "coach") {
+      if (!name || !email || !school || !phone) {
+        return {
+          ok: false,
+          error: "Fill in every required Puzzle Night coach detail before continuing.",
+        };
+      }
+    } else if (!name || !email || !school || !grade || !parentName || !parentEmail) {
       return {
         ok: false,
         error: "Fill in every required Puzzle Night detail before continuing.",
@@ -479,11 +532,13 @@ export function DpotdAuthProvider({ children }) {
         accountUid,
         email,
         eventKey: PUZZLE_NIGHT_EVENT_KEY,
-        grade,
+        grade: registrationType === "coach" ? "" : grade,
         name,
         notes,
-        parentEmail,
-        parentName,
+        parentEmail: registrationType === "coach" ? "" : parentEmail,
+        parentName: registrationType === "coach" ? "" : parentName,
+        phone: registrationType === "coach" ? phone : "",
+        registrationType,
         registrationSource: "signed-in-account",
         school,
         status: "registered",
@@ -500,7 +555,7 @@ export function DpotdAuthProvider({ children }) {
             name,
             email: (auth.currentUser.email || email).trim().toLowerCase(),
             school,
-            grade,
+            grade: registrationType === "coach" ? siteProfile?.grade || "" : grade,
             puzzleNightRegistered: true,
             puzzleNightRegisteredAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -519,6 +574,10 @@ export function DpotdAuthProvider({ children }) {
   async function createDtmtCoachProfile(values) {
     if (!auth.currentUser) {
       return { ok: false, error: "You need to be signed in before creating a coach profile." };
+    }
+
+    if ((profile?.accountType || siteProfile?.accountType) !== "coach") {
+      return { ok: false, error: "Only coach accounts can create coach details for DTMT." };
     }
 
     const coachName = values.coachName.trim();
@@ -579,8 +638,8 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "You need to be signed in before registering a DTMT school." };
     }
 
-    if (!dtmtCoachProfile) {
-      return { ok: false, error: "Create the coach profile first before registering a school." };
+    if ((profile?.accountType || siteProfile?.accountType) !== "coach") {
+      return { ok: false, error: "Only coach accounts can register a DTMT school." };
     }
 
     const schoolName = values.schoolName.trim();
@@ -588,6 +647,13 @@ export function DpotdAuthProvider({ children }) {
     const city = values.city.trim();
     const state = values.state.trim();
     const maxStudents = values.maxStudents.trim();
+    const coachName = dtmtCoachProfile?.coachName || profile?.name || siteProfile?.name || "";
+    const coachEmail = (dtmtCoachProfile?.email || profile?.email || auth.currentUser.email || "")
+      .trim()
+      .toLowerCase();
+    const coachTitle = dtmtCoachProfile?.title || "";
+    const coachPhone = dtmtCoachProfile?.phone || "";
+    const schoolAffiliation = dtmtCoachProfile?.schoolAffiliation || profile?.school || schoolName;
 
     if (!schoolName || !shortName || !city || !state || !maxStudents) {
       return {
@@ -596,15 +662,38 @@ export function DpotdAuthProvider({ children }) {
       };
     }
 
+    if (!coachName || !coachEmail) {
+      return {
+        ok: false,
+        error: "Your coach account is missing required contact details. Update your account name and try again.",
+      };
+    }
+
     try {
       const uid = auth.currentUser.uid;
       await Promise.all([
         setDoc(
+          doc(db, DTMT_COACH_COLLECTION, uid),
+          {
+            accountUid: uid,
+            coachName,
+            email: coachEmail,
+            eventKey: DTMT_EVENT_KEY,
+            phone: coachPhone,
+            schoolAffiliation,
+            status: "active",
+            title: coachTitle,
+            updatedAt: serverTimestamp(),
+            ...(dtmtCoachProfile ? {} : { createdAt: serverTimestamp() }),
+          },
+          { merge: true },
+        ),
+        setDoc(
           doc(db, DTMT_SCHOOL_COLLECTION, uid),
           {
             city,
-            coachEmail: dtmtCoachProfile.email,
-            coachName: dtmtCoachProfile.coachName,
+            coachEmail,
+            coachName,
             coachUid: uid,
             eventKey: DTMT_EVENT_KEY,
             maxStudents,
@@ -644,6 +733,10 @@ export function DpotdAuthProvider({ children }) {
   async function submitDtmtStudentRegistration(values) {
     if (!auth.currentUser) {
       return { ok: false, error: "You need to be signed in before registering for DTMT." };
+    }
+
+    if ((profile?.accountType || siteProfile?.accountType) === "coach") {
+      return { ok: false, error: "Coach accounts cannot submit student DTMT registration." };
     }
 
     const name = values.name.trim();
@@ -872,6 +965,27 @@ export function DpotdAuthProvider({ children }) {
               name: sharedProfile.name,
               schoolName: sharedProfile.school || dtmtStudentRegistration.schoolName,
               updatedAt: serverTimestamp(),
+            },
+            { merge: true },
+          ),
+        );
+      }
+
+      if (isCoachAccount || dtmtCoachProfile) {
+        writes.push(
+          setDoc(
+            doc(db, DTMT_COACH_COLLECTION, uid),
+            {
+              accountUid: uid,
+              coachName: sharedProfile.name,
+              email,
+              eventKey: DTMT_EVENT_KEY,
+              phone: dtmtCoachProfile?.phone || "",
+              schoolAffiliation: sharedProfile.school,
+              status: "active",
+              title: dtmtCoachProfile?.title || "",
+              updatedAt: serverTimestamp(),
+              ...(dtmtCoachProfile ? {} : { createdAt: serverTimestamp() }),
             },
             { merge: true },
           ),

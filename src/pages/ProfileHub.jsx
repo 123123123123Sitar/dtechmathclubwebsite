@@ -62,7 +62,7 @@ export default function ProfileHub() {
   const heroActions = useMemo(() => {
     if (authReady && user && isCoachAccount && activeView === "dtmt") {
       return [
-        { label: "Open DTMT Registration", to: "/dtmt/register" },
+        { label: dtmtSchool ? "Manage DTMT School" : "Register DTMT School", to: "/dtmt/register" },
         { label: "Profile Overview", to: "/profile?view=overview", variant: "ghost" },
       ];
     }
@@ -76,7 +76,7 @@ export default function ProfileHub() {
 
     if (authReady && user && activeView === "dtmt") {
       return [
-        { label: "Open DTMT Registration", to: "/dtmt/register" },
+        { label: dtmtSchool ? "Manage DTMT School" : "Open DTMT Registration", to: "/dtmt/register" },
         { label: "Profile Overview", to: "/profile?view=overview", variant: "ghost" },
       ];
     }
@@ -90,8 +90,8 @@ export default function ProfileHub() {
 
     if (authReady && user && isCoachAccount) {
       return [
-        { label: "Open DTMT Registration", to: "/dtmt/register" },
-        { label: "Puzzle Night Registration", to: "/puzzle-night/register", variant: "ghost" },
+        { label: dtmtSchool ? "Manage DTMT School" : "Register DTMT School", to: "/dtmt/register" },
+        { label: "Puzzle Night Coach Signup", to: "/puzzle-night/register", variant: "ghost" },
       ];
     }
 
@@ -103,7 +103,7 @@ export default function ProfileHub() {
     }
 
     return [];
-  }, [activeView, authReady, hasDpotdAccess, isCoachAccount, user]);
+  }, [activeView, authReady, dtmtSchool, hasDpotdAccess, isCoachAccount, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -210,6 +210,7 @@ export default function ProfileHub() {
                 }
                 right={
                   <ProfileAuthPanel
+                    coachRedirectTo="/dtmt/register"
                     defaultMode="register"
                     embedded
                     hideWhenSignedIn
@@ -234,8 +235,8 @@ export default function ProfileHub() {
                     profile.
                   </ModuleCard>
                   <ModuleCard actionLabel="D.PotD Registration" actionTo="/dpotd/register" title="D.PotD">
-                    Submit the D.PotD form from this account to activate the dashboard and testing
-                    access.
+                    Student accounts can submit the D.PotD form from this account to activate the
+                    dashboard and testing access.
                   </ModuleCard>
                   <ModuleCard actionLabel="DTMT Registration" actionTo="/dtmt/register" title="DTMT">
                     Coaches manage schools and rosters here, while students register for rounds,
@@ -354,7 +355,9 @@ function OverviewPanel({
                   : "Account active, registration not submitted yet"}
             </StatusLine>
             <StatusLine label="Puzzle Night">
-              {puzzleNightRegistration ? "Puzzle Night registration saved" : "No account-linked Puzzle Night registration yet"}
+              {puzzleNightRegistration
+                ? `${profile?.puzzleNightRegistrationType === "coach" ? "Coach" : "Student"} Puzzle Night signup saved`
+                : "No account-linked Puzzle Night registration yet"}
             </StatusLine>
             <StatusLine label="DTMT Coach">
               {dtmtCoachProfile ? "Coach profile active" : "Coach permissions not created yet"}
@@ -373,13 +376,21 @@ function OverviewPanel({
 
       <div className={`grid gap-5 ${isCoachAccount ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
         <ModuleCard
-          actionLabel={puzzleNightRegistration ? "Update Puzzle Night" : "Register for Puzzle Night"}
+          actionLabel={
+            puzzleNightRegistration
+              ? "Update Puzzle Night"
+              : isCoachAccount
+                ? "Coach Signup for Puzzle Night"
+                : "Register for Puzzle Night"
+          }
           actionTo="/puzzle-night/register"
           title="Puzzle Night"
         >
           {puzzleNightRegistration
             ? `This account already has a Puzzle Night registration saved${profile?.email ? ` under ${profile.email}` : ""}.`
-            : "Puzzle Night stays a simple form-based registration, but it is saved directly to this account."}
+            : isCoachAccount
+              ? "Coach accounts can submit a Puzzle Night coach signup here while keeping the registration attached to this account."
+              : "Puzzle Night stays a simple form-based registration, but it is saved directly to this account."}
         </ModuleCard>
         {!isCoachAccount ? (
           <ModuleCard
@@ -393,11 +404,13 @@ function OverviewPanel({
           </ModuleCard>
         ) : null}
         <ModuleCard
-          actionLabel="Open DTMT Registration"
+          actionLabel={isCoachAccount ? (dtmtSchool ? "Manage DTMT School" : "Register DTMT School") : "Open DTMT Registration"}
           actionTo="/dtmt/register"
           title="DTMT"
         >
-          Coaches create coach profiles and school entries here. Students register under a school, choose rounds, complete waiver and payment steps, then later see team assignments.
+          {isCoachAccount
+            ? "Coach accounts can register a school, view the roster, and assign teams from here."
+            : "Coaches create coach profiles and school entries here. Students register under a school, choose rounds, complete waiver and payment steps, then later see team assignments."}
         </ModuleCard>
       </div>
     </div>

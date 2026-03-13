@@ -16,6 +16,7 @@ const initialForm = {
   notes: "",
   parentEmail: "",
   parentName: "",
+  phone: "",
   school: "",
 };
 
@@ -24,9 +25,12 @@ export default function PuzzleNightRegister() {
   const [form, setForm] = useState(initialForm);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [registrationRole, setRegistrationRole] = useState("student");
+  const isCoachAccount = profile?.accountType === "coach";
 
   useEffect(() => {
     if (!user) {
+      setRegistrationRole("student");
       setForm((current) => ({
         ...current,
         email: current.email || "",
@@ -37,17 +41,22 @@ export default function PuzzleNightRegister() {
       return;
     }
 
+    const nextRole =
+      puzzleNightRegistration?.registrationType || (isCoachAccount ? "coach" : "student");
+
+    setRegistrationRole(nextRole);
     setForm((current) => ({
       ...current,
       email: profile?.email || user.email || "",
-      grade: puzzleNightRegistration?.grade || profile?.grade || "",
+      grade: nextRole === "coach" ? "" : puzzleNightRegistration?.grade || profile?.grade || "",
       name: puzzleNightRegistration?.name || profile?.name || "",
       notes: puzzleNightRegistration?.notes || "",
-      parentEmail: puzzleNightRegistration?.parentEmail || "",
-      parentName: puzzleNightRegistration?.parentName || "",
+      parentEmail: nextRole === "coach" ? "" : puzzleNightRegistration?.parentEmail || "",
+      parentName: nextRole === "coach" ? "" : puzzleNightRegistration?.parentName || "",
+      phone: puzzleNightRegistration?.phone || "",
       school: puzzleNightRegistration?.school || profile?.school || "",
     }));
-  }, [profile, puzzleNightRegistration, user]);
+  }, [isCoachAccount, profile, puzzleNightRegistration, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -55,10 +64,25 @@ export default function PuzzleNightRegister() {
     setMessage("");
   }
 
+  function switchRegistrationRole(nextRole) {
+    setRegistrationRole(nextRole);
+    setForm((current) => ({
+      ...current,
+      grade: nextRole === "coach" ? "" : puzzleNightRegistration?.grade || profile?.grade || "",
+      parentEmail: nextRole === "coach" ? "" : puzzleNightRegistration?.parentEmail || "",
+      parentName: nextRole === "coach" ? "" : puzzleNightRegistration?.parentName || "",
+      phone: nextRole === "coach" ? current.phone || "" : "",
+    }));
+    setMessage("");
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setBusy(true);
-    const result = await registerPuzzleNight(form);
+    const result = await registerPuzzleNight({
+      ...form,
+      registrationType: registrationRole,
+    });
     setBusy(false);
     setMessage(result.ok ? "Puzzle Night registration saved to this account." : result.error);
   }
@@ -73,7 +97,7 @@ export default function PuzzleNightRegister() {
                 { label: "Puzzle Night Page", to: "/puzzle-night", variant: "ghost" },
               ]
             : [
-                { label: "Create or Sign In", to: "/profile" },
+                { label: "Sign In", to: "/profile" },
                 { label: "Puzzle Night Page", to: "/puzzle-night", variant: "ghost" },
               ]
         }
@@ -114,15 +138,18 @@ export default function PuzzleNightRegister() {
             <SplitPanel
               left={
                 <>
-                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <h2 className="text-3xl font-black text-txt">Sign into your account</h2>
                   <p className="mt-4 leading-relaxed text-txt-muted">
                     Puzzle Night registration is attached to the shared website account. Sign in
-                    first, then complete the form for that same account.
+                    first, then complete the form for that same account. If you do not have an
+                    account yet, create one from the profile page.
                   </p>
                 </>
               }
               right={
                 <ProfileAuthPanel
+                  accountCreationLinkText="Need a Design Tech Math Club account?"
+                  allowRegister={false}
                   defaultMode="signin"
                   embedded
                   hideWhenSignedIn
@@ -151,7 +178,9 @@ export default function PuzzleNightRegister() {
                   </p>
                   <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
                     Puzzle Night status:{" "}
-                    {puzzleNightRegistration ? "registered and saved to this profile" : "registration not submitted yet"}
+                    {puzzleNightRegistration
+                      ? `${puzzleNightRegistration.registrationType === "coach" ? "coach" : "student"} signup saved to this profile`
+                      : "registration not submitted yet"}
                   </div>
                 </>
               }
@@ -171,18 +200,52 @@ export default function PuzzleNightRegister() {
               <div className="grid gap-8 lg:grid-cols-[1.06fr_0.94fr]">
                 <SurfaceCard className="p-8">
                   <SectionHeader
-                    title="Register for Puzzle Night"
-                    description="This event does not require teams, portals, or extra permissions. Fill out the form and submit it from your signed-in account."
+                    title={registrationRole === "coach" ? "Coach Signup for Puzzle Night" : "Register for Puzzle Night"}
+                    description={
+                      registrationRole === "coach"
+                        ? "Coach accounts can submit a coach signup here for Puzzle Night while keeping everything attached to the same website account."
+                        : "This event does not require teams, portals, or extra permissions. Fill out the form and submit it from your signed-in account."
+                    }
                   />
-                  <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Participant Name" name="name" onChange={handleChange} required value={form.name} />
-                      <Field label="Participant Email" name="email" onChange={handleChange} required type="email" value={form.email} />
-                      <Field label="School" name="school" onChange={handleChange} required value={form.school} />
-                      <Field label="Grade" name="grade" onChange={handleChange} required value={form.grade} />
-                      <Field label="Parent or Guardian Name" name="parentName" onChange={handleChange} required value={form.parentName} />
-                      <Field label="Parent or Guardian Email" name="parentEmail" onChange={handleChange} required type="email" value={form.parentEmail} />
+                  {isCoachAccount ? (
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      {[
+                        ["coach", "Sign Up as a Coach"],
+                        ["student", "Student Signup"],
+                      ].map(([value, label]) => (
+                        <button
+                          key={value}
+                          className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
+                            registrationRole === value
+                              ? "bg-brand text-white shadow-md shadow-brand-glow"
+                              : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
+                          }`}
+                          onClick={() => switchRegistrationRole(value)}
+                          type="button"
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
+                  ) : null}
+                  <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
+                    {registrationRole === "coach" ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Coach Name" name="name" onChange={handleChange} required value={form.name} />
+                        <Field label="Coach Email" name="email" onChange={handleChange} required type="email" value={form.email} />
+                        <Field label="School Affiliation" name="school" onChange={handleChange} required value={form.school} />
+                        <Field label="Phone" name="phone" onChange={handleChange} required value={form.phone} />
+                      </div>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Participant Name" name="name" onChange={handleChange} required value={form.name} />
+                        <Field label="Participant Email" name="email" onChange={handleChange} required type="email" value={form.email} />
+                        <Field label="School" name="school" onChange={handleChange} required value={form.school} />
+                        <Field label="Grade" name="grade" onChange={handleChange} required value={form.grade} />
+                        <Field label="Parent or Guardian Name" name="parentName" onChange={handleChange} required value={form.parentName} />
+                        <Field label="Parent or Guardian Email" name="parentEmail" onChange={handleChange} required type="email" value={form.parentEmail} />
+                      </div>
+                    )}
                     <label className="grid gap-2">
                       <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Notes</span>
                       <textarea
@@ -218,16 +281,28 @@ export default function PuzzleNightRegister() {
 
                 <SurfaceCard className="p-8">
                   <SectionHeader
-                    title="What Happens After Submission"
-                    description="There is no extra portal for Puzzle Night. Registration is complete as soon as the form is submitted."
+                    title={registrationRole === "coach" ? "Coach Signup Details" : "What Happens After Submission"}
+                    description={
+                      registrationRole === "coach"
+                        ? "Coach Puzzle Night signups are also saved directly to the account with no separate portal."
+                        : "There is no extra portal for Puzzle Night. Registration is complete as soon as the form is submitted."
+                    }
                   />
                   <div className="mt-4 grid gap-4">
-                    {[
-                      "No team assignment is required.",
-                      "No additional permissions are required.",
-                      "The registration is saved directly to your website profile.",
-                      "If anything looks wrong with your registration, contact dtechmathclub@gmail.com.",
-                    ].map((item) => (
+                    {(
+                      registrationRole === "coach"
+                        ? [
+                            "Coach signup is saved directly to your website profile.",
+                            "You can use the same account for DTMT school registration and Puzzle Night coach signup.",
+                            "If anything looks wrong with your registration, contact dtechmathclub@gmail.com.",
+                          ]
+                        : [
+                            "No team assignment is required.",
+                            "No additional permissions are required.",
+                            "The registration is saved directly to your website profile.",
+                            "If anything looks wrong with your registration, contact dtechmathclub@gmail.com.",
+                          ]
+                    ).map((item) => (
                       <div key={item} className="border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
                         {item}
                       </div>

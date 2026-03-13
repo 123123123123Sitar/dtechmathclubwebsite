@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SurfaceCard from "./SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
@@ -20,6 +20,9 @@ const initialRegister = {
 };
 
 export default function ProfileAuthPanel({
+  allowRegister = true,
+  accountCreationLinkText = "",
+  coachRedirectTo = null,
   defaultMode = "signin",
   embedded = false,
   hideWhenSignedIn = false,
@@ -43,6 +46,7 @@ export default function ProfileAuthPanel({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const registerType = registerForm.accountType === "coach" ? "coach" : "student";
+  const canShowTabs = allowRegister;
 
   function handleLoginChange(event) {
     const { name, value } = event.target;
@@ -174,29 +178,31 @@ export default function ProfileAuthPanel({
 
   return (
     <PanelShell className="p-8" embedded={embedded}>
-      <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
-        {[
-          ["signin", "Sign In"],
-          ["register", "Create Account"],
-        ].map(([value, label]) => (
-          <button
-            key={value}
-            className={`rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
-              mode === value ? "bg-brand text-white shadow-md shadow-brand-glow" : "text-txt-muted"
-            }`}
-            onClick={() => {
-              setMode(value);
-              setError("");
-              setMessage("");
-            }}
-            type="button"
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {canShowTabs ? (
+        <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
+          {[
+            ["signin", "Sign In"],
+            ["register", "Create Account"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              className={`rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
+                mode === value ? "bg-brand text-white shadow-md shadow-brand-glow" : "text-txt-muted"
+              }`}
+              onClick={() => {
+                setMode(value);
+                setError("");
+                setMessage("");
+              }}
+              type="button"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
-      {mode === "signin" ? (
+      {mode === "signin" || !allowRegister ? (
         <form className="mt-6 grid gap-4" onSubmit={submitLogin} noValidate>
           <Field
             label="Email"
@@ -231,6 +237,14 @@ export default function ProfileAuthPanel({
               Reset Password
             </button>
           </div>
+          {accountCreationLinkText ? (
+            <p className="border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
+              {accountCreationLinkText}{" "}
+              <Link className="font-bold text-brand hover:text-brand-light" to="/profile">
+                Create one on the profile page.
+              </Link>
+            </p>
+          ) : null}
         </form>
       ) : (
         <form className="mt-6 grid gap-4" onSubmit={submitRegister} noValidate>
@@ -311,8 +325,8 @@ export default function ProfileAuthPanel({
                   Coach Access
                 </span>
                 <p className="border-t border-border-subtle pt-3 text-sm leading-relaxed text-txt-muted">
-                  Coach accounts can later create the DTMT coach profile, register a school, and
-                  manage rosters.
+                  Coach accounts can go straight into DTMT school registration and roster
+                  management after signup.
                 </p>
               </div>
             )}

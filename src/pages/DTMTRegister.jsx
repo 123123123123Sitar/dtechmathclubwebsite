@@ -58,7 +58,6 @@ export default function DTMTRegister() {
     submitDtmtStudentRegistration,
     user,
   } = useDpotdAuth();
-  const [roleView, setRoleView] = useState("student");
   const [coachForm, setCoachForm] = useState(initialCoachForm);
   const [schoolForm, setSchoolForm] = useState(initialSchoolForm);
   const [studentForm, setStudentForm] = useState(initialStudentForm);
@@ -73,16 +72,7 @@ export default function DTMTRegister() {
   const [schoolOptions, setSchoolOptions] = useState([]);
   const [roster, setRoster] = useState([]);
   const [teamEdits, setTeamEdits] = useState({});
-
-  useEffect(() => {
-    if (dtmtCoachProfile || dtmtSchool) {
-      setRoleView("coach");
-    } else if (profile?.accountType === "coach") {
-      setRoleView("coach");
-    } else if (dtmtStudentRegistration) {
-      setRoleView("student");
-    }
-  }, [dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration, profile?.accountType]);
+  const isCoachAccount = profile?.accountType === "coach";
 
   useEffect(() => {
     setCoachForm({
@@ -258,7 +248,7 @@ export default function DTMTRegister() {
                 { label: "DTMT Page", to: "/dtmt", variant: "ghost" },
               ]
             : [
-                { label: "Create Account", to: "/profile" },
+                { label: "Sign In", to: "/profile" },
                 { label: "DTMT Page", to: "/dtmt", variant: "ghost" },
               ]
         }
@@ -300,16 +290,20 @@ export default function DTMTRegister() {
             <SplitPanel
               left={
                 <>
-                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <h2 className="text-3xl font-black text-txt">Sign into your account</h2>
                   <p className="mt-4 leading-relaxed text-txt-muted">
                     DTMT uses the shared website account. Coaches can set up schools and rosters,
                     while students can register for rounds, finish the waiver, and record payment.
+                    If you do not have an account yet, create one from the profile page.
                   </p>
                 </>
               }
               right={
                 <ProfileAuthPanel
-                  defaultMode="register"
+                  accountCreationLinkText="Need a Design Tech Math Club account?"
+                  allowRegister={false}
+                  coachRedirectTo="/dtmt/register"
+                  defaultMode="signin"
                   embedded
                   hideWhenSignedIn
                   redirectTo="/dtmt/register"
@@ -359,32 +353,7 @@ export default function DTMTRegister() {
               </SurfaceCard>
             ) : !user ? null : (
               <div className="grid gap-8">
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
-                      roleView === "student"
-                        ? "bg-brand text-white shadow-md shadow-brand-glow"
-                        : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
-                    }`}
-                    onClick={() => setRoleView("student")}
-                    type="button"
-                  >
-                    Student Registration
-                  </button>
-                  <button
-                    className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
-                      roleView === "coach"
-                        ? "bg-brand text-white shadow-md shadow-brand-glow"
-                        : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
-                    }`}
-                    onClick={() => setRoleView("coach")}
-                    type="button"
-                  >
-                    Coach Registration
-                  </button>
-                </div>
-
-                {roleView === "student" ? (
+                {!isCoachAccount ? (
                   <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr]">
                     <SurfaceCard className="p-8">
                       <SectionHeader
@@ -562,13 +531,13 @@ export default function DTMTRegister() {
                   </div>
                 ) : null}
 
-                {roleView === "coach" ? (
+                {isCoachAccount ? (
                   <div className="grid gap-8 lg:grid-cols-[0.94fr_1.06fr]">
                     <div className="grid gap-8">
                       <SurfaceCard className="p-8">
                         <SectionHeader
-                          title="Coach Profile"
-                          description="Creating the coach profile attaches DTMT management permissions to this website account."
+                          title="Coach Details"
+                          description="Your coach account already has DTMT access. Add or update your coach details here."
                         />
                         <form className="mt-8 grid gap-4" onSubmit={handleCoachSubmit} noValidate>
                           <Field label="Coach Name" name="coachName" onChange={handleCoachChange} required value={coachForm.coachName} />
@@ -593,40 +562,33 @@ export default function DTMTRegister() {
                       <SurfaceCard className="p-8">
                         <SectionHeader
                           title="School Registration"
-                          description="Once the coach profile exists, the school registration unlocks the roster table and team assignment interface."
+                          description="Coach accounts can register a school right away, then use the roster table and team assignment interface."
                         />
-                        {!dtmtCoachProfile ? (
-                          <p className="mt-6 text-sm leading-relaxed text-txt-muted">
-                            Create the coach profile first, then this school registration form will
-                            attach a DTMT school entry to the same account.
-                          </p>
-                        ) : (
-                          <form className="mt-8 grid gap-4" onSubmit={handleSchoolSubmit} noValidate>
-                            <Field label="School Name" name="schoolName" onChange={handleSchoolChange} required value={schoolForm.schoolName} />
-                            <Field label="Short Name" name="shortName" onChange={handleSchoolChange} required value={schoolForm.shortName} />
-                            <div className="grid gap-4 sm:grid-cols-3">
-                              <Field label="City" name="city" onChange={handleSchoolChange} required value={schoolForm.city} />
-                              <Field label="State" name="state" onChange={handleSchoolChange} required value={schoolForm.state} />
-                              <Field label="Max Students" name="maxStudents" onChange={handleSchoolChange} required value={schoolForm.maxStudents} />
-                            </div>
-                            {schoolMessage ? (
-                              <p className={`text-sm font-semibold ${schoolMessage === "DTMT school registration saved." ? "text-emerald-600" : "text-red-500"}`}>
-                                {schoolMessage}
-                              </p>
-                            ) : null}
-                            <button
-                              className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-                              disabled={schoolBusy}
-                              type="submit"
-                            >
-                              {schoolBusy
-                                ? "Saving..."
-                                : dtmtSchool
-                                  ? "Update School Registration"
-                                  : "Register School"}
-                            </button>
-                          </form>
-                        )}
+                        <form className="mt-8 grid gap-4" onSubmit={handleSchoolSubmit} noValidate>
+                          <Field label="School Name" name="schoolName" onChange={handleSchoolChange} required value={schoolForm.schoolName} />
+                          <Field label="Short Name" name="shortName" onChange={handleSchoolChange} required value={schoolForm.shortName} />
+                          <div className="grid gap-4 sm:grid-cols-3">
+                            <Field label="City" name="city" onChange={handleSchoolChange} required value={schoolForm.city} />
+                            <Field label="State" name="state" onChange={handleSchoolChange} required value={schoolForm.state} />
+                            <Field label="Max Students" name="maxStudents" onChange={handleSchoolChange} required value={schoolForm.maxStudents} />
+                          </div>
+                          {schoolMessage ? (
+                            <p className={`text-sm font-semibold ${schoolMessage === "DTMT school registration saved." ? "text-emerald-600" : "text-red-500"}`}>
+                              {schoolMessage}
+                            </p>
+                          ) : null}
+                          <button
+                            className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={schoolBusy}
+                            type="submit"
+                          >
+                            {schoolBusy
+                              ? "Saving..."
+                              : dtmtSchool
+                                ? "Update School Registration"
+                                : "Register School"}
+                          </button>
+                        </form>
                       </SurfaceCard>
                     </div>
 

@@ -23,6 +23,7 @@ export default function DPotDRegister() {
   const [form, setForm] = useState(initialForm);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const isCoachAccount = profile?.accountType === "coach";
 
   useEffect(() => {
     if (!user) {
@@ -66,13 +67,18 @@ export default function DPotDRegister() {
     <>
       <PageHero
         actions={
-          authReady && user && hasDpotdAccess
+          authReady && user && isCoachAccount
+            ? [
+                { label: "Open DTMT Registration", to: "/dtmt/register" },
+                { label: "Open Profile", to: "/profile", variant: "ghost" },
+              ]
+            : authReady && user && hasDpotdAccess
             ? [
                 { label: "Open D.PotD Dashboard", to: "/profile?view=dpotd" },
                 { label: "Open Profile", to: "/profile", variant: "ghost" },
               ]
             : [
-                { label: "Open Profile", to: "/profile" },
+                { label: "Sign In", to: "/profile" },
                 { label: "D.PotD Overview", to: "/dpotd/about", variant: "ghost" },
               ]
         }
@@ -117,20 +123,48 @@ export default function DPotDRegister() {
             <SplitPanel
               left={
                 <>
-                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <h2 className="text-3xl font-black text-txt">Sign into your account</h2>
                   <p className="mt-4 leading-relaxed text-txt-muted">
                     D.PotD registration is attached to the account that is currently signed in.
-                    Sign in first, then complete the D.PotD form for that same account.
+                    Sign in first, then complete the D.PotD form for that same account. If you do
+                    not have an account yet, create one from the profile page.
                   </p>
                 </>
               }
               right={
                 <ProfileAuthPanel
-                  defaultMode="register"
+                  accountCreationLinkText="Need a Design Tech Math Club account?"
+                  allowRegister={false}
+                  coachRedirectTo="/dtmt/register"
+                  defaultMode="signin"
                   embedded
                   hideWhenSignedIn
                   redirectTo="/dpotd/register"
                 />
+              }
+            />
+          ) : isCoachAccount ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">D.PotD is for student accounts</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    This signed-in account is a coach account, so D.PotD registration is not
+                    available here.
+                  </p>
+                </>
+              }
+              right={
+                <>
+                  <h2 className="text-3xl font-black text-txt">{profile?.name || "Coach"}</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-txt-muted">
+                    {profile?.email || user.email || ""}
+                  </p>
+                  <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                    Use this coach account for DTMT school registration or Puzzle Night coach
+                    signup.
+                  </div>
+                </>
               }
             />
           ) : (
@@ -170,7 +204,28 @@ export default function DPotDRegister() {
               <SurfaceCard className="p-8 text-center">
                 <p className="text-sm font-semibold text-txt-muted">Checking registration status...</p>
               </SurfaceCard>
-            ) : !user ? null : hasDpotdAccess ? (
+            ) : !user ? null : isCoachAccount ? (
+              <SurfaceCard className="p-8">
+                <SectionHeader
+                  title="Coach Accounts Cannot Register for D.PotD"
+                  description="D.PotD registration is only available for student accounts. You can still use this coach account for DTMT school registration and Puzzle Night coach signup."
+                />
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
+                    to="/dtmt/register"
+                  >
+                    Open DTMT Registration
+                  </Link>
+                  <Link
+                    className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
+                    to="/puzzle-night/register"
+                  >
+                    Puzzle Night Coach Signup
+                  </Link>
+                </div>
+              </SurfaceCard>
+            ) : hasDpotdAccess ? (
               <SurfaceCard className="p-8">
                 <SectionHeader
                   title="This Account Is Already Registered for D.PotD"
