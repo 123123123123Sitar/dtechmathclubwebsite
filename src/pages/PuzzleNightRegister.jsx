@@ -41,7 +41,7 @@ export default function PuzzleNightRegister() {
       ...current,
       email: profile?.email || user.email || "",
       grade: puzzleNightRegistration?.grade || profile?.grade || "",
-      name: puzzleNightRegistration?.name || profile?.name || user.email || "",
+      name: puzzleNightRegistration?.name || profile?.name || "",
       notes: puzzleNightRegistration?.notes || "",
       parentEmail: puzzleNightRegistration?.parentEmail || "",
       parentName: puzzleNightRegistration?.parentName || "",

@@ -86,7 +86,7 @@ export default function DTMTRegister() {
 
   useEffect(() => {
     setCoachForm({
-      coachName: dtmtCoachProfile?.coachName || profile?.name || user?.email || "",
+      coachName: dtmtCoachProfile?.coachName || profile?.name || "",
       phone: dtmtCoachProfile?.phone || "",
       schoolAffiliation: dtmtCoachProfile?.schoolAffiliation || profile?.school || "",
       title: dtmtCoachProfile?.title || "",
@@ -106,7 +106,7 @@ export default function DTMTRegister() {
   useEffect(() => {
     setStudentForm({
       grade: dtmtStudentRegistration?.grade || profile?.grade || "",
-      name: dtmtStudentRegistration?.name || profile?.name || user?.email || "",
+      name: dtmtStudentRegistration?.name || profile?.name || "",
       paymentAcknowledged: Boolean(dtmtStudentRegistration?.paymentStatus),
       paymentMethod: dtmtStudentRegistration?.paymentMethod || "",
       schoolId: dtmtStudentRegistration?.schoolId || "",

@@ -33,6 +33,7 @@ export default function ProfileHub() {
   });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const isCoachAccount = profile?.accountType === "coach";
 
   const activeView = dashboardViews.has(searchParams.get("view"))
     ? searchParams.get("view")
@@ -45,14 +46,27 @@ export default function ProfileHub() {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
+    if (isCoachAccount && !hasDpotdAccess && activeView === "dpotd") {
+      setSearchParams({ view: "overview" }, { replace: true });
+    }
+  }, [activeView, hasDpotdAccess, isCoachAccount, setSearchParams]);
+
+  useEffect(() => {
     setForm({
       grade: profile?.grade || "",
-      name: profile?.name || user?.email || "",
+      name: profile?.name || "",
       school: profile?.school || "",
     });
   }, [profile, user]);
 
   const heroActions = useMemo(() => {
+    if (authReady && user && isCoachAccount && activeView === "dtmt") {
+      return [
+        { label: "Open DTMT Registration", to: "/dtmt/register" },
+        { label: "Profile Overview", to: "/profile?view=overview", variant: "ghost" },
+      ];
+    }
+
     if (authReady && user && activeView === "dpotd" && hasDpotdAccess) {
       return [
         { label: "Open Testing Portal", href: "/dpotd-portal/student.html" },
@@ -74,6 +88,13 @@ export default function ProfileHub() {
       ];
     }
 
+    if (authReady && user && isCoachAccount) {
+      return [
+        { label: "Open DTMT Registration", to: "/dtmt/register" },
+        { label: "Puzzle Night Registration", to: "/puzzle-night/register", variant: "ghost" },
+      ];
+    }
+
     if (authReady && user) {
       return [
         { label: "Register for D.PotD", to: "/dpotd/register" },
@@ -82,7 +103,7 @@ export default function ProfileHub() {
     }
 
     return [];
-  }, [activeView, authReady, hasDpotdAccess, user]);
+  }, [activeView, authReady, hasDpotdAccess, isCoachAccount, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -129,7 +150,11 @@ export default function ProfileHub() {
         <FlowSection>
           <section className="py-8">
             <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
-              <DashboardNav activeView={activeView} />
+              <DashboardNav
+                activeView={activeView}
+                hasDpotdAccess={hasDpotdAccess}
+                isCoachAccount={isCoachAccount}
+              />
             </div>
           </section>
         </FlowSection>
@@ -149,6 +174,7 @@ export default function ProfileHub() {
                   handleSignOut={handleSignOut}
                   handleSubmit={handleSubmit}
                   hasDpotdAccess={hasDpotdAccess}
+                  isCoachAccount={isCoachAccount}
                   message={message}
                   profile={profile}
                   puzzleNightRegistration={puzzleNightRegistration}
@@ -225,12 +251,14 @@ export default function ProfileHub() {
   );
 }
 
-function DashboardNav({ activeView }) {
-  const items = [
-    ["overview", "Overview"],
-    ["dpotd", "D.PotD"],
-    ["dtmt", "DTMT"],
-  ];
+function DashboardNav({ activeView, hasDpotdAccess, isCoachAccount }) {
+  const items = [["overview", "Overview"]];
+
+  if (!isCoachAccount || hasDpotdAccess) {
+    items.push(["dpotd", "D.PotD"]);
+  }
+
+  items.push(["dtmt", "DTMT"]);
 
   return (
     <div className="flex flex-wrap gap-3">
@@ -260,6 +288,7 @@ function OverviewPanel({
   handleSignOut,
   handleSubmit,
   hasDpotdAccess,
+  isCoachAccount,
   message,
   profile,
   puzzleNightRegistration,
@@ -275,8 +304,15 @@ function OverviewPanel({
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
-            <Field label="School" name="school" onChange={handleChange} value={form.school} />
-            <Field label="Grade" name="grade" onChange={handleChange} value={form.grade} />
+            <Field
+              label={isCoachAccount ? "School Affiliation" : "School"}
+              name="school"
+              onChange={handleChange}
+              value={form.school}
+            />
+            {!isCoachAccount ? (
+              <Field label="Grade" name="grade" onChange={handleChange} value={form.grade} />
+            ) : null}
             <div className="flex flex-wrap gap-3">
               <button
                 className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
@@ -311,7 +347,11 @@ function OverviewPanel({
               {profile?.accountType === "coach" ? "Coach account" : "Student account"}
             </StatusLine>
             <StatusLine label="D.PotD">
-              {hasDpotdAccess ? "Registered and dashboard-ready" : "Account active, registration not submitted yet"}
+              {isCoachAccount
+                ? "Student access not enabled for this coach account"
+                : hasDpotdAccess
+                  ? "Registered and dashboard-ready"
+                  : "Account active, registration not submitted yet"}
             </StatusLine>
             <StatusLine label="Puzzle Night">
               {puzzleNightRegistration ? "Puzzle Night registration saved" : "No account-linked Puzzle Night registration yet"}
@@ -331,7 +371,7 @@ function OverviewPanel({
         </SurfaceCard>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className={`grid gap-5 ${isCoachAccount ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
         <ModuleCard
           actionLabel={puzzleNightRegistration ? "Update Puzzle Night" : "Register for Puzzle Night"}
           actionTo="/puzzle-night/register"
@@ -341,15 +381,17 @@ function OverviewPanel({
             ? `This account already has a Puzzle Night registration saved${profile?.email ? ` under ${profile.email}` : ""}.`
             : "Puzzle Night stays a simple form-based registration, but it is saved directly to this account."}
         </ModuleCard>
-        <ModuleCard
-          actionLabel={hasDpotdAccess ? "Open D.PotD Dashboard" : "Register for D.PotD"}
-          actionTo={hasDpotdAccess ? "/profile?view=dpotd" : "/dpotd/register"}
-          title="D.PotD"
-        >
-          {hasDpotdAccess
-            ? "Your D.PotD portal is no longer a separate sign-in flow. The dashboard now lives inside this profile and the testing portal follows the same session."
-            : "D.PotD requires this shared account first. Once the form is submitted, D.PotD access turns on for this same account."}
-        </ModuleCard>
+        {!isCoachAccount ? (
+          <ModuleCard
+            actionLabel={hasDpotdAccess ? "Open D.PotD Dashboard" : "Register for D.PotD"}
+            actionTo={hasDpotdAccess ? "/profile?view=dpotd" : "/dpotd/register"}
+            title="D.PotD"
+          >
+            {hasDpotdAccess
+              ? "Your D.PotD portal is no longer a separate sign-in flow. The dashboard now lives inside this profile and the testing portal follows the same session."
+              : "D.PotD requires this shared account first. Once the form is submitted, D.PotD access turns on for this same account."}
+          </ModuleCard>
+        ) : null}
         <ModuleCard
           actionLabel="Open DTMT Registration"
           actionTo="/dtmt/register"

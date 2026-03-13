@@ -144,7 +144,10 @@ async function loadDtmtStudentRegistration(user) {
 
 function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration, dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration) {
   const accountType =
-    siteProfile?.accountType || (dtmtCoachProfile ? "coach" : "student");
+    siteProfile?.accountType ||
+    (siteProfile?.coachAccount ? "coach" : null) ||
+    (siteProfile?.studentAccount ? "student" : null) ||
+    (dtmtCoachProfile ? "coach" : "student");
 
   return {
     id: siteProfile?.id || portalProfile?.id || user?.uid || null,
@@ -155,16 +158,18 @@ function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration
       dtmtCoachProfile?.coachName ||
       portalProfile?.name ||
       user?.displayName ||
-      user?.email ||
       "Member",
     email: siteProfile?.email || portalProfile?.email || user?.email || "",
     school:
       dtmtStudentRegistration?.schoolName ||
       dtmtSchool?.schoolName ||
+      dtmtCoachProfile?.schoolAffiliation ||
       siteProfile?.school ||
       portalProfile?.school ||
       "",
     grade: dtmtStudentRegistration?.grade || siteProfile?.grade || portalProfile?.grade || "",
+    coachAccount: accountType === "coach",
+    studentAccount: accountType !== "coach",
     dpotdRegistered: Boolean(siteProfile?.dpotdRegistered || portalProfile),
     dpotdRegistrationCompletedAt:
       siteProfile?.dpotdRegistrationCompletedAt || portalProfile?.dpotdRegisteredAt || null,
@@ -316,8 +321,8 @@ export function DpotdAuthProvider({ children }) {
 
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
-
-      await setDoc(doc(db, SITE_PROFILE_COLLECTION, credential.user.uid), {
+      const optimisticSiteProfile = {
+        id: credential.user.uid,
         accountType,
         coachAccount: accountType === "coach",
         studentAccount: accountType === "student",
@@ -330,12 +335,33 @@ export function DpotdAuthProvider({ children }) {
         dtmtSchoolRegistered: false,
         dtmtStudentRegistered: false,
         puzzleNightRegistered: false,
+        source: "dtechmathclub-site",
+      };
+
+      await setDoc(doc(db, SITE_PROFILE_COLLECTION, credential.user.uid), {
+        ...optimisticSiteProfile,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        source: "dtechmathclub-site",
       });
 
-      await refreshProfile(credential.user);
+      setAuthReady(true);
+      setUser(credential.user);
+      setSiteProfile(optimisticSiteProfile);
+      setPortalProfile(null);
+      setPuzzleNightRegistration(null);
+      setDtmtCoachProfile(null);
+      setDtmtSchool(null);
+      setDtmtStudentRegistration(null);
+      setProfile(
+        mergeProfiles(credential.user, optimisticSiteProfile, null, null, null, null, null),
+      );
+
+      try {
+        await refreshProfile(credential.user);
+      } catch (_) {
+        // Keep the optimistic profile if the immediate refetch lags behind account creation.
+      }
+
       return { ok: true };
     } catch (error) {
       return {

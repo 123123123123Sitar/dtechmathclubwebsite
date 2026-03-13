@@ -33,7 +33,7 @@ export default function DPotDRegister() {
     setForm((current) => ({
       ...current,
       grade: profile?.grade || "",
-      name: profile?.name || user.email || "",
+      name: profile?.name || "",
       school: profile?.school || "",
     }));
   }, [profile, user]);

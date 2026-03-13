@@ -115,6 +115,7 @@ export default function ProfileAuthPanel({
       return;
     }
 
+    await refreshProfile().catch(() => null);
     navigate(redirectTo);
   }
 
