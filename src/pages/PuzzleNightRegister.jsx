@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
@@ -76,25 +78,87 @@ export default function PuzzleNightRegister() {
               ]
         }
         aside={
-          authReady && user ? (
-            <RegistrationStatusCard
-              email={profile?.email || user.email || ""}
-              hasAccountLink={Boolean(puzzleNightRegistration)}
-              name={profile?.name || user.email || "Participant"}
-            />
-          ) : (
-            <ProfileAuthPanel
-              defaultMode="signin"
-              embedded
-              redirectTo="/puzzle-night/register"
-              signedInCopy="Puzzle Night registration is attached to your website account. Sign in first, then complete the form below."
-            />
-          )
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge="Puzzle Night"
+            caption="Sign in with your Design Tech Math Club account, then submit the Puzzle Night form so the registration stays attached to your profile."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
+          />
         }
         description="Puzzle Night is a simple registration page, but it still uses the website account. Sign in first, complete the form, and the registration is saved to your profile."
         highlights={["Simple Form", "One Account", "Saved to Profile"]}
         title="Puzzle Night Registration"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          {!authReady ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Checking your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    We are confirming whether this browser already has a signed-in account.
+                  </p>
+                </>
+              }
+              right={
+                <p className="text-sm leading-relaxed text-txt-muted">
+                  Once your account is confirmed, the page will show either the registration form
+                  or the current Puzzle Night status for that profile.
+                </p>
+              }
+            />
+          ) : !user ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    Puzzle Night registration is attached to the shared website account. Sign in
+                    first, then complete the form for that same account.
+                  </p>
+                </>
+              }
+              right={
+                <ProfileAuthPanel
+                  defaultMode="signin"
+                  embedded
+                  hideWhenSignedIn
+                  redirectTo="/puzzle-night/register"
+                />
+              }
+            />
+          ) : (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Puzzle Night account status</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    There is no extra portal for Puzzle Night. Registration is complete as soon as
+                    the form is submitted from this account.
+                  </p>
+                </>
+              }
+              right={
+                <>
+                  <h2 className="text-3xl font-black text-txt">
+                    {profile?.name || "Participant"}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-txt-muted">
+                    {profile?.email || user.email || ""}
+                  </p>
+                  <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                    Puzzle Night status:{" "}
+                    {puzzleNightRegistration ? "registered and saved to this profile" : "registration not submitted yet"}
+                  </div>
+                </>
+              }
+            />
+          )}
+        </section>
+      </FlowSection>
 
       <FlowSection glow="muted">
         <section className="py-16">
@@ -103,15 +167,7 @@ export default function PuzzleNightRegister() {
               <SurfaceCard className="p-8 text-center">
                 <p className="text-sm font-semibold text-txt-muted">Checking registration access...</p>
               </SurfaceCard>
-            ) : !user ? (
-              <SurfaceCard className="p-8">
-                <SectionHeader
-                  align="center"
-                  title="Create or Sign Into Your Account First"
-                  description="Puzzle Night registration is now tied to the same website account used across the rest of the site. Sign in above first, then this page will show the registration form."
-                />
-              </SurfaceCard>
-            ) : (
+            ) : !user ? null : (
               <div className="grid gap-8 lg:grid-cols-[1.06fr_0.94fr]">
                 <SurfaceCard className="p-8">
                   <SectionHeader
@@ -120,12 +176,12 @@ export default function PuzzleNightRegister() {
                   />
                   <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Participant Name" name="name" onChange={handleChange} value={form.name} />
-                      <Field label="Participant Email" name="email" onChange={handleChange} type="email" value={form.email} />
-                      <Field label="School" name="school" onChange={handleChange} value={form.school} />
-                      <Field label="Grade" name="grade" onChange={handleChange} value={form.grade} />
-                      <Field label="Parent or Guardian Name" name="parentName" onChange={handleChange} value={form.parentName} />
-                      <Field label="Parent or Guardian Email" name="parentEmail" onChange={handleChange} type="email" value={form.parentEmail} />
+                      <Field label="Participant Name" name="name" onChange={handleChange} required value={form.name} />
+                      <Field label="Participant Email" name="email" onChange={handleChange} required type="email" value={form.email} />
+                      <Field label="School" name="school" onChange={handleChange} required value={form.school} />
+                      <Field label="Grade" name="grade" onChange={handleChange} required value={form.grade} />
+                      <Field label="Parent or Guardian Name" name="parentName" onChange={handleChange} required value={form.parentName} />
+                      <Field label="Parent or Guardian Email" name="parentEmail" onChange={handleChange} required type="email" value={form.parentEmail} />
                     </div>
                     <label className="grid gap-2">
                       <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Notes</span>
@@ -184,18 +240,6 @@ export default function PuzzleNightRegister() {
         </section>
       </FlowSection>
     </>
-  );
-}
-
-function RegistrationStatusCard({ email, hasAccountLink, name }) {
-  return (
-    <div className="p-1 text-left">
-      <h2 className="text-3xl font-black text-txt">{name}</h2>
-      <p className="mt-2 text-sm text-txt-muted">{email}</p>
-      <div className="mt-5 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
-        Puzzle Night status: {hasAccountLink ? "registered and saved to this profile" : "not registered yet"}
-      </div>
-    </div>
   );
 }
 

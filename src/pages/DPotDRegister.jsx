@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
@@ -75,26 +77,15 @@ export default function DPotDRegister() {
               ]
         }
         aside={
-          !authReady ? (
-            <div className="p-8 text-center">
-              <p className="text-sm font-semibold text-txt-muted">Checking your account...</p>
-            </div>
-          ) : user ? (
-            <RegistrationStatusCard
-              email={profile?.email || user.email || ""}
-              hasDpotdAccess={hasDpotdAccess}
-              name={profile?.name || user.email || "Student"}
-            />
-          ) : (
-            <ProfileAuthPanel
-              defaultMode="register"
-              embedded
-              redirectTo="/dpotd/register"
-              signedInCopy="You are signed in. Complete the D.PotD registration form below to unlock the D.PotD dashboard for this account."
-            />
-          )
+          <HeroMediaPanel
+            alt="D.PotD logo"
+            badge="D.PotD Registration"
+            caption="Register once from your Design Tech Math Club account, then use that same account for the D.PotD dashboard, testing, and submissions."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dpotd-portal/dpotd-logo.png"
+          />
         }
-        description="D.PotD registration is attached to the website account that is currently signed in. Submitting the form below provisions D.PotD access for that account, and the dashboard then becomes visible inside the profile page."
+        description="D.PotD registration is attached to the website account that is currently signed in. Submitting the form below turns on D.PotD access for that account, and the dashboard then becomes visible inside the profile page."
         highlights={[
           "One D.Tech Math Club account",
           "D.PotD registration attached to that account",
@@ -103,6 +94,75 @@ export default function DPotDRegister() {
         title="D.PotD Registration"
       />
 
+      <FlowSection>
+        <section className="py-8">
+          {!authReady ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Checking your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    We are confirming whether this browser already has a signed-in student account.
+                  </p>
+                </>
+              }
+              right={
+                <p className="text-sm leading-relaxed text-txt-muted">
+                  Once the account is confirmed, this page will show either the D.PotD form or the
+                  current D.PotD status for that account.
+                </p>
+              }
+            />
+          ) : !user ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    D.PotD registration is attached to the account that is currently signed in.
+                    Sign in first, then complete the D.PotD form for that same account.
+                  </p>
+                </>
+              }
+              right={
+                <ProfileAuthPanel
+                  defaultMode="register"
+                  embedded
+                  hideWhenSignedIn
+                  redirectTo="/dpotd/register"
+                />
+              }
+            />
+          ) : (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Your D.PotD account link</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    The D.PotD portal does not use a separate login. Registration, testing access,
+                    submissions, and leaderboard history stay tied to this account.
+                  </p>
+                </>
+              }
+              right={
+                <>
+                  <h2 className="text-3xl font-black text-txt">
+                    {profile?.name || "Student"}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-txt-muted">
+                    {profile?.email || user.email || ""}
+                  </p>
+                  <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                    D.PotD status:{" "}
+                    {hasDpotdAccess ? "registered and ready to use" : "registration not submitted yet"}
+                  </div>
+                </>
+              }
+            />
+          )}
+        </section>
+      </FlowSection>
+
       <FlowSection glow="muted">
         <section className="py-16">
           <div className="mx-auto w-[min(calc(100%-2rem),1120px)]">
@@ -110,19 +170,11 @@ export default function DPotDRegister() {
               <SurfaceCard className="p-8 text-center">
                 <p className="text-sm font-semibold text-txt-muted">Checking registration status...</p>
               </SurfaceCard>
-            ) : !user ? (
-              <SurfaceCard className="p-8">
-                <SectionHeader
-                  align="center"
-                  title="Create or Sign Into Your Student Account First"
-                  description="Use the account panel above first. Once you are signed in, this page will switch to the D.PotD registration form for that same account."
-                />
-              </SurfaceCard>
-            ) : hasDpotdAccess ? (
+            ) : !user ? null : hasDpotdAccess ? (
               <SurfaceCard className="p-8">
                 <SectionHeader
                   title="This Account Is Already Registered for D.PotD"
-                  description="Your D.PotD portal profile has already been provisioned from this student account. The testing portal, submissions, and leaderboard all continue to use the same signed-in account."
+                  description="Your D.PotD access is already active on this student account. The testing portal, submissions, and leaderboard all continue to use the same signed-in account."
                 />
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
@@ -144,15 +196,15 @@ export default function DPotDRegister() {
                 <SurfaceCard className="p-8">
                   <SectionHeader
                     title="Complete the D.PotD Form"
-                    description="Submitting this form attaches D.PotD registration to your signed-in website account and automatically creates the portal profile used for testing, submissions, leaderboard history, and the D.PotD dashboard inside your profile."
+                    description="Submitting this form attaches D.PotD registration to your signed-in website account and automatically turns on the D.PotD access used for testing, submissions, leaderboard history, and the D.PotD dashboard inside your profile."
                   />
                   <form className="mt-8 grid gap-5" onSubmit={handleSubmit} noValidate>
                     <ReadonlyField label="Signed-In Email" value={profile?.email || user.email || ""} />
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
-                      <Field label="School" name="school" onChange={handleChange} value={form.school} />
+                      <Field label="Full Name" name="name" onChange={handleChange} required value={form.name} />
+                      <Field label="School" name="school" onChange={handleChange} required value={form.school} />
                     </div>
-                    <Field label="Grade" name="grade" onChange={handleChange} value={form.grade} />
+                    <Field label="Grade" name="grade" onChange={handleChange} required value={form.grade} />
 
                     <label className="flex items-start gap-3 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
                       <input
@@ -160,6 +212,7 @@ export default function DPotDRegister() {
                         className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
                         name="termsAccepted"
                         onChange={handleChange}
+                        required
                         type="checkbox"
                       />
                       <span>
@@ -175,6 +228,7 @@ export default function DPotDRegister() {
                         className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
                         name="integrityAccepted"
                         onChange={handleChange}
+                        required
                         type="checkbox"
                       />
                       <span>
@@ -211,13 +265,13 @@ export default function DPotDRegister() {
                 <SurfaceCard className="p-8">
                   <SectionHeader
                     title="What Happens After You Submit"
-                    description="The system provisions D.PotD access only after this form is submitted from a signed-in account."
+                    description="D.PotD access turns on only after this form is submitted from a signed-in account."
                   />
                   <div className="mt-6 grid gap-4">
                     {[
                       "Your signed-in Design Tech Math Club account stays the main identity.",
                       "A D.PotD registration record is attached to that account.",
-                      "Your D.PotD portal profile is created automatically after submission.",
+                      "Your D.PotD access is created automatically after submission.",
                       "Testing access, submissions, and leaderboard tracking stay tied to that same account.",
                       "If registration looks incorrect, contact dtechmathclub@gmail.com.",
                     ].map((item) => (
@@ -233,18 +287,6 @@ export default function DPotDRegister() {
         </section>
       </FlowSection>
     </>
-  );
-}
-
-function RegistrationStatusCard({ email, hasDpotdAccess, name }) {
-  return (
-    <div className="p-1 text-left">
-      <h2 className="text-3xl font-black text-txt">{name}</h2>
-      <p className="mt-2 text-sm text-txt-muted">{email}</p>
-      <div className="mt-5 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
-        D.PotD status: {hasDpotdAccess ? "registered and portal-ready" : "account active, registration not submitted yet"}
-      </div>
-    </div>
   );
 }
 

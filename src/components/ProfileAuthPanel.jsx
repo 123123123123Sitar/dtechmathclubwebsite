@@ -22,13 +22,13 @@ const initialRegister = {
 export default function ProfileAuthPanel({
   defaultMode = "signin",
   embedded = false,
+  hideWhenSignedIn = false,
   redirectTo = "/profile",
   signedInCopy = "This browser already has an active Design Tech Math Club account session.",
 }) {
   const navigate = useNavigate();
   const {
     authReady,
-    hasDpotdAccess,
     profile,
     refreshProfile,
     registerSiteAccount,
@@ -83,12 +83,18 @@ export default function ProfileAuthPanel({
       registerForm.firstName,
       registerForm.lastName,
       registerForm.email,
+      registerForm.school,
       registerForm.password,
       registerForm.confirmPassword,
     ].map((value) => value.trim());
 
     if (requiredValues.some((value) => !value)) {
-      setError("Fill in the required account fields before continuing.");
+      setError("Fill in every account field before continuing.");
+      return;
+    }
+
+    if (registerType === "student" && !registerForm.grade.trim()) {
+      setError("Enter your grade before continuing.");
       return;
     }
 
@@ -142,16 +148,17 @@ export default function ProfileAuthPanel({
   }
 
   if (user) {
+    if (hideWhenSignedIn) {
+      return null;
+    }
+
     return (
       <PanelShell className="p-8" embedded={embedded}>
-        <h2 className="text-3xl font-black text-txt">{profile?.name || user.email}</h2>
+        <h2 className="text-3xl font-black text-txt">{profile?.name || "Member"}</h2>
         <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
         <p className="mt-4 leading-relaxed text-txt-muted">{signedInCopy}</p>
         <p className="mt-3 text-sm text-txt-muted">
           Account type: {profile?.accountType === "coach" ? "coach" : "student"}
-        </p>
-        <p className="mt-2 text-sm text-txt-muted">
-          D.PotD access: {hasDpotdAccess ? "active" : "not activated yet"}
         </p>
         <button
           className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
@@ -194,6 +201,7 @@ export default function ProfileAuthPanel({
             label="Email"
             name="email"
             onChange={handleLoginChange}
+            required
             type="email"
             value={loginForm.email}
           />
@@ -201,6 +209,7 @@ export default function ProfileAuthPanel({
             label="Password"
             name="password"
             onChange={handleLoginChange}
+            required
             type="password"
             value={loginForm.password}
           />
@@ -261,33 +270,38 @@ export default function ProfileAuthPanel({
               label="First Name"
               name="firstName"
               onChange={handleRegisterChange}
+              required
               value={registerForm.firstName}
             />
             <Field
               label="Last Name"
               name="lastName"
               onChange={handleRegisterChange}
+              required
               value={registerForm.lastName}
             />
             <Field
               label="Email"
               name="email"
               onChange={handleRegisterChange}
+              required
               type="email"
               value={registerForm.email}
             />
             <Field
-              label={registerType === "coach" ? "School Affiliation (Optional)" : "School (Optional)"}
+              label={registerType === "coach" ? "School Affiliation" : "School"}
               name="school"
               onChange={handleRegisterChange}
+              required
               value={registerForm.school}
             />
             {registerType === "student" ? (
               <Field
-                label="Grade (Optional)"
+                label="Grade"
                 name="grade"
                 onChange={handleRegisterChange}
-                placeholder="Student grade if applicable"
+                placeholder="Student grade"
+                required
                 value={registerForm.grade}
               />
             ) : (
@@ -305,6 +319,7 @@ export default function ProfileAuthPanel({
               label="Password"
               name="password"
               onChange={handleRegisterChange}
+              required
               type="password"
               value={registerForm.password}
             />
@@ -313,6 +328,7 @@ export default function ProfileAuthPanel({
                 label="Confirm Password"
                 name="confirmPassword"
                 onChange={handleRegisterChange}
+                required
                 type="password"
                 value={registerForm.confirmPassword}
               />

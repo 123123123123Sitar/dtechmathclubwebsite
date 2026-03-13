@@ -306,6 +306,14 @@ export function DpotdAuthProvider({ children }) {
     const password = values.password;
     const name = [firstName, lastName].filter(Boolean).join(" ").trim();
 
+    if (!firstName || !lastName || !email || !school || !password) {
+      return { ok: false, error: "Fill in every account field before continuing." };
+    }
+
+    if (accountType === "student" && !grade) {
+      return { ok: false, error: "Enter your grade before continuing." };
+    }
+
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -433,8 +441,11 @@ export function DpotdAuthProvider({ children }) {
     const notes = values.notes.trim();
     const accountUid = auth.currentUser.uid;
 
-    if (!name || !email || !grade) {
-      return { ok: false, error: "Fill in the participant name, email, and grade before continuing." };
+    if (!name || !email || !school || !grade || !parentName || !parentEmail) {
+      return {
+        ok: false,
+        error: "Fill in every required Puzzle Night detail before continuing.",
+      };
     }
 
     try {
@@ -552,8 +563,11 @@ export function DpotdAuthProvider({ children }) {
     const state = values.state.trim();
     const maxStudents = values.maxStudents.trim();
 
-    if (!schoolName || !city || !state) {
-      return { ok: false, error: "Fill in the school name, city, and state before continuing." };
+    if (!schoolName || !shortName || !city || !state || !maxStudents) {
+      return {
+        ok: false,
+        error: "Fill in every school registration detail before continuing.",
+      };
     }
 
     try {
@@ -759,15 +773,29 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "You need to be signed in to update your profile." };
     }
 
+    const name = values.name.trim();
+    const school = values.school.trim();
+    const grade = values.grade.trim();
+    const isCoachAccount = (profile?.accountType || siteProfile?.accountType) === "coach";
+
+    if (!name || !school || (!isCoachAccount && !grade)) {
+      return {
+        ok: false,
+        error: isCoachAccount
+          ? "Fill in your name and school before saving."
+          : "Fill in your name, school, and grade before saving.",
+      };
+    }
+
     try {
       const uid = auth.currentUser.uid;
       const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
       const sharedProfile = {
         accountType: profile?.accountType || siteProfile?.accountType || "student",
         email,
-        grade: values.grade.trim(),
-        name: values.name.trim(),
-        school: values.school.trim(),
+        grade,
+        name,
+        school,
         updatedAt: serverTimestamp(),
       };
 

@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
 import { sponsorTiers } from "../data";
@@ -36,17 +38,45 @@ export default function DTMT() {
         ]}
         align="center"
         aside={
-          <div className="text-left">
-            <h2 className="text-3xl font-black text-txt">Closed</h2>
-            <p className="mt-3 text-sm text-txt-muted">Deadline: March 3</p>
-            <p className="mt-1 text-sm text-txt-muted">Fee: $10</p>
-          </div>
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge="DTMT"
+            caption="A full competition day with subject rounds, team events, speakers, and awards at Design Tech High School."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
+          />
         }
         description="The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking."
         highlights={["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"]}
         title="Design Tech Math Tournament"
         titleClassName="whitespace-nowrap text-[clamp(1.9rem,3.6vw,3.5rem)]"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          <SplitPanel
+            left={
+              <>
+                <h2 className="text-3xl font-black text-txt">Tournament overview</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  DTMT is the club&apos;s flagship middle school event, combining strong subject
+                  rounds with team-based collaboration, community-building, and recognition for
+                  outstanding mathematical performance.
+                </p>
+              </>
+            }
+            right={
+              <>
+                <h2 className="text-3xl font-black text-txt">Registration details</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">Registration status: Closed</p>
+                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                  Deadline: March 3. Entry fee: $10.
+                </div>
+              </>
+            }
+          />
+        </section>
+      </FlowSection>
 
       {/* ── Stats ─────────────────────────────────────────── */}
       <FlowSection>

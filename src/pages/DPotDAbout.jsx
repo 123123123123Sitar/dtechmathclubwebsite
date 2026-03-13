@@ -1,6 +1,8 @@
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import {
   dpotdArchive,
   dpotdFeatureCards,
@@ -16,10 +18,49 @@ export default function DPotDAbout() {
           { label: "Register for D.PotD", to: "/dpotd/register" },
           { label: "Open D.PotD Dashboard", to: "/profile?view=dpotd", variant: "ghost" },
         ]}
-        aside={<AboutSummaryCard />}
+        aside={
+          <HeroMediaPanel
+            alt="D.PotD logo"
+            badge="D.PotD 2026"
+            caption="Five days of timed daily sets, including proof writing, as the lead-up to DTMT."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dpotd-portal/dpotd-logo.png"
+          />
+        }
         description="The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them."
         title="Design Tech Problem of the Day Challenge"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          <SplitPanel
+            left={
+              <>
+                <h2 className="text-3xl font-black text-txt">D.PotD Challenge</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  The challenge is open to middle school students across the United States, with
+                  online recognition for top performers and additional prizes for top students who
+                  also participate in DTMT.
+                </p>
+              </>
+            }
+            right={
+              <>
+                <h2 className="text-3xl font-black text-txt">Event details</h2>
+                <div className="mt-4 grid gap-4">
+                  <InfoRow label="Date" value="Mon, Feb 23" />
+                  <InfoRow label="Location" value="Online in our website's D.PotD portal" />
+                  <InfoRow label="Status" value="Closed for the 2026 challenge cycle" />
+                  <InfoRow
+                    label="Eligibility"
+                    value="Open to middle school students across the United States"
+                  />
+                </div>
+              </>
+            }
+          />
+        </section>
+      </FlowSection>
 
       <FlowSection glow="muted">
         <section className="py-16">
@@ -180,36 +221,6 @@ export default function DPotDAbout() {
         </section>
       </FlowSection>
     </>
-  );
-}
-
-function AboutSummaryCard() {
-  return (
-    <div className="p-1 text-left">
-      <div className="flex items-center gap-4">
-        <img
-          alt="D.PotD logo"
-          className="h-16 w-16 rounded-2xl border border-brand/20 bg-white object-cover p-2"
-          src="/dpotd-portal/dpotd-logo.png"
-        />
-        <div>
-          <h2 className="text-2xl font-black text-txt">D.PotD Challenge</h2>
-          <span className="mt-2 inline-flex rounded-full bg-brand/10 px-3 py-1 text-sm font-semibold text-brand">
-            Registration Closed
-          </span>
-        </div>
-      </div>
-      <div className="mt-6 grid gap-4 border-t border-border-subtle pt-5">
-        <InfoRow label="Date" value="Mon, Feb 23" />
-        <InfoRow label="Location" value="Online in our website's D.PotD portal" />
-        <InfoRow label="Status" value="Closed for the 2026 challenge cycle" />
-        <InfoRow label="Eligibility" value="Open to middle school students across the United States" />
-      </div>
-      <p className="mt-5 text-sm leading-relaxed text-txt-muted">
-        Winners receive online recognition, and top students who also participate in DTMT receive
-        additional prizes.
-      </p>
-    </div>
   );
 }
 

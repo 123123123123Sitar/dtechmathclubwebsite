@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
@@ -261,25 +263,92 @@ export default function DTMTRegister() {
               ]
         }
         aside={
-          authReady && user ? (
-            <DtmtStatusCard
-              coachProfile={dtmtCoachProfile}
-              school={dtmtSchool}
-              studentRegistration={dtmtStudentRegistration}
-            />
-          ) : (
-            <ProfileAuthPanel
-              defaultMode="register"
-              embedded
-              redirectTo="/dtmt/register"
-              signedInCopy="DTMT uses the shared website account. Coach permissions, school registration, student registration, waiver status, payment status, and team assignment all attach to this same account."
-            />
-          )
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge="DTMT"
+            caption="Coaches and students both use the same Design Tech Math Club account system for DTMT registration and status."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
+          />
         }
         description="DTMT is the most detailed registration on the site. Coaches create coach profiles and school entries, while students register under a school, choose rounds, complete the waiver, record payment, and later receive team assignments."
         highlights={["Coach and Student Roles", "School Roster Management", "Waiver and Payment Tracking"]}
         title="DTMT Registration"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          {!authReady ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Checking your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    We are confirming whether this browser already has a signed-in account for
+                    DTMT registration.
+                  </p>
+                </>
+              }
+              right={
+                <p className="text-sm leading-relaxed text-txt-muted">
+                  Once your account is confirmed, this page will show either sign-in options or
+                  the DTMT forms for that account.
+                </p>
+              }
+            />
+          ) : !user ? (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">Create or sign into your account</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    DTMT uses the shared website account. Coaches can set up schools and rosters,
+                    while students can register for rounds, finish the waiver, and record payment.
+                  </p>
+                </>
+              }
+              right={
+                <ProfileAuthPanel
+                  defaultMode="register"
+                  embedded
+                  hideWhenSignedIn
+                  redirectTo="/dtmt/register"
+                />
+              }
+            />
+          ) : (
+            <SplitPanel
+              left={
+                <>
+                  <h2 className="text-3xl font-black text-txt">DTMT account status</h2>
+                  <p className="mt-4 leading-relaxed text-txt-muted">
+                    This account can hold both coach and student DTMT information, depending on
+                    which registration steps you complete.
+                  </p>
+                </>
+              }
+              right={
+                <>
+                  <h2 className="text-3xl font-black text-txt">{profile?.name || "Member"}</h2>
+                  <div className="mt-5 grid gap-4">
+                    <StatusRow label="Coach Profile">
+                      {dtmtCoachProfile ? "Active" : "Not created yet"}
+                    </StatusRow>
+                    <StatusRow label="School">
+                      {dtmtSchool?.schoolName || "No school registered yet"}
+                    </StatusRow>
+                    <StatusRow label="Student Registration">
+                      {dtmtStudentRegistration
+                        ? dtmtStudentRegistration.schoolName
+                        : "No student registration yet"}
+                    </StatusRow>
+                  </div>
+                </>
+              }
+            />
+          )}
+        </section>
+      </FlowSection>
 
       <FlowSection glow="muted">
         <section className="py-16">
@@ -288,21 +357,7 @@ export default function DTMTRegister() {
               <SurfaceCard className="p-8 text-center">
                 <p className="text-sm font-semibold text-txt-muted">Checking your account session...</p>
               </SurfaceCard>
-            ) : !user ? (
-              <div className="grid gap-5 md:grid-cols-3">
-                <InfoCard title="Account First">
-                  DTMT management features only become available after a website account exists.
-                </InfoCard>
-                <InfoCard title="For Coaches">
-                  Coaches create coach profiles, register schools, then manage roster visibility and
-                  team assignment.
-                </InfoCard>
-                <InfoCard title="For Students">
-                  Students register under a school, choose subject rounds, complete the waiver, and
-                  submit the payment step from this same account.
-                </InfoCard>
-              </div>
-            ) : (
+            ) : !user ? null : (
               <div className="grid gap-8">
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -344,8 +399,8 @@ export default function DTMTRegister() {
                       ) : (
                         <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
                           <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="Student Name" name="name" onChange={handleStudentChange} value={studentForm.name} />
-                            <Field label="Grade" name="grade" onChange={handleStudentChange} value={studentForm.grade} />
+                            <Field label="Student Name" name="name" onChange={handleStudentChange} required value={studentForm.name} />
+                            <Field label="Grade" name="grade" onChange={handleStudentChange} required value={studentForm.grade} />
                           </div>
 
                           <label className="grid gap-2">
@@ -354,6 +409,7 @@ export default function DTMTRegister() {
                               className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
                               name="schoolId"
                               onChange={handleStudentChange}
+                              required
                               value={studentForm.schoolId}
                             >
                               <option value="">Select a registered school</option>
@@ -392,6 +448,7 @@ export default function DTMTRegister() {
                                 label="Waiver Signer Name"
                                 name="waiverSignerName"
                                 onChange={handleStudentChange}
+                                required
                                 value={studentForm.waiverSignerName}
                               />
                               <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
@@ -400,6 +457,7 @@ export default function DTMTRegister() {
                                   className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
                                   name="waiverAccepted"
                                   onChange={handleStudentChange}
+                                  required
                                   type="checkbox"
                                 />
                                 <span>
@@ -418,6 +476,7 @@ export default function DTMTRegister() {
                                   className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
                                   name="paymentMethod"
                                   onChange={handleStudentChange}
+                                  required
                                   value={studentForm.paymentMethod}
                                 >
                                   <option value="">Select a payment method</option>
@@ -432,10 +491,11 @@ export default function DTMTRegister() {
                                   className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
                                   name="paymentAcknowledged"
                                   onChange={handleStudentChange}
+                                  required
                                   type="checkbox"
                                 />
                                 <span>
-                                  I understand that payment status is being recorded here as part of registration. Live checkout can be integrated later without changing the account structure.
+                                  I understand that payment status is being recorded here as part of registration.
                                 </span>
                               </label>
                             </div>
@@ -511,10 +571,10 @@ export default function DTMTRegister() {
                           description="Creating the coach profile attaches DTMT management permissions to this website account."
                         />
                         <form className="mt-8 grid gap-4" onSubmit={handleCoachSubmit} noValidate>
-                          <Field label="Coach Name" name="coachName" onChange={handleCoachChange} value={coachForm.coachName} />
+                          <Field label="Coach Name" name="coachName" onChange={handleCoachChange} required value={coachForm.coachName} />
                           <Field label="Title" name="title" onChange={handleCoachChange} value={coachForm.title} />
-                          <Field label="School Affiliation" name="schoolAffiliation" onChange={handleCoachChange} value={coachForm.schoolAffiliation} />
-                          <Field label="Phone" name="phone" onChange={handleCoachChange} value={coachForm.phone} />
+                          <Field label="School Affiliation" name="schoolAffiliation" onChange={handleCoachChange} required value={coachForm.schoolAffiliation} />
+                          <Field label="Phone" name="phone" onChange={handleCoachChange} required value={coachForm.phone} />
                           {coachMessage ? (
                             <p className={`text-sm font-semibold ${coachMessage === "Coach profile saved." ? "text-emerald-600" : "text-red-500"}`}>
                               {coachMessage}
@@ -542,12 +602,12 @@ export default function DTMTRegister() {
                           </p>
                         ) : (
                           <form className="mt-8 grid gap-4" onSubmit={handleSchoolSubmit} noValidate>
-                            <Field label="School Name" name="schoolName" onChange={handleSchoolChange} value={schoolForm.schoolName} />
-                            <Field label="Short Name" name="shortName" onChange={handleSchoolChange} value={schoolForm.shortName} />
+                            <Field label="School Name" name="schoolName" onChange={handleSchoolChange} required value={schoolForm.schoolName} />
+                            <Field label="Short Name" name="shortName" onChange={handleSchoolChange} required value={schoolForm.shortName} />
                             <div className="grid gap-4 sm:grid-cols-3">
-                              <Field label="City" name="city" onChange={handleSchoolChange} value={schoolForm.city} />
-                              <Field label="State" name="state" onChange={handleSchoolChange} value={schoolForm.state} />
-                              <Field label="Max Students" name="maxStudents" onChange={handleSchoolChange} value={schoolForm.maxStudents} />
+                              <Field label="City" name="city" onChange={handleSchoolChange} required value={schoolForm.city} />
+                              <Field label="State" name="state" onChange={handleSchoolChange} required value={schoolForm.state} />
+                              <Field label="Max Students" name="maxStudents" onChange={handleSchoolChange} required value={schoolForm.maxStudents} />
                             </div>
                             {schoolMessage ? (
                               <p className={`text-sm font-semibold ${schoolMessage === "DTMT school registration saved." ? "text-emerald-600" : "text-red-500"}`}>
@@ -640,30 +700,6 @@ export default function DTMTRegister() {
         </section>
       </FlowSection>
     </>
-  );
-}
-
-function DtmtStatusCard({ coachProfile, school, studentRegistration }) {
-  return (
-    <div className="p-1 text-left">
-      <h2 className="text-3xl font-black text-txt">DTMT Account Status</h2>
-      <div className="mt-5 grid gap-4">
-        <StatusRow label="Coach Profile">{coachProfile ? "Active" : "Not created yet"}</StatusRow>
-        <StatusRow label="School">{school?.schoolName || "No school registered yet"}</StatusRow>
-        <StatusRow label="Student Registration">
-          {studentRegistration ? studentRegistration.schoolName : "No student registration yet"}
-        </StatusRow>
-      </div>
-    </div>
-  );
-}
-
-function InfoCard({ title, children }) {
-  return (
-    <SurfaceCard className="p-7">
-      <h3 className="text-2xl font-black text-txt">{title}</h3>
-      <p className="mt-4 leading-relaxed text-txt-muted">{children}</p>
-    </SurfaceCard>
   );
 }
 

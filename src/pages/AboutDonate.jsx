@@ -1,6 +1,8 @@
 import PageHero from "../components/PageHero";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import { donationImpact } from "../content/sponsorship";
 
 const givingTemplate = [
@@ -14,30 +16,53 @@ export default function AboutDonate() {
     <>
       <PageHero
         aside={
-          <div className="text-left">
-            <h2 className="text-3xl font-black text-txt">Payment Integration Ready</h2>
-            <p className="mt-4 leading-relaxed text-txt-muted">
-              Wire future donation buttons to Stripe Checkout or Payment Links here. The page
-              layout, messaging, and impact sections are already in place.
-            </p>
-            <div className="mt-6 border-t border-dashed border-brand/40 pt-4 text-sm leading-relaxed text-txt-muted">
-              Suggested future hook: one-time gifts, recurring support, sponsor acknowledgement,
-              and post-payment thank-you messaging.
-            </div>
-          </div>
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge="Support"
+            caption="Support for prizes, materials, and student access helps the club keep events welcoming and ambitious."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
+          />
         }
-        description="This page is the donation template in the site's orange visual system. Stripe can be connected here later without redesigning the structure."
-        eyebrow="Donate"
+        description="Support from families, alumni, and community members helps the Design Tech Math Club fund prizes, materials, and accessible math programming."
         title="Support the Design Tech Math Club"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          <SplitPanel
+            left={
+              <>
+                <h2 className="text-3xl font-black text-txt">How donations help</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  Individual giving helps the club run events well, recognize student achievement,
+                  and keep participation accessible across our programs.
+                </p>
+              </>
+            }
+            right={
+              <>
+                <h2 className="text-3xl font-black text-txt">Donation page details</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  This page is set up for future giving support, with space for one-time gifts,
+                  recurring support, and donor acknowledgement.
+                </p>
+                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                  When online giving is added, this page can also include follow-up messaging and
+                  a thank-you note for supporters.
+                </div>
+              </>
+            }
+          />
+        </section>
+      </FlowSection>
 
       <FlowSection>
         <section className="py-18">
           <div className="mx-auto w-[min(calc(100%-2rem),1120px)]">
             <SectionHeader
-              eyebrow="Impact"
               title="What Donations Help Fund"
-              description="A clean donation page needs a clear impact story. These cards give you ready-to-keep messaging when Stripe is added."
+              description="These focus areas show how support can help student programs, event quality, and broader access."
               align="center"
             />
             <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -59,9 +84,8 @@ export default function AboutDonate() {
         <section className="py-18">
           <div className="mx-auto w-[min(calc(100%-2rem),1120px)]">
             <SectionHeader
-              eyebrow="Template Tiers"
               title="Suggested Giving Cards"
-              description="These are frontend placeholders only. Update amounts, copy, and Stripe links later."
+              description="These sample giving levels can be refined with final amounts and donation links later."
               align="center"
             />
             <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -79,7 +103,7 @@ export default function AboutDonate() {
                     className="mt-6 inline-flex rounded-full border border-brand px-5 py-3 text-sm font-bold text-brand"
                     type="button"
                   >
-                    Stripe Button Later
+                    Donation Link Coming Soon
                   </button>
                 </article>
               ))}

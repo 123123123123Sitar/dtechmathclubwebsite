@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import DpotdDashboardPanel from "../components/DpotdDashboardPanel";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
@@ -79,10 +81,7 @@ export default function ProfileHub() {
       ];
     }
 
-    return [
-      { label: "Create Account", to: "/profile" },
-      { label: "View D.PotD", to: "/dpotd/about", variant: "ghost" },
-    ];
+    return [];
   }, [activeView, authReady, hasDpotdAccess, user]);
 
   function handleChange(event) {
@@ -109,15 +108,16 @@ export default function ProfileHub() {
       <PageHero
         actions={heroActions}
         aside={
-          <ProfileAuthPanel
-            defaultMode="signin"
-            embedded
-            redirectTo={`/profile?view=${activeView}`}
-            signedInCopy={
-              hasDpotdAccess
-                ? "This shared account is active and already connected to D.PotD. DTMT roles and event registrations can also attach to this same profile."
-                : "This shared account is active. Event access appears here as you complete registrations and account steps."
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge={authReady && user ? "Account Dashboard" : "Shared Account"}
+            caption={
+              authReady && user
+                ? "This single account holds your event registrations, D.PotD access, and DTMT role information."
+                : "Create one Design Tech Math Club account first, then use it across Puzzle Night, D.PotD, and DTMT."
             }
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
           />
         }
         description="This is the shared website account for the Design Tech Math Club. Puzzle Night, D.PotD, and DTMT registration details all attach to this same account."
@@ -169,32 +169,57 @@ export default function ProfileHub() {
           </section>
         </FlowSection>
       ) : (
-        <FlowSection glow="muted">
-          <section className="py-18">
-            <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
-              <SectionHeader
-                align="center"
-                description="Create one website account first when you want account-based features. Puzzle Night, D.PotD, and DTMT all build on this shared profile."
-                title="How the System Works"
+        <>
+          <FlowSection>
+            <section className="py-8">
+              <SplitPanel
+                left={
+                  <>
+                    <h2 className="text-3xl font-black text-txt">Create your shared account</h2>
+                    <p className="mt-4 leading-relaxed text-txt-muted">
+                      Start here when you want access to account-based features. Puzzle Night,
+                      D.PotD, and DTMT all build on this same profile.
+                    </p>
+                  </>
+                }
+                right={
+                  <ProfileAuthPanel
+                    defaultMode="register"
+                    embedded
+                    hideWhenSignedIn
+                    redirectTo={`/profile?view=${activeView}`}
+                  />
+                }
               />
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                <ModuleCard actionLabel="Puzzle Night" actionTo="/puzzle-night/register" title="Simple Form Registration">
-                  Puzzle Night stays lightweight, but it still uses the shared account. Sign in,
-                  submit the form, and the registration is saved directly to this profile.
-                </ModuleCard>
-                <ModuleCard actionLabel="D.PotD Dashboard" actionTo="/dpotd/register" title="Portal Unlock After Registration">
-                  Students first create a website account, then submit the D.PotD form. That
-                  submission provisions the D.PotD portal for the same account.
-                </ModuleCard>
-                <ModuleCard actionLabel="DTMT Registration" actionTo="/dtmt/register" title="Coach and Student Roles">
-                  DTMT adds role-based data. Coaches create coach profiles and school entries;
-                  students register under a school, complete waiver and payment steps, then see
-                  team assignments later.
-                </ModuleCard>
+            </section>
+          </FlowSection>
+
+          <FlowSection glow="muted">
+            <section className="py-18">
+              <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
+                <SectionHeader
+                  align="center"
+                  description="Each event uses the same account, but access opens only after the matching registration is completed."
+                  title="What This Account Unlocks"
+                />
+                <div className="mt-8 grid gap-5 md:grid-cols-3">
+                  <ModuleCard actionLabel="Puzzle Night" actionTo="/puzzle-night/register" title="Puzzle Night">
+                    Sign in, submit the form, and the registration is saved directly to this
+                    profile.
+                  </ModuleCard>
+                  <ModuleCard actionLabel="D.PotD Registration" actionTo="/dpotd/register" title="D.PotD">
+                    Submit the D.PotD form from this account to activate the dashboard and testing
+                    access.
+                  </ModuleCard>
+                  <ModuleCard actionLabel="DTMT Registration" actionTo="/dtmt/register" title="DTMT">
+                    Coaches manage schools and rosters here, while students register for rounds,
+                    complete waivers, and record payment.
+                  </ModuleCard>
+                </div>
               </div>
-            </div>
-          </section>
-        </FlowSection>
+            </section>
+          </FlowSection>
+        </>
       )}
     </>
   );
@@ -323,7 +348,7 @@ function OverviewPanel({
         >
           {hasDpotdAccess
             ? "Your D.PotD portal is no longer a separate sign-in flow. The dashboard now lives inside this profile and the testing portal follows the same session."
-            : "D.PotD requires this shared account first. Once the form is submitted, the portal profile is provisioned automatically for this same account."}
+            : "D.PotD requires this shared account first. Once the form is submitted, D.PotD access turns on for this same account."}
         </ModuleCard>
         <ModuleCard
           actionLabel="Open DTMT Registration"

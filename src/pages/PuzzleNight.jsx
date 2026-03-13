@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
+import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
+import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
 
 const puzzleSponsors = [
@@ -61,21 +63,47 @@ export default function PuzzleNight() {
         ]}
         align="center"
         aside={
-          <div className="text-left">
-            <h3 className="text-2xl font-black text-txt">Interactive stations and prizes</h3>
-            <p className="mt-3 text-sm leading-relaxed text-txt-muted">
-              Exploration activities, estimation, countdown, and raffle energy all live in the
-              same event flow instead of being split into separate boxed callouts.
-            </p>
-            <div className="mt-5 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
-              Expect logic, modeling, geometry, and collaborative problem solving throughout the
-              evening.
-            </div>
-          </div>
+          <HeroMediaPanel
+            alt="Design Tech Math Club banner"
+            badge="Puzzle Night"
+            caption="Exploration stations, countdown energy, and a community math night built for middle school students."
+            imageClassName="object-contain p-8 md:p-10"
+            src="/dtechmathclublogolarger.jpg"
+          />
         }
         description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event features interactive puzzle stations that show the fun side of mathematics."
         title="Design Tech Puzzle Night"
       />
+
+      <FlowSection>
+        <section className="py-8">
+          <SplitPanel
+            left={
+              <>
+                <h2 className="text-3xl font-black text-txt">Design Tech Puzzle Night</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  Puzzle Night is built as an exploration-focused event where students rotate
+                  through engaging mathematical challenges, try unfamiliar ideas, and collaborate
+                  in a lower-pressure setting than a formal contest.
+                </p>
+              </>
+            }
+            right={
+              <>
+                <h2 className="text-3xl font-black text-txt">Interactive stations and prizes</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  Exploration activities, estimation, countdown, and raffle energy all live in the
+                  same event instead of being broken into separate callouts.
+                </p>
+                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
+                  Expect logic, modeling, geometry, and collaborative problem solving throughout
+                  the evening.
+                </div>
+              </>
+            }
+          />
+        </section>
+      </FlowSection>
 
       {/* ── Message ───────────────────────────────────────── */}
       <FlowSection>
