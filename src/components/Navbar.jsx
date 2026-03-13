@@ -6,17 +6,19 @@ import { useDpotdAuth } from "../context/DpotdAuthContext";
 function buildNavItems(isCoachAccount) {
   return [
     { type: "link", to: "/", label: "Home" },
-    {
-      type: "dropdown",
-      label: "Puzzle Night",
-      match: "/puzzle-night",
-      items: isCoachAccount
-        ? [{ to: "/puzzle-night", label: "Overview" }]
-        : [
-            { to: "/puzzle-night", label: "Overview" },
-            { to: "/puzzle-night/register", label: "Register Here" },
-          ],
-    },
+    ...(!isCoachAccount
+      ? [
+          {
+            type: "dropdown",
+            label: "Puzzle Night",
+            match: "/puzzle-night",
+            items: [
+              { to: "/puzzle-night", label: "Overview" },
+              { to: "/puzzle-night/register", label: "Register Here" },
+            ],
+          },
+        ]
+      : []),
     {
       type: "dropdown",
       label: "d.PotD",
