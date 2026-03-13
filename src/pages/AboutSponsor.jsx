@@ -45,39 +45,10 @@ export default function AboutSponsor() {
           />
         }
         description="The Design Tech High School Math Club is a student-run Mu Alpha Theta chapter on the Oracle campus in Redwood City, California. We organize math programs for middle school students in the Bay Area and beyond, with a focus on reasoning, problem solving, and analytical thinking."
-        highlights={["Puzzle Night", "D.PotD", "DTMT"]}
         title="Partner with the Design Tech Math Club"
+        actions={[{ label: "Inquire Now", to: "#sponsor-form", variant: "primary" }]}
       />
 
-      <FlowSection>
-        <section className="py-8">
-          <SplitPanel
-            left={
-              <>
-                <h2 className="text-3xl font-black text-txt">Let&apos;s partner</h2>
-                <p className="mt-4 leading-relaxed text-txt-muted">
-                  Sponsor support helps us provide prizes, run events at scale, and keep
-                  participation widely accessible for young mathematicians.
-                </p>
-              </>
-            }
-            right={
-              <>
-                <h2 className="text-3xl font-black text-txt">Contact details</h2>
-                <div className="mt-4 grid gap-3 leading-relaxed text-txt-muted">
-                  <p>275 Oracle Parkway</p>
-                  <p>Redwood City, CA 94065</p>
-                  <p>Email: dtechmathclub@gmail.com</p>
-                </div>
-                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
-                  Interested in sponsoring the Design Tech Math Club? Contact us through the form
-                  below or by email.
-                </div>
-              </>
-            }
-          />
-        </section>
-      </FlowSection>
 
       <FlowSection>
         <section className="py-18">
@@ -104,66 +75,129 @@ export default function AboutSponsor() {
 
       <FlowSection glow="muted">
         <section className="py-18">
-          <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-10 lg:grid-cols-[1fr_1fr]">
-            <div className="rounded-[34px] border border-border-subtle bg-surface-card p-8">
-              <SectionHeader
-                title="Sponsorship Levels"
-                description="We offer three sponsorship tiers. Final amounts and printed materials can be added here as the partnership details are finalized."
-              />
-              <div className="grid gap-4">
-                {sponsorTierTemplate.map((tier) => (
-                  <article key={tier.name} className="border-t border-border-subtle pt-5">
-                    <div className="flex items-center gap-4">
-                      <div className={`h-12 w-12 rounded-2xl bg-linear-to-br ${tier.accent}`} />
-                      <div>
-                        <h3 className="text-2xl font-black text-txt">{tier.name}</h3>
-                        <p className="text-sm text-txt-muted">Sponsorship tier</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {tier.perks.map((perk) => (
-                        <span
-                          key={perk}
-                          className="rounded-full bg-brand/10 px-3 py-1.5 text-xs font-bold text-brand"
-                        >
-                          {perk}
-                        </span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
+          <div className="mx-auto w-[min(calc(100%-2rem),1180px)] rounded-[34px] border border-border-subtle bg-surface-card p-8 md:p-10">
+            <h2 className="text-3xl font-black text-txt mb-4">Sponsorship Levels</h2>
+            <p className="mb-6 text-txt-muted">We offer the following three sponsorship tiers. Subject to change as the partnership details are finalized.</p>
+            <div className="overflow-x-auto mb-8 rounded-[20px] border border-border-subtle">
+              <table className="min-w-full text-txt text-sm">
+                <thead>
+                  <tr className="bg-brand/8 border-b border-border-subtle">
+                    <th className="px-6 py-4 text-lg font-extrabold text-center text-brand" colSpan="3">Sponsorship Tiers</th>
+                  </tr>
+                  <tr className="bg-brand/5 border-b border-border-subtle">
+                    <th className="px-6 py-4 font-bold text-brand text-center">
+                      Gold
+                      <div className="text-sm font-semibold text-txt-muted">$100+</div>
+                    </th>
+                    <th className="px-6 py-4 font-bold text-brand text-center border-l border-r border-border-subtle">
+                      Diamond
+                      <div className="text-sm font-semibold text-txt-muted">$300+</div>
+                    </th>
+                    <th className="px-6 py-4 font-bold text-brand text-center">
+                      Platinum
+                      <div className="text-sm font-semibold text-txt-muted">$500+</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border-subtle hover:bg-white/30 transition-colors">
+                    <td className="px-6 py-4 text-center text-txt-muted">—</td>
+                    <td className="px-6 py-4 text-center border-l border-r border-border-subtle">Everything in Gold</td>
+                    <td className="px-6 py-4 text-center">Everything in Diamond</td>
+                  </tr>
+                  <tr className="border-b border-border-subtle hover:bg-white/30 transition-colors">
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Small Logo</span>
+                      <div className="text-txt-muted text-xs">on website and merchandise</div>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed border-l border-r border-border-subtle">
+                      <span className="font-semibold">Medium Logo</span>
+                      <div className="text-txt-muted text-xs">on website and merchandise</div>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Large Logo</span>
+                      <div className="text-txt-muted text-xs">on website and merchandise</div>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-border-subtle hover:bg-white/30 transition-colors">
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Verbal Recognition</span>
+                      <div className="text-txt-muted text-xs">at events</div>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed border-l border-r border-border-subtle">
+                      <span className="font-semibold">Verbal Recognition</span>
+                      <div className="text-txt-muted text-xs">at announcements</div>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Advertisements</span>
+                      <div className="text-txt-muted text-xs">at announcements</div>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-border-subtle hover:bg-white/30 transition-colors">
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Event Slides</span>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed border-l border-r border-border-subtle">
+                      <span className="font-semibold">Event Materials</span>
+                    </td>
+                    <td className="px-6 py-4 text-center leading-relaxed">
+                      <span className="font-semibold">Event Title</span>
+                    </td>
+                  </tr>
+                  <tr className="hover:bg-white/30 transition-colors">
+                    <td className="px-6 py-4 text-center text-txt-muted">—</td>
+                    <td className="px-6 py-4 text-center border-l border-r border-border-subtle">
+                      <span className="font-semibold">Display Banner</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="font-semibold">Product Demo</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <div className="rounded-[34px] border border-border-subtle bg-surface-card p-8">
-              <SectionHeader
-                title="Additional Ways to Support"
-                description="If you would like to speak as a guest speaker at the Design Tech Math Tournament, please contact us. We appreciate insights from the math community and would love to hear from you."
-              />
-              <div className="border-t border-border-subtle pt-5">
-                <p className="leading-relaxed text-txt-muted">
-                  Please note that this form is intended for corporate sponsorships. For
-                  individual donations, please use the donations page.
-                </p>
-                <Link
-                  className="mt-5 inline-flex rounded-full border border-brand px-5 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                  to="/about/donate"
-                >
-                  Go to Donations
-                </Link>
-              </div>
-            </div>
+            <h2 className="text-3xl font-black text-txt mb-4">Additional Ways to Support</h2>
+            <p className="mb-6 text-txt-muted">If you would like to speak as a guest speaker at the Design Tech Math Tournament, please contact us. We appreciate insights from the math community and would love to hear from you.</p>
           </div>
+        </section>
+      </FlowSection>
+
+
+      <FlowSection>
+        <section className="py-8" id="sponsor-form">
+          <SplitPanel
+            left={
+              <>
+                <h2 className="text-3xl font-black text-txt">Let&apos;s partner</h2>
+                <p className="mt-4 leading-relaxed text-txt-muted">
+                  Sponsor support helps us provide prizes, run events at scale, and keep
+                  participation widely accessible for young mathematicians.
+                </p>
+              </>
+            }
+            right={
+              <>
+                <h2 className="text-3xl font-black text-txt">Contact details</h2>
+                <div className="mt-4 grid gap-3 leading-relaxed text-txt-muted">
+                  <p>275 Oracle Parkway</p>
+                  <p>Redwood City, CA 94065</p>
+                  <p>Email: dtechmathclub@gmail.com</p>
+                </div>
+              </>
+            }
+          />
         </section>
       </FlowSection>
 
       <FlowSection>
         <section className="py-18">
-          <div className="mx-auto w-[min(calc(100%-2rem),980px)] rounded-[34px] border border-border-subtle bg-surface-card p-8 md:p-10">
+          <div className="mx-auto w-[min(calc(100%-2rem),1180px)] rounded-[34px] border border-border-subtle bg-surface-card p-8 md:p-10">
             <SectionHeader
               title="Corporate Sponsorship Inquiry"
               description="Interested in sponsoring the Design Tech Math Club? Contact us through this form."
               align="center"
+              titleClassName="text-3xl md:text-3xl whitespace-nowrap"
             />
             <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
               <div className="grid gap-4 sm:grid-cols-2">

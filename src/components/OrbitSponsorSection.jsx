@@ -75,25 +75,7 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
           ))}
         </div>
 
-        {/* Floating sponsor pills */}
-        <div className="flex flex-wrap justify-center gap-3 mt-10">
-          {allSponsors.map((s, i) => (
-            <motion.a
-              key={s.name}
-              href={s.href}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center rounded-full border border-[rgba(234,109,74,0.14)] bg-white/78 px-5 py-2.5 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white hover:border-brand"
-              initial={{ opacity: 0, y: 20, rotateZ: -5 }}
-              whileInView={{ opacity: 1, y: 0, rotateZ: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.06 }}
-              whileHover={{ scale: 1.08, y: -2 }}
-            >
-              {s.name}
-            </motion.a>
-          ))}
-        </div>
+        {/* Floating sponsor pills removed as requested */}
       </div>
     </section>
   );

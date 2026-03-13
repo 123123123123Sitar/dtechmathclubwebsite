@@ -139,7 +139,6 @@ function AppShell() {
                 />
                 <Route path="/dpotd" element={<Navigate to="/dpotd/about" replace />} />
                 <Route path="/dpotd/about" element={<DPotDAbout />} />
-                <Route path="/dpotd/portal" element={<DPotDPortal />} />
                 <Route
                   path="/dpotd/register"
                   element={withSiteAccountGate(<DPotDRegister />)}

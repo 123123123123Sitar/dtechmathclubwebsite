@@ -8,16 +8,8 @@ import { sponsorTiers } from "../data";
 
 const competitions = [
   {
-    name: "BMT (Berkeley Math Tournament)",
-    copy: "A university-run contest that pushes students through rich proof-based and contest-style problems.",
-  },
-  {
-    name: "SMT (Stanford Math Tournament)",
-    copy: "A collaborative and competitive tournament that rewards deep mathematical thinking and teamwork.",
-  },
-  {
-    name: "CMM (Caltech Math Meet)",
-    copy: "An advanced invitational event known for creative rounds and thoughtful problem design.",
+    name: "College run competitions",
+    copy: "Berekly Math Tournament, Caltech Math Meet, and the Stanford Math Tournament",
   },
   {
     name: "AMC (American Mathematics Competition)",
@@ -63,7 +55,7 @@ const leaders = [
     name: "Siddhi Prassad",
     role: "Vice President",
     description:
-      "Siddhi supports club operations, collaborates on event preparation, and helps create a consistent experience for meetings, practices, and hosted contests.",
+      "Siddhi supports club operations and helps create a consistent experience for meetings, practices, and hosted contests.",
     gradient: "from-[#78c79e] to-[#3d9a70]",
   },
 ];
