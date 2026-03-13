@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
+import RequireSiteAccount from "./components/RequireSiteAccount";
 
 const About = lazy(() => import("./pages/About"));
 const AboutDonate = lazy(() => import("./pages/AboutDonate"));
@@ -106,6 +107,10 @@ const pageVariants = {
   exit: { opacity: 0, y: -12 },
 };
 
+function withSiteAccountGate(element) {
+  return <RequireSiteAccount>{element}</RequireSiteAccount>;
+}
+
 function AppShell() {
   usePageMeta();
   useScrollToTop();
@@ -134,14 +139,23 @@ function AppShell() {
               <Routes location={location}>
                 <Route path="/" element={<Home />} />
                 <Route path="/puzzle-night" element={<PuzzleNight />} />
-                <Route path="/puzzle-night/register" element={<PuzzleNightRegister />} />
+                <Route
+                  path="/puzzle-night/register"
+                  element={withSiteAccountGate(<PuzzleNightRegister />)}
+                />
                 <Route path="/dpotd" element={<Navigate to="/dpotd/about" replace />} />
                 <Route path="/dpotd/about" element={<DPotDAbout />} />
                 <Route path="/dpotd/portal" element={<DPotDPortal />} />
-                <Route path="/dpotd/register" element={<DPotDRegister />} />
+                <Route
+                  path="/dpotd/register"
+                  element={withSiteAccountGate(<DPotDRegister />)}
+                />
                 <Route path="/profile" element={<ProfileHub />} />
                 <Route path="/dtmt" element={<DTMT />} />
-                <Route path="/dtmt/register" element={<DTMTRegister />} />
+                <Route
+                  path="/dtmt/register"
+                  element={withSiteAccountGate(<DTMTRegister />)}
+                />
                 <Route path="/about" element={<Navigate to="/about/our-team" replace />} />
                 <Route path="/about/our-team" element={<About />} />
                 <Route path="/about/donate" element={<AboutDonate />} />

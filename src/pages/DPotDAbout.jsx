@@ -3,6 +3,8 @@ import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
+import { useDpotdAuth } from "../context/DpotdAuthContext";
+import { buildProfileNextHref } from "../lib/siteAccountRouting";
 import {
   dpotdArchive,
   dpotdFeatureCards,
@@ -11,12 +13,25 @@ import {
 } from "../content/dpotd";
 
 export default function DPotDAbout() {
+  const { authReady, user } = useDpotdAuth();
+  const hasSignedInAccount = authReady && Boolean(user);
+  const registrationPath = hasSignedInAccount
+    ? "/profile?view=dpotd"
+    : buildProfileNextHref("/profile?view=dpotd");
+
   return (
     <>
       <PageHero
         actions={[
-          { label: "Register for D.PotD", to: "/dpotd/register" },
-          { label: "Open D.PotD Dashboard", to: "/profile?view=dpotd", variant: "ghost" },
+          {
+            label: hasSignedInAccount ? "Open D.PotD Dashboard" : "Sign In for D.PotD",
+            to: registrationPath,
+          },
+          {
+            label: hasSignedInAccount ? "Open D.PotD Dashboard" : "Open Profile",
+            to: hasSignedInAccount ? "/profile?view=dpotd" : "/profile",
+            variant: "ghost",
+          },
         ]}
         aside={
           <HeroMediaPanel

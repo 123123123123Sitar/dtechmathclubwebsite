@@ -6,7 +6,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDKUKsa5G321pwX8JCkAnpvYcig33ripEo",
   authDomain: "dpotd-app.firebaseapp.com",
   projectId: "dpotd-app",
-  storageBucket: "dpotd-app.appspot.com",
+  storageBucket: "dpotd-app.firebasestorage.app",
   messagingSenderId: "756829711322",
   appId: "1:756829711322:web:46bc121c55810cbf9f6ee3",
 };

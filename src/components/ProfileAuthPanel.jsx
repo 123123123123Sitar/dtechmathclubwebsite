@@ -107,6 +107,11 @@ export default function ProfileAuthPanel({
       return;
     }
 
+    if (registerForm.password.length < 6) {
+      setError("Use a stronger password with at least 6 characters.");
+      return;
+    }
+
     setBusy(true);
     setError("");
     setMessage("");
@@ -120,7 +125,7 @@ export default function ProfileAuthPanel({
     }
 
     await refreshProfile().catch(() => null);
-    navigate(redirectTo);
+    navigate(registerType === "coach" && coachRedirectTo ? coachRedirectTo : redirectTo);
   }
 
   async function sendReset() {

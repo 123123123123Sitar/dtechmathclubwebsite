@@ -5,6 +5,8 @@ import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
+import { useDpotdAuth } from "../context/DpotdAuthContext";
+import { buildProfileNextHref } from "../lib/siteAccountRouting";
 
 const puzzleSponsors = [
   {
@@ -54,12 +56,21 @@ const fadeUp = {
 };
 
 export default function PuzzleNight() {
+  const { authReady, user } = useDpotdAuth();
+  const hasSignedInAccount = authReady && Boolean(user);
+  const registrationPath = hasSignedInAccount
+    ? "/profile?view=puzzle-night"
+    : buildProfileNextHref("/profile?view=puzzle-night");
+
   return (
     <>
       <PageHero
         actions={[
-          { label: "Register for Puzzle Night", to: "/puzzle-night/register" },
-          { label: "Open Profile", to: "/profile", variant: "ghost" },
+          {
+            label: hasSignedInAccount ? "Open Puzzle Night Dashboard" : "Sign In for Puzzle Night",
+            to: registrationPath,
+          },
+          { label: "Open Profile", to: "/profile?view=profile", variant: "ghost" },
         ]}
         align="center"
         aside={

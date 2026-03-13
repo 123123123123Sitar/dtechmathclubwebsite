@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from "firebase/auth";
 import {
   collection,
@@ -20,6 +21,7 @@ import {
 import { auth, db } from "../lib/dpotdFirebase";
 
 const SITE_PROFILE_COLLECTION = "siteProfiles";
+const COACH_ACCOUNT_COLLECTION = "coachAccounts";
 const PORTAL_USER_COLLECTION = "users";
 const DPOTD_REGISTRATION_COLLECTION = "dpotdRegistrations";
 const PUZZLE_NIGHT_COLLECTION = "puzzleNightRegistrations";
@@ -29,6 +31,7 @@ const DTMT_STUDENT_COLLECTION = "dtmtStudentRegistrations";
 
 const PUZZLE_NIGHT_EVENT_KEY = "puzzle-night-2026";
 const DTMT_EVENT_KEY = "dtmt-2026";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const DpotdAuthContext = createContext(null);
 
@@ -54,8 +57,128 @@ function formatAuthError(error, fallback) {
   if (code.includes("too-many-requests")) {
     return "Too many attempts. Wait a moment and try again.";
   }
+  if (code.includes("operation-not-allowed")) {
+    return "Email and password signup is not enabled in Firebase Authentication for this project.";
+  }
+  if (code.includes("app-not-authorized") || code.includes("unauthorized-domain")) {
+    return "This site domain is not authorized for Firebase Authentication. Add the deployed domain in Firebase Authentication settings.";
+  }
+  if (code.includes("invalid-api-key")) {
+    return "The Firebase Web API key is invalid or blocked for this site.";
+  }
+  if (
+    code.includes("captcha-check-failed") ||
+    code.includes("invalid-app-credential") ||
+    code.includes("missing-app-credential") ||
+    code.includes("missing-client-type") ||
+    code.includes("recaptcha")
+  ) {
+    return "Firebase rejected the signup verification step. Check the deployed domain and Firebase Auth anti-abuse settings.";
+  }
+  if (code.includes("network-request-failed")) {
+    return "The network request to Firebase failed. Check your connection and try again.";
+  }
+
+  if (code) {
+    return `${fallback} (${code.replace(/^auth\//, "")})`;
+  }
 
   return fallback;
+}
+
+function formatFirestoreError(error, fallback) {
+  const code = error?.code ?? "";
+
+  if (code.includes("permission-denied")) {
+    return "Firestore is blocking this save. Update the Firestore rules for siteProfiles, coachAccounts, dtmtCoachProfiles, dtmtSchools, dtmtStudentRegistrations, puzzleNightRegistrations, and dpotdRegistrations.";
+  }
+  if (code.includes("unavailable")) {
+    return "Firestore is temporarily unavailable. Try again in a moment.";
+  }
+
+  if (code) {
+    return `${fallback} (${code.replace(/^firestore\//, "")})`;
+  }
+
+  return fallback;
+}
+
+function hasLetter(value) {
+  return /[A-Za-z]/.test(value);
+}
+
+function validateTextField(value, label, { minLength = 2, requireLetter = false } = {}) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return `${label} is required.`;
+  }
+
+  if (trimmed.length < minLength) {
+    return `${label} must be at least ${minLength} characters.`;
+  }
+
+  if (requireLetter && !hasLetter(trimmed)) {
+    return `${label} must include letters and cannot be only numbers or symbols.`;
+  }
+
+  return "";
+}
+
+function validateEmailField(value, label = "Email") {
+  const trimmed = value.trim().toLowerCase();
+
+  if (!trimmed) {
+    return `${label} is required.`;
+  }
+
+  if (!EMAIL_PATTERN.test(trimmed)) {
+    return `Enter a valid ${label.toLowerCase()}.`;
+  }
+
+  return "";
+}
+
+function combineNameParts(firstName, lastName) {
+  return [firstName?.trim(), lastName?.trim()].filter(Boolean).join(" ").trim();
+}
+
+function normalizeSchoolKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function coerceBooleanChoice(value, defaultValue = false) {
+  if (typeof value === "boolean") return value;
+
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  if (["yes", "true", "attending", "coming", "1"].includes(normalized)) {
+    return true;
+  }
+
+  if (["no", "false", "not-attending", "not coming", "0"].includes(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
+}
+
+function buildIndependentTeamLabel(userId) {
+  const safeId = String(userId || "").trim();
+  const buckets = ["Independent Team 1", "Independent Team 2", "Independent Team 3"];
+
+  if (!safeId) {
+    return buckets[0];
+  }
+
+  const score = safeId.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return buckets[score % buckets.length];
 }
 
 async function loadDocByUidOrEmail(collectionName, user) {
@@ -87,6 +210,17 @@ async function loadPortalProfile(user) {
 
 async function loadSiteProfile(user) {
   return loadDocByUidOrEmail(SITE_PROFILE_COLLECTION, user);
+}
+
+async function loadCoachAccount(user) {
+  if (!user) return null;
+
+  const directDoc = await getDoc(doc(db, COACH_ACCOUNT_COLLECTION, user.uid));
+  if (directDoc.exists()) {
+    return { id: directDoc.id, ...directDoc.data() };
+  }
+
+  return null;
 }
 
 async function loadPuzzleNightRegistration(user) {
@@ -142,23 +276,95 @@ async function loadDtmtStudentRegistration(user) {
   return null;
 }
 
-function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration, dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration) {
-  const accountType =
-    siteProfile?.accountType ||
-    (siteProfile?.coachAccount ? "coach" : null) ||
-    (siteProfile?.studentAccount ? "student" : null) ||
-    (dtmtCoachProfile ? "coach" : "student");
+function deriveAccountType(
+  siteProfile,
+  coachAccountRecord,
+  dtmtCoachProfile,
+  dtmtSchool,
+  dtmtStudentRegistration,
+) {
+  const hasCoachSignals = Boolean(
+    siteProfile?.coachAccount ||
+      coachAccountRecord ||
+      siteProfile?.dtmtCoachActive ||
+      dtmtCoachProfile ||
+      dtmtSchool,
+  );
+
+  if (hasCoachSignals || siteProfile?.accountType === "coach") {
+    return "coach";
+  }
+
+  if (
+    siteProfile?.accountType === "student" ||
+    siteProfile?.studentAccount ||
+    dtmtStudentRegistration
+  ) {
+    return "student";
+  }
+
+  return "student";
+}
+
+function deriveProfileName(
+  user,
+  siteProfile,
+  portalProfile,
+  dtmtCoachProfile,
+  dtmtStudentRegistration,
+) {
+  const directName =
+    siteProfile?.name ||
+    combineNameParts(siteProfile?.firstName, siteProfile?.lastName) ||
+    dtmtStudentRegistration?.name ||
+    dtmtCoachProfile?.coachName ||
+    portalProfile?.name ||
+    user?.displayName ||
+    "";
+
+  if (directName.trim()) {
+    return directName.trim();
+  }
+
+  const emailLocalPart = (siteProfile?.email || portalProfile?.email || user?.email || "")
+    .split("@")[0]
+    .trim();
+
+  if (emailLocalPart && hasLetter(emailLocalPart)) {
+    return emailLocalPart;
+  }
+
+  return "Member";
+}
+
+function mergeProfiles(
+  user,
+  siteProfile,
+  coachAccountRecord,
+  portalProfile,
+  puzzleNightRegistration,
+  dtmtCoachProfile,
+  dtmtSchool,
+  dtmtStudentRegistration,
+) {
+  const accountType = deriveAccountType(
+    siteProfile,
+    coachAccountRecord,
+    dtmtCoachProfile,
+    dtmtSchool,
+    dtmtStudentRegistration,
+  );
 
   return {
     id: siteProfile?.id || portalProfile?.id || user?.uid || null,
     accountType,
-    name:
-      siteProfile?.name ||
-      dtmtStudentRegistration?.name ||
-      dtmtCoachProfile?.coachName ||
-      portalProfile?.name ||
-      user?.displayName ||
-      "Member",
+    name: deriveProfileName(
+      user,
+      siteProfile,
+      portalProfile,
+      dtmtCoachProfile,
+      dtmtStudentRegistration,
+    ),
     email: siteProfile?.email || portalProfile?.email || user?.email || "",
     school:
       dtmtStudentRegistration?.schoolName ||
@@ -188,6 +394,7 @@ function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration
 export function DpotdAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [siteProfile, setSiteProfile] = useState(null);
+  const [coachAccountRecord, setCoachAccountRecord] = useState(null);
   const [portalProfile, setPortalProfile] = useState(null);
   const [puzzleNightRegistration, setPuzzleNightRegistration] = useState(null);
   const [dtmtCoachProfile, setDtmtCoachProfile] = useState(null);
@@ -195,11 +402,28 @@ export function DpotdAuthProvider({ children }) {
   const [dtmtStudentRegistration, setDtmtStudentRegistration] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const refreshRequestRef = useRef(0);
+
+  async function readOptional(loader) {
+    try {
+      return await loader();
+    } catch (_) {
+      return null;
+    }
+  }
 
   async function refreshProfile(nextUser = auth.currentUser) {
+    const requestId = refreshRequestRef.current + 1;
+    refreshRequestRef.current = requestId;
+
     if (!nextUser) {
+      if (requestId !== refreshRequestRef.current) {
+        return null;
+      }
+
       setUser(null);
       setSiteProfile(null);
+      setCoachAccountRecord(null);
       setPortalProfile(null);
       setPuzzleNightRegistration(null);
       setDtmtCoachProfile(null);
@@ -211,23 +435,26 @@ export function DpotdAuthProvider({ children }) {
 
     const [
       nextSiteProfile,
+      nextCoachAccountRecord,
       nextPortalProfile,
       nextPuzzleNightRegistration,
       nextDtmtCoachProfile,
       nextDtmtSchool,
       nextDtmtStudentRegistration,
     ] = await Promise.all([
-      loadSiteProfile(nextUser),
-      loadPortalProfile(nextUser),
-      loadPuzzleNightRegistration(nextUser),
-      loadDtmtCoachProfile(nextUser),
-      loadDtmtSchool(nextUser),
-      loadDtmtStudentRegistration(nextUser),
+      readOptional(() => loadSiteProfile(nextUser)),
+      readOptional(() => loadCoachAccount(nextUser)),
+      readOptional(() => loadPortalProfile(nextUser)),
+      readOptional(() => loadPuzzleNightRegistration(nextUser)),
+      readOptional(() => loadDtmtCoachProfile(nextUser)),
+      readOptional(() => loadDtmtSchool(nextUser)),
+      readOptional(() => loadDtmtStudentRegistration(nextUser)),
     ]);
 
     const mergedProfile = mergeProfiles(
       nextUser,
       nextSiteProfile,
+      nextCoachAccountRecord,
       nextPortalProfile,
       nextPuzzleNightRegistration,
       nextDtmtCoachProfile,
@@ -235,8 +462,22 @@ export function DpotdAuthProvider({ children }) {
       nextDtmtStudentRegistration,
     );
 
+    if (requestId !== refreshRequestRef.current) {
+      return {
+        siteProfile: nextSiteProfile,
+        coachAccountRecord: nextCoachAccountRecord,
+        portalProfile: nextPortalProfile,
+        puzzleNightRegistration: nextPuzzleNightRegistration,
+        dtmtCoachProfile: nextDtmtCoachProfile,
+        dtmtSchool: nextDtmtSchool,
+        dtmtStudentRegistration: nextDtmtStudentRegistration,
+        profile: mergedProfile,
+      };
+    }
+
     setUser(nextUser);
     setSiteProfile(nextSiteProfile);
+    setCoachAccountRecord(nextCoachAccountRecord);
     setPortalProfile(nextPortalProfile);
     setPuzzleNightRegistration(nextPuzzleNightRegistration);
     setDtmtCoachProfile(nextDtmtCoachProfile);
@@ -246,6 +487,7 @@ export function DpotdAuthProvider({ children }) {
 
     return {
       siteProfile: nextSiteProfile,
+      coachAccountRecord: nextCoachAccountRecord,
       portalProfile: nextPortalProfile,
       puzzleNightRegistration: nextPuzzleNightRegistration,
       dtmtCoachProfile: nextDtmtCoachProfile,
@@ -257,9 +499,17 @@ export function DpotdAuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+      const authStateRequestId = refreshRequestRef.current + 1;
+      refreshRequestRef.current = authStateRequestId;
+
       if (!nextUser) {
+        if (authStateRequestId !== refreshRequestRef.current) {
+          return;
+        }
+
         setUser(null);
         setSiteProfile(null);
+        setCoachAccountRecord(null);
         setPortalProfile(null);
         setPuzzleNightRegistration(null);
         setDtmtCoachProfile(null);
@@ -273,9 +523,14 @@ export function DpotdAuthProvider({ children }) {
       try {
         await refreshProfile(nextUser);
       } catch (_) {
-        const fallbackProfile = mergeProfiles(nextUser, null, null, null, null, null, null);
+        if (authStateRequestId !== refreshRequestRef.current) {
+          return;
+        }
+
+        const fallbackProfile = mergeProfiles(nextUser, null, null, null, null, null, null, null);
         setUser(nextUser);
         setSiteProfile(null);
+        setCoachAccountRecord(null);
         setPortalProfile(null);
         setPuzzleNightRegistration(null);
         setDtmtCoachProfile(null);
@@ -320,20 +575,44 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "Enter your grade before continuing." };
     }
 
+    const firstNameError = validateTextField(firstName, "First name", { requireLetter: true });
+    if (firstNameError) {
+      return { ok: false, error: firstNameError };
+    }
+
+    const lastNameError = validateTextField(lastName, "Last name", { requireLetter: true });
+    if (lastNameError) {
+      return { ok: false, error: lastNameError };
+    }
+
+    const emailError = validateEmailField(email, "Email");
+    if (emailError) {
+      return { ok: false, error: emailError };
+    }
+
+    const schoolError = validateTextField(
+      school,
+      accountType === "coach" ? "School affiliation" : "School",
+      { requireLetter: true },
+    );
+    if (schoolError) {
+      return { ok: false, error: schoolError };
+    }
+
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
-      const optimisticCoachProfile =
+      await updateProfile(credential.user, { displayName: name }).catch(() => null);
+      const optimisticCoachAccountRecord =
         accountType === "coach"
           ? {
               id: credential.user.uid,
               accountUid: credential.user.uid,
-              coachName: name,
+              accountType: "coach",
               email,
-              eventKey: DTMT_EVENT_KEY,
-              phone: "",
-              schoolAffiliation: school,
+              name,
+              school,
+              source: "dtechmathclub-site",
               status: "active",
-              title: "",
             }
           : null;
       const optimisticSiteProfile = {
@@ -342,11 +621,13 @@ export function DpotdAuthProvider({ children }) {
         coachAccount: accountType === "coach",
         studentAccount: accountType === "student",
         name,
+        firstName,
+        lastName,
         email,
         school,
         grade,
         dpotdRegistered: false,
-        dtmtCoachActive: accountType === "coach",
+        dtmtCoachActive: false,
         dtmtSchoolRegistered: false,
         dtmtStudentRegistered: false,
         puzzleNightRegistered: false,
@@ -361,10 +642,10 @@ export function DpotdAuthProvider({ children }) {
         }),
       ];
 
-      if (optimisticCoachProfile) {
+      if (optimisticCoachAccountRecord) {
         writes.push(
-          setDoc(doc(db, DTMT_COACH_COLLECTION, credential.user.uid), {
-            ...optimisticCoachProfile,
+          setDoc(doc(db, COACH_ACCOUNT_COLLECTION, credential.user.uid), {
+            ...optimisticCoachAccountRecord,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           }),
@@ -376,18 +657,20 @@ export function DpotdAuthProvider({ children }) {
       setAuthReady(true);
       setUser(credential.user);
       setSiteProfile(optimisticSiteProfile);
+      setCoachAccountRecord(optimisticCoachAccountRecord);
       setPortalProfile(null);
       setPuzzleNightRegistration(null);
-      setDtmtCoachProfile(optimisticCoachProfile);
+      setDtmtCoachProfile(null);
       setDtmtSchool(null);
       setDtmtStudentRegistration(null);
       setProfile(
         mergeProfiles(
           credential.user,
           optimisticSiteProfile,
+          optimisticCoachAccountRecord,
           null,
           null,
-          optimisticCoachProfile,
+          null,
           null,
           null,
         ),
@@ -401,9 +684,19 @@ export function DpotdAuthProvider({ children }) {
 
       return { ok: true };
     } catch (error) {
+      if ((error?.code || "").startsWith("auth/")) {
+        return {
+          ok: false,
+          error: formatAuthError(error, "Unable to create your account right now."),
+        };
+      }
+
       return {
         ok: false,
-        error: formatAuthError(error, "Unable to create your account right now."),
+        error: formatFirestoreError(
+          error,
+          "Unable to create your account because the profile record could not be saved.",
+        ),
       };
     }
   }
@@ -502,29 +795,83 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "You need to be signed in before registering for Puzzle Night." };
     }
 
+    const accountType = profile?.accountType || siteProfile?.accountType || "student";
     const registrationType = values.registrationType === "coach" ? "coach" : "student";
     const name = values.name.trim();
-    const email = values.email.trim().toLowerCase();
-    const school = values.school.trim();
+    const email = (auth.currentUser.email || values.email || profile?.email || "").trim().toLowerCase();
+    const schoolId = registrationType === "coach" ? auth.currentUser.uid : values.schoolId.trim();
+    const schoolName = (values.schoolName || values.school || "").trim();
+    const schoolKey = normalizeSchoolKey(schoolName);
     const grade = values.grade.trim();
     const parentName = values.parentName.trim();
     const parentEmail = values.parentEmail.trim().toLowerCase();
-    const phone = values.phone.trim();
     const notes = values.notes.trim();
+    const coachAttending = coerceBooleanChoice(
+      values.coachAttending,
+      puzzleNightRegistration?.coachAttending ?? true,
+    );
     const accountUid = auth.currentUser.uid;
 
+    if (accountType === "coach" && registrationType !== "coach") {
+      return { ok: false, error: "Coach accounts can only submit the coach Puzzle Night form." };
+    }
+
+    if (accountType !== "coach" && registrationType === "coach") {
+      return { ok: false, error: "Only coach accounts can submit the coach Puzzle Night form." };
+    }
+
     if (registrationType === "coach") {
-      if (!name || !email || !school || !phone) {
+      if (!name || !email || !schoolName) {
         return {
           ok: false,
           error: "Fill in every required Puzzle Night coach detail before continuing.",
         };
       }
-    } else if (!name || !email || !school || !grade || !parentName || !parentEmail) {
+    } else if (!name || !email || !grade || !parentName || !parentEmail) {
       return {
         ok: false,
         error: "Fill in every required Puzzle Night detail before continuing.",
       };
+    }
+
+    const nameError = validateTextField(
+      name,
+      registrationType === "coach" ? "Coach name" : "Student name",
+      { requireLetter: true },
+    );
+    if (nameError) {
+      return { ok: false, error: nameError };
+    }
+
+    const emailError = validateEmailField(email, "Email");
+    if (emailError) {
+      return { ok: false, error: emailError };
+    }
+
+    if (registrationType === "coach") {
+      const schoolError = validateTextField(schoolName, "School", { requireLetter: true });
+      if (schoolError) {
+        return { ok: false, error: schoolError };
+      }
+    }
+
+    if (registrationType === "student") {
+      const gradeError = validateTextField(grade, "Grade", { minLength: 1 });
+      if (gradeError) {
+        return { ok: false, error: gradeError };
+      }
+
+      const parentNameError = validateTextField(parentName, "Parent or guardian name", {
+        requireLetter: true,
+      });
+      if (parentNameError) {
+        return { ok: false, error: parentNameError };
+      }
+
+      const parentEmailError = validateEmailField(parentEmail, "Parent or guardian email");
+      if (parentEmailError) {
+        return { ok: false, error: parentEmailError };
+      }
     }
 
     try {
@@ -535,39 +882,101 @@ export function DpotdAuthProvider({ children }) {
         grade: registrationType === "coach" ? "" : grade,
         name,
         notes,
+        coachAttending: registrationType === "coach" ? coachAttending : null,
         parentEmail: registrationType === "coach" ? "" : parentEmail,
         parentName: registrationType === "coach" ? "" : parentName,
-        phone: registrationType === "coach" ? phone : "",
         registrationType,
         registrationSource: "signed-in-account",
-        school,
+        schoolId,
+        schoolKey,
+        schoolName,
         status: "registered",
         submittedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
-      await Promise.all([
+      const writes = [
         setDoc(doc(db, PUZZLE_NIGHT_COLLECTION, accountUid), payload, { merge: true }),
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, accountUid),
           {
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            ...(accountType === "coach"
+              ? { accountType: "coach", coachAccount: true, studentAccount: false }
+              : { accountType: "student", coachAccount: false, studentAccount: true }),
             name,
             email: (auth.currentUser.email || email).trim().toLowerCase(),
-            school,
+            school: schoolName || siteProfile?.school || "",
             grade: registrationType === "coach" ? siteProfile?.grade || "" : grade,
             puzzleNightRegistered: true,
             puzzleNightRegisteredAt: serverTimestamp(),
+            puzzleNightRegistrationType: registrationType,
             updatedAt: serverTimestamp(),
           },
           { merge: true },
         ),
-      ]);
+      ];
+
+      if (accountType === "coach") {
+        writes.push(
+          setDoc(
+            doc(db, COACH_ACCOUNT_COLLECTION, accountUid),
+            {
+              accountType: "coach",
+              accountUid,
+              email,
+              name,
+              school: schoolName,
+              status: "active",
+              updatedAt: serverTimestamp(),
+              ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            },
+            { merge: true },
+          ),
+        );
+      }
+
+      await Promise.all(writes);
 
       await refreshProfile();
       return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to submit Puzzle Night registration right now."),
+      };
+    }
+  }
+
+  async function listPuzzleNightSchools() {
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, PUZZLE_NIGHT_COLLECTION), where("registrationType", "==", "coach")),
+      );
+
+      return snapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() }))
+        .filter((item) => item.status === "registered" && item.schoolName)
+        .sort((left, right) => left.schoolName.localeCompare(right.schoolName));
     } catch (_) {
-      return { ok: false, error: "Unable to submit Puzzle Night registration right now." };
+      return [];
+    }
+  }
+
+  async function loadPuzzleNightRoster(schoolId = auth.currentUser?.uid) {
+    if (!schoolId) return [];
+
+    try {
+      const snapshot = await getDocs(
+        query(collection(db, PUZZLE_NIGHT_COLLECTION), where("schoolId", "==", schoolId)),
+      );
+
+      return snapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() }))
+        .filter((item) => item.registrationType === "student")
+        .sort((left, right) => left.name.localeCompare(right.name));
+    } catch (_) {
+      return [];
     }
   }
 
@@ -606,6 +1015,20 @@ export function DpotdAuthProvider({ children }) {
             title,
             updatedAt: serverTimestamp(),
             ...(dtmtCoachProfile ? {} : { createdAt: serverTimestamp() }),
+          },
+          { merge: true },
+        ),
+        setDoc(
+          doc(db, COACH_ACCOUNT_COLLECTION, uid),
+          {
+            accountType: "coach",
+            accountUid: uid,
+            email,
+            name: coachName,
+            school: schoolAffiliation,
+            status: "active",
+            updatedAt: serverTimestamp(),
+            ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
           },
           { merge: true },
         ),
@@ -689,6 +1112,20 @@ export function DpotdAuthProvider({ children }) {
           { merge: true },
         ),
         setDoc(
+          doc(db, COACH_ACCOUNT_COLLECTION, uid),
+          {
+            accountType: "coach",
+            accountUid: uid,
+            email: coachEmail,
+            name: coachName,
+            school: schoolName,
+            status: "active",
+            updatedAt: serverTimestamp(),
+            ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+          },
+          { merge: true },
+        ),
+        setDoc(
           doc(db, DTMT_SCHOOL_COLLECTION, uid),
           {
             city,
@@ -698,9 +1135,11 @@ export function DpotdAuthProvider({ children }) {
             eventKey: DTMT_EVENT_KEY,
             maxStudents,
             schoolName,
+            schoolKey: normalizeSchoolKey(schoolName),
             shortName,
             state,
             status: "registered",
+            teamLabels: dtmtSchool?.teamLabels || [],
             updatedAt: serverTimestamp(),
             ...(dtmtSchool ? {} : { createdAt: serverTimestamp() }),
           },
@@ -725,8 +1164,189 @@ export function DpotdAuthProvider({ children }) {
 
       await refreshProfile();
       return { ok: true };
-    } catch (_) {
-      return { ok: false, error: "Unable to register the DTMT school right now." };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to register the DTMT school right now."),
+      };
+    }
+  }
+
+  async function saveDtmtCoachRegistration(values) {
+    if (!auth.currentUser) {
+      return { ok: false, error: "You need to be signed in before registering your DTMT coach details." };
+    }
+
+    if ((profile?.accountType || siteProfile?.accountType) !== "coach") {
+      return { ok: false, error: "Only coach accounts can manage DTMT coach registration." };
+    }
+
+    const coachName = values.coachName.trim();
+    const title = values.title.trim();
+    const phone = values.phone.trim();
+    const schoolName = values.schoolName.trim();
+    const shortName = values.shortName.trim();
+    const city = values.city.trim();
+    const state = values.state.trim();
+    const maxStudents = values.maxStudents.trim();
+    const coachAttending = coerceBooleanChoice(
+      values.coachAttending,
+      dtmtCoachProfile?.coachAttending ?? true,
+    );
+    const coachEventNotes = values.coachEventNotes.trim();
+    const coachEmail = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
+    const existingTeamLabels = Array.isArray(dtmtSchool?.teamLabels)
+      ? dtmtSchool.teamLabels
+          .map((item) => String(item || "").trim())
+          .filter(Boolean)
+      : [];
+
+    const requiredChecks = [
+      validateTextField(coachName, "Coach name", { requireLetter: true }),
+      validateTextField(phone, "Phone number", { minLength: 7 }),
+      validateTextField(schoolName, "School name", { requireLetter: true }),
+      validateTextField(shortName, "Short name", { requireLetter: true }),
+      validateTextField(city, "City", { requireLetter: true }),
+      validateTextField(state, "State", { minLength: 2, requireLetter: true }),
+    ].filter(Boolean);
+
+    if (requiredChecks.length) {
+      return { ok: false, error: requiredChecks[0] };
+    }
+
+    if (!/^\d+$/.test(maxStudents) || Number(maxStudents) <= 0) {
+      return { ok: false, error: "Max students must be a positive whole number." };
+    }
+
+    try {
+      const uid = auth.currentUser.uid;
+      await Promise.all([
+        setDoc(
+          doc(db, DTMT_COACH_COLLECTION, uid),
+          {
+            accountUid: uid,
+            coachAttending,
+            coachEventNotes,
+            coachName,
+            email: coachEmail,
+            eventKey: DTMT_EVENT_KEY,
+            phone,
+            schoolAffiliation: schoolName,
+            status: "active",
+            title,
+            updatedAt: serverTimestamp(),
+            ...(dtmtCoachProfile ? {} : { createdAt: serverTimestamp() }),
+          },
+          { merge: true },
+        ),
+        setDoc(
+          doc(db, COACH_ACCOUNT_COLLECTION, uid),
+          {
+            accountType: "coach",
+            accountUid: uid,
+            email: coachEmail,
+            name: coachName,
+            school: schoolName,
+            status: "active",
+            updatedAt: serverTimestamp(),
+            ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+          },
+          { merge: true },
+        ),
+        setDoc(
+          doc(db, DTMT_SCHOOL_COLLECTION, uid),
+          {
+            city,
+            coachAttending,
+            coachEmail,
+            coachEventNotes,
+            coachName,
+            coachUid: uid,
+            eventKey: DTMT_EVENT_KEY,
+            maxStudents,
+            schoolKey: normalizeSchoolKey(schoolName),
+            schoolName,
+            shortName,
+            state,
+            status: "registered",
+            teamLabels: existingTeamLabels,
+            updatedAt: serverTimestamp(),
+            ...(dtmtSchool ? {} : { createdAt: serverTimestamp() }),
+          },
+          { merge: true },
+        ),
+        setDoc(
+          doc(db, SITE_PROFILE_COLLECTION, uid),
+          {
+            accountType: "coach",
+            ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            coachAccount: true,
+            dtmtCoachActive: true,
+            dtmtCoachProfileCompletedAt: serverTimestamp(),
+            dtmtSchoolRegistered: true,
+            dtmtSchoolRegisteredAt: serverTimestamp(),
+            email: coachEmail,
+            name: coachName,
+            school: schoolName,
+            studentAccount: false,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        ),
+      ]);
+
+      await refreshProfile();
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to save the DTMT coach registration right now."),
+      };
+    }
+  }
+
+  async function saveDtmtTeamLabels(teamLabels) {
+    if (!auth.currentUser) {
+      return { ok: false, error: "You need to be signed in before managing DTMT teams." };
+    }
+
+    if ((profile?.accountType || siteProfile?.accountType) !== "coach") {
+      return { ok: false, error: "Only coach accounts can manage DTMT teams." };
+    }
+
+    if (!dtmtSchool?.id) {
+      return { ok: false, error: "Register your DTMT school before creating teams." };
+    }
+
+    const normalizedLabels = Array.from(
+      new Set(
+        (Array.isArray(teamLabels) ? teamLabels : [])
+          .map((item) => String(item || "").trim())
+          .filter(Boolean),
+      ),
+    );
+
+    if (normalizedLabels.some((item) => !hasLetter(item))) {
+      return { ok: false, error: "Each DTMT team name must include letters." };
+    }
+
+    try {
+      await setDoc(
+        doc(db, DTMT_SCHOOL_COLLECTION, dtmtSchool.id),
+        {
+          teamLabels: normalizedLabels,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      await refreshProfile();
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to save the DTMT team list right now."),
+      };
     }
   }
 
@@ -741,19 +1361,26 @@ export function DpotdAuthProvider({ children }) {
 
     const name = values.name.trim();
     const grade = values.grade.trim();
-    const schoolId = values.schoolId.trim();
-    const schoolName = values.schoolName.trim();
+    const requestedSchoolId = values.schoolId.trim();
+    const requestedSchoolName = values.schoolName.trim();
+    const registrationMode = requestedSchoolId ? "school" : "individual";
     const waiverSignerName = values.waiverSignerName.trim();
     const subjectRounds = values.subjectRounds.filter(Boolean);
+    const lunchPreference = values.lunchPreference.trim();
+    const dietaryNotes = values.dietaryNotes.trim();
     const paymentMethod = values.paymentMethod.trim();
     const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
 
-    if (!name || !grade || !schoolId || !schoolName) {
-      return { ok: false, error: "Fill in your name, grade, and school before continuing." };
+    if (!name || !grade) {
+      return { ok: false, error: "Fill in your name and grade before continuing." };
     }
 
     if (!subjectRounds.length) {
       return { ok: false, error: "Choose at least one DTMT subject round." };
+    }
+
+    if (!lunchPreference) {
+      return { ok: false, error: "Select a lunch preference before continuing." };
     }
 
     if (!values.waiverAccepted || !waiverSignerName) {
@@ -764,8 +1391,38 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: "Complete the payment section before registering for DTMT." };
     }
 
+    const nameError = validateTextField(name, "Student name", { requireLetter: true });
+    if (nameError) {
+      return { ok: false, error: nameError };
+    }
+
+    const gradeError = validateTextField(grade, "Grade", { minLength: 1 });
+    if (gradeError) {
+      return { ok: false, error: gradeError };
+    }
+
+    const waiverNameError = validateTextField(waiverSignerName, "Waiver signer name", {
+      requireLetter: true,
+    });
+    if (waiverNameError) {
+      return { ok: false, error: waiverNameError };
+    }
+
+    if (registrationMode === "school" && !requestedSchoolName) {
+      return { ok: false, error: "Choose a registered school or continue as an individual." };
+    }
+
     try {
       const uid = auth.currentUser.uid;
+      const schoolId = registrationMode === "school" ? requestedSchoolId : "independent";
+      const schoolName = registrationMode === "school" ? requestedSchoolName : "Independent Entry";
+      const teamLabel =
+        registrationMode === "school"
+          ? dtmtStudentRegistration?.registrationMode === "individual"
+            ? ""
+            : dtmtStudentRegistration?.teamLabel || ""
+          : buildIndependentTeamLabel(uid);
+
       await Promise.all([
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, uid),
@@ -778,7 +1435,7 @@ export function DpotdAuthProvider({ children }) {
             email,
             grade,
             name,
-            school: schoolName,
+            school: registrationMode === "school" ? schoolName : siteProfile?.school || "",
             studentAccount: true,
             updatedAt: serverTimestamp(),
           },
@@ -791,14 +1448,20 @@ export function DpotdAuthProvider({ children }) {
             email,
             eventKey: DTMT_EVENT_KEY,
             grade,
+            lunchPreference,
+            dietaryNotes,
             name,
             paymentMethod,
             paymentStatus: "submitted",
             registrationStatus: "registered",
+            registrationMode,
             schoolId,
             schoolName,
+            schoolKey: normalizeSchoolKey(schoolName),
             subjectRounds,
-            teamLabel: dtmtStudentRegistration?.teamLabel || "",
+            teamAssignmentMode:
+              registrationMode === "school" ? "coach-managed" : "independent-auto",
+            teamLabel,
             updatedAt: serverTimestamp(),
             waiverAccepted: true,
             waiverSignerName,
@@ -810,8 +1473,11 @@ export function DpotdAuthProvider({ children }) {
 
       await refreshProfile();
       return { ok: true };
-    } catch (_) {
-      return { ok: false, error: "Unable to register for DTMT right now." };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to register for DTMT right now."),
+      };
     }
   }
 
@@ -853,8 +1519,11 @@ export function DpotdAuthProvider({ children }) {
       }
 
       return { ok: true };
-    } catch (_) {
-      return { ok: false, error: "Unable to save the team assignment right now." };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to save the team assignment right now."),
+      };
     }
   }
 
@@ -906,6 +1575,20 @@ export function DpotdAuthProvider({ children }) {
       };
     }
 
+    const nameError = validateTextField(name, "Name", { requireLetter: true });
+    if (nameError) {
+      return { ok: false, error: nameError };
+    }
+
+    const schoolError = validateTextField(
+      school,
+      isCoachAccount ? "School affiliation" : "School",
+      { requireLetter: true },
+    );
+    if (schoolError) {
+      return { ok: false, error: schoolError };
+    }
+
     try {
       const uid = auth.currentUser.uid;
       const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
@@ -914,6 +1597,8 @@ export function DpotdAuthProvider({ children }) {
         email,
         grade,
         name,
+        firstName: siteProfile?.firstName || "",
+        lastName: siteProfile?.lastName || "",
         school,
         updatedAt: serverTimestamp(),
       };
@@ -974,6 +1659,20 @@ export function DpotdAuthProvider({ children }) {
       if (isCoachAccount || dtmtCoachProfile) {
         writes.push(
           setDoc(
+            doc(db, COACH_ACCOUNT_COLLECTION, uid),
+            {
+              accountType: "coach",
+              accountUid: uid,
+              email,
+              name: sharedProfile.name,
+              school: sharedProfile.school,
+              status: "active",
+              updatedAt: serverTimestamp(),
+              ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            },
+            { merge: true },
+          ),
+          setDoc(
             doc(db, DTMT_COACH_COLLECTION, uid),
             {
               accountUid: uid,
@@ -993,10 +1692,14 @@ export function DpotdAuthProvider({ children }) {
       }
 
       await Promise.all(writes);
+      await updateProfile(auth.currentUser, { displayName: name }).catch(() => null);
       await refreshProfile();
       return { ok: true };
-    } catch (_) {
-      return { ok: false, error: "Unable to save your profile changes right now." };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to save your profile changes right now."),
+      };
     }
   }
 
@@ -1025,9 +1728,11 @@ export function DpotdAuthProvider({ children }) {
         dtmtSchool,
         dtmtStudentRegistration,
         hasDpotdAccess: Boolean(portalProfile),
-        hasDtmtCoachAccess: Boolean(dtmtCoachProfile),
+        hasDtmtCoachAccess: (profile?.accountType || siteProfile?.accountType) === "coach",
         listDtmtSchools,
+        listPuzzleNightSchools,
         loadDtmtRoster,
+        loadPuzzleNightRoster,
         portalProfile,
         profile,
         puzzleNightRegistration,
@@ -1036,6 +1741,8 @@ export function DpotdAuthProvider({ children }) {
         registerDtmtSchool,
         registerSiteAccount,
         requestAccountPasswordReset,
+        saveDtmtCoachRegistration,
+        saveDtmtTeamLabels,
         signInSiteAccount,
         signOutAccount,
         siteProfile,

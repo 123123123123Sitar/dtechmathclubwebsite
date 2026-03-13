@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
@@ -6,6 +7,8 @@ import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
+import { useDpotdAuth } from "../context/DpotdAuthContext";
+import { buildProfileNextHref } from "../lib/siteAccountRouting";
 import { sponsorTiers } from "../data";
 
 const schedule = [
@@ -29,11 +32,20 @@ const fadeUp = {
 };
 
 export default function DTMT() {
+  const { authReady, user } = useDpotdAuth();
+  const hasSignedInAccount = authReady && Boolean(user);
+  const registrationPath = hasSignedInAccount
+    ? "/profile?view=dtmt"
+    : buildProfileNextHref("/profile?view=dtmt");
+
   return (
     <>
       <PageHero
         actions={[
-          { label: "Open DTMT Registration", to: "/dtmt/register" },
+          {
+            label: hasSignedInAccount ? "Open DTMT Dashboard" : "Sign In for DTMT",
+            to: registrationPath,
+          },
           { label: "Open Profile", to: "/profile?view=dtmt", variant: "ghost" },
         ]}
         align="center"
@@ -96,12 +108,12 @@ export default function DTMT() {
             >
               Competition Handbook
             </a>
-            <a
+            <Link
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
-              href="/dtmt/register"
+              to={registrationPath}
             >
-              Open Registration
-            </a>
+              {hasSignedInAccount ? "Open Registration" : "Sign In to Register"}
+            </Link>
           </motion.div>
         </div>
         </section>

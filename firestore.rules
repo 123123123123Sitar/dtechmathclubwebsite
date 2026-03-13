@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /siteProfiles/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    match /coachAccounts/{coachId} {
+      allow read, write: if isOwner(coachId) || isAdmin();
+    }
+
+    match /dpotdRegistrations/{userId} {
+      allow read, create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /puzzleNightRegistrations/{registrationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.accountUid == request.auth.uid;
+      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.accountUid == request.auth.uid);
+    }
+
+    match /dtmtCoachProfiles/{coachId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(coachId) || isAdmin();
+    }
+
+    match /dtmtSchools/{schoolId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner(schoolId) || isAdmin();
+    }
+
+    match /dtmtStudentRegistrations/{studentId} {
+      allow read: if isAdmin() ||
+        (isAuthenticated() &&
+          (
+            resource.data.accountUid == request.auth.uid ||
+            resource.data.schoolId == request.auth.uid
+          ));
+
+      allow create: if isAuthenticated() && request.resource.data.accountUid == request.auth.uid;
+
+      allow update: if isAdmin() ||
+        (isAuthenticated() &&
+          (
+            resource.data.accountUid == request.auth.uid ||
+            resource.data.schoolId == request.auth.uid
+          ));
+
+      allow delete: if isOwner(studentId) || isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if (isAuthenticated() && resource.data.userId == request.auth.uid) ||
+        (isAuthenticated() && resource.data.studentEmail == request.auth.token.email) ||
+        isAdmin();
+    }
+
+    match /activeTests/{testId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    match /schedule/{day} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{setting} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /leaderboard/{entry} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /DTMTClarifications/{clarificationId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+  }
+}
