@@ -9,7 +9,6 @@ const About = lazy(() => import("./pages/About"));
 const AboutDonate = lazy(() => import("./pages/AboutDonate"));
 const AboutSponsor = lazy(() => import("./pages/AboutSponsor"));
 const DPotDAbout = lazy(() => import("./pages/DPotDAbout"));
-const DPotDPortal = lazy(() => import("./pages/DPotDPortal"));
 const DPotDRegister = lazy(() => import("./pages/DPotDRegister"));
 const DTMT = lazy(() => import("./pages/DTMT"));
 const DTMTRegister = lazy(() => import("./pages/DTMTRegister"));
@@ -34,15 +33,10 @@ const routeMeta = {
     description:
       "Register for Puzzle Night through the website form attached to your Design Tech Math Club account.",
   },
-  "/dpotd/about": {
-    title: "D.PotD About | Design Tech Math Club",
+  "/dpotd": {
+    title: "D.PotD | Design Tech Math Club",
     description:
       "Learn about the Design Tech Problem of the Day Challenge, scoring, awards, and the 2026 archive layout.",
-  },
-  "/dpotd/portal": {
-    title: "D.PotD Portal | Design Tech Math Club",
-    description:
-      "Open the shared-account D.PotD dashboard, current challenge status, leaderboard information, and support details.",
   },
   "/dpotd/register": {
     title: "D.PotD Registration | Design Tech Math Club",

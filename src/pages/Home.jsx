@@ -15,7 +15,7 @@ const stats = [
 
 const events = [
   {
-    title: "Design Tech Math Tournament (DTMT 2026)",
+    title: "Design Tech Math Tournament 2027",
     date: "Early March",
     location: "Design Tech High School",
     imageLabel: "Students competing in timed rounds",
@@ -23,7 +23,7 @@ const events = [
     to: "/dtmt",
   },
   {
-    title: "Design Tech Problem of the Day Challenge (D.PotD)",
+    title: "Design Tech Problem of the Day Challenge",
     date: "February",
     location: "Online in our website's D.PotD portal",
     imageLabel: "Math problems and scratch work",

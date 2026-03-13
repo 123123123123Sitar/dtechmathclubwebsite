@@ -66,11 +66,7 @@ export default function PuzzleNight() {
     <>
       <PageHero
         actions={[
-          {
-            label: hasSignedInAccount ? "Open Puzzle Night Dashboard" : "Sign In for Puzzle Night",
-            to: registrationPath,
-          },
-          { label: "Open Profile", to: "/profile?view=profile", variant: "ghost" },
+          { label: "Register for Puzzle Night", to: "/puzzle-night/register" },
         ]}
         align="center"
         aside={
@@ -88,31 +84,15 @@ export default function PuzzleNight() {
 
       <FlowSection>
         <section className="py-8">
-          <SplitPanel
-            left={
-              <>
-                <h2 className="text-3xl font-black text-txt">Design Tech Puzzle Night</h2>
-                <p className="mt-4 leading-relaxed text-txt-muted">
-                  Puzzle Night is built as an exploration-focused event where students rotate
-                  through engaging mathematical challenges, try unfamiliar ideas, and collaborate
-                  in a lower-pressure setting than a formal contest.
-                </p>
-              </>
-            }
-            right={
-              <>
-                <h2 className="text-3xl font-black text-txt">Interactive stations and prizes</h2>
-                <p className="mt-4 leading-relaxed text-txt-muted">
-                  Exploration activities, estimation, countdown, and raffle energy all live in the
-                  same event instead of being broken into separate callouts.
-                </p>
-                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
-                  Expect logic, modeling, geometry, and collaborative problem solving throughout
-                  the evening.
-                </div>
-              </>
-            }
-          />
+          <div className="mx-auto w-[min(calc(100%-2rem),1260px)] rounded-[34px] border border-border-subtle bg-white/90 p-10 shadow-lg">
+            <h2 className="text-3xl font-black text-txt mb-2">Interactive stations and prizes</h2>
+            <p className="mb-8 leading-relaxed text-txt-muted">
+              Puzzle Night is built as an exploration-focused event where students rotate through engaging mathematical challenges, try unfamiliar ideas, and collaborate in a lower-pressure setting than a formal contest.
+            </p>
+            <p className="mb-6 leading-relaxed text-txt-muted">
+              Exploration activities, estimation, countdown, and raffle energy all live in the same event instead of being broken into separate callouts. Expect logic, modeling, geometry, and collaborative problem solving throughout the evening.
+            </p>
+          </div>
         </section>
       </FlowSection>
 

@@ -6,15 +6,7 @@ import { useDpotdAuth } from "../context/DpotdAuthContext";
 const navItems = [
   { type: "link", to: "/", label: "Home" },
   { type: "link", to: "/puzzle-night", label: "Puzzle Night" },
-  {
-    type: "dropdown",
-    label: "d.PotD",
-    match: "/dpotd",
-    items: [
-      { to: "/dpotd/about", label: "About" },
-      { to: "/profile?view=dpotd", label: "Portal" },
-    ],
-  },
+  { type: "link", to: "/dpotd", label: "d.PotD" },
   { type: "link", to: "/dtmt", label: "DTMT" },
   {
     type: "dropdown",
