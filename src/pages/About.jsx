@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
+import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import OrbitSponsorSection from "../components/OrbitSponsorSection";
 import ScrollReveal from "../components/ScrollReveal";
+import SurfaceCard from "../components/SurfaceCard";
 import { sponsorTiers } from "../data";
 
 const competitions = [
@@ -76,36 +78,20 @@ const cardVariants = {
 export default function About() {
   return (
     <>
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-[#0d1a2d] via-surface to-[#1a0f0a]" />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand/8 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-8 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          >
-              <SectionHeader
-                title="About Design Tech Math Club"
-                description="Welcome to the Design Tech Math Club! We're a community of math enthusiasts who come together to explore the beauty of mathematics. Whether it's through engaging competitions, problem-solving, or collaborative projects, we strive to inspire and empower the math community."
-              />
-          </motion.div>
-
-          <motion.div
-            className="relative min-h-[300px] rounded-3xl overflow-hidden bg-linear-to-br from-[#1d4875]/40 to-[#8ec6a3]/30 border border-white/5"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-          >
-            <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
-            <span className="absolute bottom-5 left-5 right-5 text-white text-sm font-medium z-10">
-              Design Tech High School campus
-            </span>
-          </motion.div>
-        </div>
-      </section>
+      <PageHero
+        aside={
+          <SurfaceCard className="overflow-hidden p-0">
+            <div className="relative min-h-[300px] bg-linear-to-br from-[#1d4875]/45 to-[#8ec6a3]/35">
+              <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+              <span className="absolute bottom-5 left-5 right-5 z-10 text-sm font-medium text-white">
+                Design Tech High School campus
+              </span>
+            </div>
+          </SurfaceCard>
+        }
+        description="Welcome to the Design Tech Math Club. We are a community of students who explore mathematics through competitions, collaboration, and outreach built for younger problem solvers."
+        title="About Design Tech Math Club"
+      />
 
       {/* ── What We Do / Meetings ─────────────────────────── */}
       <FlowSection>

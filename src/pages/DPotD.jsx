@@ -10,10 +10,6 @@ export default function DPotD() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <p className="mb-3 text-xs font-extrabold tracking-[0.2em] uppercase text-brand">
-          d.PotD
-        </p>
-
         {/* Animated icon */}
         <motion.div
           className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-linear-to-br from-brand/20 to-brand/5 border border-brand/20 grid place-items-center"

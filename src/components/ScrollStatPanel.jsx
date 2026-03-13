@@ -46,7 +46,7 @@ export default function ScrollStatPanel({ value, label, direction = "left" }) {
   return (
     <div
       ref={ref}
-      className="w-screen ml-[calc(50%-50vw)] min-h-[32vh] sm:min-h-[30vh] lg:min-h-[32vh] flex items-center justify-center overflow-hidden bg-linear-to-r from-brand-dark via-brand to-brand-light text-white"
+      className="relative ml-[calc(50%-50vw)] flex min-h-[32vh] w-screen items-center justify-center overflow-hidden bg-linear-to-r from-brand-dark via-brand to-brand-light text-white sm:min-h-[30vh] lg:min-h-[32vh]"
       style={{
         transform: `translateX(${translateX}%) scale(${scale})`,
         opacity,
@@ -54,7 +54,9 @@ export default function ScrollStatPanel({ value, label, direction = "left" }) {
         willChange: "transform, opacity",
       }}
     >
-      <div className="grid gap-1 sm:gap-1.5 text-center px-5 py-6 sm:px-8 md:px-10">
+      <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.1),transparent_28%,rgba(255,255,255,0.14)_52%,transparent_74%)]" />
+      <div className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.16)_1px,transparent_1px)] [background-size:34px_34px]" />
+      <div className="relative grid gap-1 px-5 py-6 text-center sm:gap-1.5 sm:px-8 md:px-10">
         <span className="text-[clamp(2.5rem,12vw,7rem)] font-extrabold leading-[0.9]">
           {value}
         </span>

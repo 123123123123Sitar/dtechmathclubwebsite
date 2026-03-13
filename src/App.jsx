@@ -1,13 +1,19 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
-import About from "./pages/About";
-import DPotD from "./pages/DPotD";
-import DTMT from "./pages/DTMT";
-import Home from "./pages/Home";
-import PuzzleNight from "./pages/PuzzleNight";
+
+const About = lazy(() => import("./pages/About"));
+const AboutDonate = lazy(() => import("./pages/AboutDonate"));
+const AboutSponsor = lazy(() => import("./pages/AboutSponsor"));
+const DPotDAbout = lazy(() => import("./pages/DPotDAbout"));
+const DPotDPortal = lazy(() => import("./pages/DPotDPortal"));
+const DPotDRegister = lazy(() => import("./pages/DPotDRegister"));
+const DTMT = lazy(() => import("./pages/DTMT"));
+const Home = lazy(() => import("./pages/Home"));
+const ProfileHub = lazy(() => import("./pages/ProfileHub"));
+const PuzzleNight = lazy(() => import("./pages/PuzzleNight"));
 
 const routeMeta = {
   "/": {
@@ -20,19 +26,45 @@ const routeMeta = {
     description:
       "Explore Design Tech Puzzle Night, an interactive event for middle schoolers in the Bay Area.",
   },
-  "/dpotd": {
-    title: "D.PotD | Design Tech Math Club",
-    description: "Design Tech Problem of the Day portal placeholder page.",
+  "/dpotd/about": {
+    title: "D.PotD About | Design Tech Math Club",
+    description:
+      "Learn about the Design Tech Problem of the Day Challenge, scoring, awards, and the 2026 archive layout.",
+  },
+  "/dpotd/portal": {
+    title: "D.PotD Portal | Design Tech Math Club",
+    description:
+      "Access the D.PotD portal dashboard, current challenge status, leaderboard information, and support details.",
+  },
+  "/dpotd/register": {
+    title: "D.PotD Registration | Design Tech Math Club",
+    description:
+      "Create your Design Tech Math Club account to access the Problem of the Day Challenge and other account-based site features.",
+  },
+  "/profile": {
+    title: "Profile | Design Tech Math Club",
+    description:
+      "Manage your Design Tech Math Club account, student details, and competition access from one profile page.",
   },
   "/dtmt": {
     title: "DTMT | Design Tech Math Club",
     description:
       "Design Tech Math Tournament information, schedule, registration, and problem archives.",
   },
-  "/about-our-team": {
-    title: "About | Design Tech Math Club",
+  "/about/our-team": {
+    title: "Our Team | Design Tech Math Club",
     description:
       "Meet the Design Tech Math Club leadership, mission, sponsors, and activities.",
+  },
+  "/about/donate": {
+    title: "Donate | Design Tech Math Club",
+    description:
+      "Support Design Tech Math Club programs through the new donation page template.",
+  },
+  "/about/sponsor-us": {
+    title: "Sponsor Us | Design Tech Math Club",
+    description:
+      "Explore sponsorship opportunities and contact the Design Tech Math Club through the sponsor page.",
   },
 };
 
@@ -80,15 +112,31 @@ function AppShell() {
             exit="exit"
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <Routes location={location}>
-              <Route path="/" element={<Home />} />
-              <Route path="/puzzle-night" element={<PuzzleNight />} />
-              <Route path="/dpotd" element={<DPotD />} />
-              <Route path="/dtmt" element={<DTMT />} />
-              <Route path="/about-our-team" element={<About />} />
-              <Route path="/competitions" element={<Navigate to="/" replace />} />
-              <Route path="*" element={<Navigate to="/dpotd" replace />} />
-            </Routes>
+            <Suspense
+              fallback={
+                <div className="mx-auto w-[min(calc(100%-2rem),1180px)] py-24 text-center text-sm font-semibold text-txt-muted">
+                  Loading page...
+                </div>
+              }
+            >
+              <Routes location={location}>
+                <Route path="/" element={<Home />} />
+                <Route path="/puzzle-night" element={<PuzzleNight />} />
+                <Route path="/dpotd" element={<Navigate to="/dpotd/about" replace />} />
+                <Route path="/dpotd/about" element={<DPotDAbout />} />
+                <Route path="/dpotd/portal" element={<DPotDPortal />} />
+                <Route path="/dpotd/register" element={<DPotDRegister />} />
+                <Route path="/profile" element={<ProfileHub />} />
+                <Route path="/dtmt" element={<DTMT />} />
+                <Route path="/about" element={<Navigate to="/about/our-team" replace />} />
+                <Route path="/about/our-team" element={<About />} />
+                <Route path="/about/donate" element={<AboutDonate />} />
+                <Route path="/about/sponsor-us" element={<AboutSponsor />} />
+                <Route path="/about-our-team" element={<Navigate to="/about/our-team" replace />} />
+                <Route path="/competitions" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>

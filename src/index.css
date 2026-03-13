@@ -8,20 +8,21 @@
   --color-brand-dark: #d55d3d;
   --color-brand-glow: rgba(234, 109, 74, 0.18);
 
-  --color-surface: #e3e3e3;
-  --color-surface-2: #e3e3e3;
-  --color-surface-3: #e3e3e3;
-  --color-surface-card: #f1f1f1;
-  --color-surface-glass: rgba(227,227,227,0.9);
+  --color-surface: #f7f0e8;
+  --color-surface-2: #f3ece6;
+  --color-surface-3: #fffaf6;
+  --color-surface-card: rgba(255, 255, 255, 0.76);
+  --color-surface-glass: rgba(247, 240, 232, 0.86);
 
-  --color-txt: #333333;
-  --color-txt-muted: #666666;
-  --color-txt-dim: #b0b0b0;
+  --color-txt: #35271f;
+  --color-txt-muted: #756155;
+  --color-txt-dim: #b7a79d;
 
-  --color-border-subtle: #e3e3e3;
-  --color-border-accent: #ea6d4a33;
+  --color-border-subtle: rgba(234, 109, 74, 0.12);
+  --color-border-accent: rgba(234, 109, 74, 0.2);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
 
 /* ── Base Reset ─────────────────────────────────────────────── */
@@ -37,10 +38,39 @@
   }
 
   body {
+    position: relative;
     margin: 0;
     font-family: var(--font-sans);
     color: var(--color-txt);
-    background: var(--color-surface);
+    background:
+      radial-gradient(circle at top center, rgba(234, 109, 74, 0.14), transparent 24%),
+      radial-gradient(circle at 85% 24%, rgba(45, 121, 183, 0.09), transparent 18%),
+      radial-gradient(circle at 18% 82%, rgba(235, 179, 92, 0.1), transparent 20%),
+      linear-gradient(180deg, #f7f0e8 0%, #f3ece6 44%, #faf6f2 100%);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+    background-size: 38px 38px;
+    mask-image: radial-gradient(circle at center, black 12%, transparent 80%);
+    opacity: 0.24;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.72), transparent 22%),
+      radial-gradient(circle at 82% 88%, rgba(255, 255, 255, 0.55), transparent 18%);
+    opacity: 0.75;
   }
 
   a {
@@ -56,6 +86,26 @@
   input,
   textarea {
     font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  dt,
+  dd {
+    text-wrap: pretty;
   }
 
   ::selection {

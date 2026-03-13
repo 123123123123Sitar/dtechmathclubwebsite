@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
+import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
+import SurfaceCard from "../components/SurfaceCard";
 import { sponsorTiers } from "../data";
 
 const schedule = [
@@ -28,39 +30,21 @@ const fadeUp = {
 export default function DTMT() {
   return (
     <>
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-[#0d1a2d] via-surface to-[#1a1008]" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-brand/10 rounded-full blur-[140px] pointer-events-none" />
-
-        <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto text-center">
-          <SectionHeader
-            title="Design Tech Math Tournament"
-            description="The Design Tech Math Club is hosting our biggest competition of the year, the Design Tech Math Tournament (DTMT), on March 8th. This is a competitive yet welcoming event for middle school students in the Bay Area."
-            align="center"
-            titleClassName="whitespace-nowrap text-[clamp(1.9rem,3.6vw,3.5rem)]"
-          />
-
-          {/* Info bar */}
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-between gap-4 w-[min(92%,1000px)] mx-auto mt-8 px-6 sm:px-10 py-5 rounded-2xl bg-linear-to-r from-brand to-brand-dark border border-white/10 shadow-2xl shadow-brand-glow/20"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            {["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"].map(
-              (text) => (
-                <span
-                  key={text}
-                  className="flex-1 text-center text-white font-extrabold text-sm sm:text-base"
-                >
-                  {text}
-                </span>
-              ),
-            )}
-          </motion.div>
-        </div>
-      </section>
+      <PageHero
+        align="center"
+        aside={
+          <SurfaceCard className="p-8">
+            <h2 className="text-3xl font-black text-txt">Closed</h2>
+            <p className="mt-3 text-sm text-txt-muted">Deadline: March 3</p>
+            <p className="mt-1 text-sm text-txt-muted">Fee: $10</p>
+          </SurfaceCard>
+        }
+        description="The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking."
+        eyebrow="Signature Competition"
+        highlights={["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"]}
+        title="Design Tech Math Tournament"
+        titleClassName="whitespace-nowrap text-[clamp(1.9rem,3.6vw,3.5rem)]"
+      />
 
       {/* ── Stats ─────────────────────────────────────────── */}
       <FlowSection>
@@ -71,11 +55,7 @@ export default function DTMT() {
             <StatBadge value="2" label="Speaker Session" />
             <StatBadge value="$3k" label="In Prizes" />
           </div>
-          <motion.div
-            className="flex flex-wrap justify-center gap-4 mt-10"
-            {...fadeUp}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <motion.div className="flex flex-wrap justify-center gap-4 mt-10" {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }}>
             <a
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
               href="https://drive.google.com"
@@ -111,14 +91,10 @@ export default function DTMT() {
               description="Students compete in subject rounds covering Algebra, Geometry, Discrete, and a 6th Grade Test, followed by a Team Round and Sequence Round. The activities session includes Professor Ciprian Manolescu's presentation on Knot Theory, random math problem sets, math jeopardy, and a relay round. Tiebreakers use a Mathcounts-style Countdown round."
             />
           </div>
-          <div className="rounded-2xl border border-border-accent bg-surface-3 p-6">
-            <p className="text-xs font-extrabold tracking-[0.2em] uppercase text-brand mb-2">
-              Registration
-            </p>
-            <h3 className="text-2xl font-extrabold text-txt mb-3">Closed</h3>
-            <p className="text-txt-muted text-sm">Deadline: March 3rd</p>
-            <p className="text-txt-muted text-sm">Fee: $10</p>
-          </div>
+          <SurfaceCard className="p-6">
+            <h3 className="text-2xl font-extrabold text-txt">Competition Day</h3>
+            <p className="text-txt-muted text-sm">Subject rounds, team rounds, speaker session, and awards</p>
+          </SurfaceCard>
         </motion.div>
         </section>
       </FlowSection>

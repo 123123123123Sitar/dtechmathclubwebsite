@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
+import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
+import SurfaceCard from "../components/SurfaceCard";
 
 const puzzleSponsors = [
   {
@@ -53,39 +55,28 @@ const fadeUp = {
 export default function PuzzleNight() {
   return (
     <>
-      {/* ── Hero ──────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-[#1a0f0a] via-surface to-[#0d1a2d]" />
-        <div className="absolute top-1/3 right-0 w-[500px] h-[400px] bg-brand/10 rounded-full blur-[140px] pointer-events-none" />
-
-        <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto text-center">
-          <SectionHeader
-            title="Design Tech Puzzle Night"
-            description="The Design Math Club hosts an exploration-focused Puzzle Night for Middle Schoolers in the Bay Area during late November. The Puzzle Night features a variety of interactive puzzle stations, each offering a different way to explore the fun side of mathematics."
-            align="center"
-          />
-
-          {/* Banner */}
-          <motion.div
-            className="flex flex-col sm:flex-row items-center gap-5 mt-8 rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="min-w-[100px] min-h-[100px] rounded-2xl bg-linear-to-br from-[#ffcb57] to-brand grid place-items-center text-white font-extrabold text-sm">
-              Puzzle Night
+      <PageHero
+        align="center"
+        aside={
+          <SurfaceCard className="p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-5">
+              <div className="grid min-h-[96px] min-w-[96px] place-items-center rounded-2xl bg-linear-to-br from-[#ffcb57] to-brand text-sm font-extrabold text-white">
+                Puzzle Night
+              </div>
+              <div className="text-left">
+                <h3 className="text-lg font-bold text-txt">Interactive stations and prizes</h3>
+                <p className="mt-1 text-sm text-txt-muted">
+                  Exploration, raffle energy, and a sponsor-supported math night atmosphere.
+                </p>
+              </div>
             </div>
-            <div className="text-left">
-              <h3 className="text-lg font-bold text-txt">
-                Interactive stations, prizes, and AoPS support
-              </h3>
-              <p className="text-sm text-txt-muted mt-1">
-                Promotional banner recreation with sponsor callout and event branding.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+          </SurfaceCard>
+        }
+        description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event features interactive puzzle stations that show the fun side of mathematics."
+        eyebrow="Community Event"
+        highlights={["Logic and modeling", "Interactive stations", "Raffle and prizes"]}
+        title="Design Tech Puzzle Night"
+      />
 
       {/* ── Message ───────────────────────────────────────── */}
       <FlowSection>

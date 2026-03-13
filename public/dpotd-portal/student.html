@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="student.css">
+    <title>D.PotD Portal</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+
+<body>
+    <div class="loading-modal" id="loadingModal">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Loading...</p>
+        </div>
+    </div>
+
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="confirmation-content" style="max-width: 600px;">
+            <h2 style="color: #EA5A2F; margin-bottom: 20px;">Test Rules & Confirmation</h2>
+            <p style="font-size: 16px; margin-bottom: 20px;">Please read carefully before starting:</p>
+            <ul style="list-style: disc; padding-left: 25px; line-height: 2; font-size: 15px;">
+                <li><strong>Time Limit:</strong> 1 hour for all 3 questions</li>
+                <li><strong>Questions:</strong> Q1 worth 4 points, Q2 worth 6 points, and 1 proof question worth 10
+                    points</li>
+                <li>A latex syntax helper will be available for Q3</li>
+                <li>Fullscreen mode will activate automatically. Any tab switching will be recorded.</li>
+                <li>Once the test starts, the timer cannot be paused. The test will auto-submit when time expires</li>
+                <li><strong>IMPORTANT:</strong> If you accidentally close the tab, you can resume where you left off,
+                    but a violation will be recorded</li>
+                <li>If you encounter any issues, please notify us at <a href="mailto:dtechmathclub@gmail.com"
+                        style="color: #EA5A2F;">dtechmathclub@gmail.com</a></li>
+            </ul>
+            <p style="color: #dc3545; font-weight: 600; margin-top: 20px; font-size: 14px;">
+                WARNING: Violations like tab switching and exiting fullscreen will be recorded and may affect your
+                score!
+            </p>
+            <div class="confirmation-buttons" style="margin-top: 25px;">
+                <button class="confirm-btn cancel" onclick="cancelTest()"
+                    style="background: #dc3545; flex: 1;">Cancel</button>
+                <button class="confirm-btn start" onclick="confirmStart()" style="background: #28a745; flex: 1;">I
+                    Understand - Start Test</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="warning-overlay" id="warningOverlay">
+        <p><strong>WARNING: YOU HAVE LEFT THE TEST PAGE!</strong></p>
+        <p style="font-size: 18px; margin: 20px 0;">Return to the test immediately! Your time does not pause.</p>
+        <p class="warning-count">Violations recorded: <span id="violationCount">0</span></p>
+        <button class="btn" onclick="returnToFullscreen()"
+            style="max-width: 400px; padding: 20px 40px; font-size: 18px; margin-top: 20px; background: #fff; color: #dc3545; border: 3px solid #fff;">
+            Return to Test &amp; Enter Fullscreen
+        </button>
+    </div>
+
+    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAIHelper()">
+        LaTeX Helper
+    </button>
+
+
+
+    <div class="ai-helper" id="aiHelper">
+        <div class="ai-header">
+            <span>LaTeX Helper</span>
+            <button class="ai-close" onclick="toggleAIHelper()">×</button>
+        </div>
+        <div class="ai-chat-container" id="aiChatContainer">
+            <div class="ai-message assistant">
+                <strong>LaTeX Helper:</strong> I can ONLY help with LaTeX syntax and formatting.
+                <br><br>
+                <strong style="color: #dc3545;">I CANNOT:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Solve math problems</li>
+                    <li>Provide answers or hints</li>
+                    <li>Explain math concepts</li>
+                    <li>Calculate anything</li>
+                </ul>
+                <strong style="color: #28a745;">I CAN help with:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>"How do I write a fraction?"</li>
+                    <li>"What's the syntax for square roots?"</li>
+                    <li>"How do I make subscripts?"</li>
+                    <li>"How do I write Greek letters?"</li>
+                </ul>
+            </div>
+        </div>
+        <div class="ai-input-container">
+            <input type="text" id="aiInput" placeholder="Ask about LaTeX syntax..." onkeypress="handleAIEnter(event)">
+            <button type="button" onclick="sendAIMessage()">Send</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="authScreen">
+            <h1>D.PotD Student Portal</h1>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" onkeypress="handleLoginEnter(event)">
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" onkeypress="handleLoginEnter(event)">
+                </div>
+                <button class="btn" onclick="login()">Login</button>
+                <div class="forgot-password-link">
+                    <a href="#" onclick="showForgotPassword(); return false;">Forgot Password?</a>
+                </div>
+                <div id="loginStatus" class="status"></div>
+                <p style="text-align: center; color: #666; margin-top: 20px; font-size: 14px;">
+                    Don't have an account? Please register <a
+                        href="/dpotd/register">here</a>.
+                </p>
+            </div>
+
+            <div id="forgotPasswordForm" class="hidden">
+                <h2 style="text-align: center; margin-bottom: 20px;">Reset Password</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    Enter your email address and we'll send you a “Set new password” email.
+                </p>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="resetEmail">
+                </div>
+                <button class="btn" onclick="requestPasswordReset()">Send Reset Link</button>
+                <button class="btn-secondary" onclick="showLogin()" style="width: 100%; margin-top: 10px;">Back to
+                    Login</button>
+                <div id="resetStatus" class="status"></div>
+            </div>
+
+            <div id="resetPasswordForm" class="hidden">
+                <h2 style="text-align: center; margin-bottom: 20px;">Create New Password</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                    Enter your new password below.
+                </p>
+                <div class="form-group">
+                    <label>New Password:</label>
+                    <input type="password" id="newResetPassword">
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password:</label>
+                    <input type="password" id="confirmResetPassword">
+                </div>
+                <button class="btn" onclick="resetPassword()">Reset Password</button>
+                <div id="resetPasswordStatus" class="status"></div>
+            </div>
+        </div>
+
+        <div id="mainPortal" class="hidden">
+            <div class="profile-header">
+                <div class="profile-meta">
+                    <div class="profile-name-row">
+                        <span class="profile-name" id="profileName"></span>
+                        <div class="profile-rank hidden" id="profileRank">
+                            <span class="rank-badge-large" id="rankDisplay">#--</span>
+                            <span class="rank-text" id="rankDetails"></span>
+                        </div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchMainTab('today')">Today's Test</button>
+                <button class="tab" onclick="switchMainTab('leaderboard')">Leaderboard</button>
+                <button class="tab" onclick="switchMainTab('history')">Score History</button>
+            </div>
+
+            <div id="todayTab" class="tab-content active">
+                <div id="resumeTestBanner" class="resume-test-banner" style="display: none;">
+                    <h3>Resume Your Test</h3>
+                    <p>You have an active test for Day <span id="resumeDay"></span>. Click below to resume.</p>
+                    <button class="btn" onclick="resumeTest()">Resume Test</button>
+                </div>
+                <div id="testStatus"></div>
+            </div>
+
+            <div id="leaderboardTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Top 5 Leaderboard</h2>
+                <p style="color: #666; margin-bottom: 20px;"></p>
+                <div id="leaderboardContainer">
+                    <p style="color: #666; text-align: center;">Loading leaderboard...</p>
+                </div>
+            </div>
+
+            <div id="historyTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Your Score History</h2>
+                <div id="historyContainer"></div>
+            </div>
+        </div>
+
+        <div id="questionSection" class="question-section">
+            <div class="timer" id="timer">Time Remaining: 2:00:00</div>
+
+            <div
+                style="text-align: center; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <img src="dpotd-icon.png" alt="D.PotD" style="width: 50px; height: 50px; border-radius: 8px;">
+                <div style="font-size: 2.5em; font-weight: bold; color: #EA5A2F;" id="testTitle">D.PotD Day 1</div>
+            </div>
+
+            <div id="navigationBar"
+                style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                    <button class="question-nav-btn" onclick="showQuestion(0)" id="navBtn0"
+                        style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">I</button>
+                    <button class="question-nav-btn" onclick="showQuestion(1)" id="navBtn1"
+                        style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">1</button>
+                    <button class="question-nav-btn" onclick="showQuestion(2)" id="navBtn2"
+                        style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">2</button>
+                    <button class="question-nav-btn" onclick="showQuestion(3)" id="navBtn3"
+                        style="padding: 10px 20px; border: 2px solid #E3E3E3; background: white; border-radius: 6px; cursor: pointer; font-weight: 600;">3</button>
+                    <div style="width: 2px; height: 30px; background: #E3E3E3; margin: 0 10px;"></div>
+                    <button class="btn" onclick="nextQuestion()" id="nextBtn"
+                        style="width: auto; padding: 10px 30px; margin: 0;">Next</button>
+                    <button class="btn" onclick="submitTest()" id="submitBtn"
+                        style="width: auto; padding: 10px 30px; margin: 0; background: #28a745;">Submit
+                        Test</button>
+                </div>
+            </div>
+
+            <div id="instructionsPage" style="display: none;">
+                <div class="question-box">
+                    <h2>Instructions</h2>
+                    <div id="instructionsContent" style="color:#333; font-size:1.05em; line-height:1.6;"></div>
+                    <div style="text-align:center; margin-top:20px;">
+                        <button class="btn" onclick="nextQuestion()" style="max-width:300px;">Proceed to Question
+                            1</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="q1Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 1</h2>
+                    <p id="q1Text"></p>
+                    <img id="q1Image" class="question-image" style="display: none;">
+                    <input type="text" id="q1Answer" placeholder="Your answer (numbers only)">
+                </div>
+                <div id="q1Status" class="status"></div>
+            </div>
+
+            <div id="q2Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 2</h2>
+                    <p id="q2Text"></p>
+                    <img id="q2Image" class="question-image" style="display: none;">
+                    <input type="text" id="q2Answer" placeholder="Your answer (numbers only)">
+                </div>
+                <div id="q2Status" class="status"></div>
+            </div>
+
+            <div id="q3Page" style="display: none;">
+                <div class="question-box">
+                    <h2>Question 3</h2>
+                    <p id="q3Text"></p>
+                    <img id="q3Image" class="question-image" style="display: none;">
+                </div>
+                <div class="latex-editor-container">
+                    <div class="latex-input-section">
+                        <h3>LaTeX Code</h3>
+                        <div class="latex-toolbar"
+                            style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; padding: 8px; background: #f4f4f4; border-radius: 6px;">
+                            <button type="button" onclick="insertLatex('$\\frac{}{}$')" title="Fraction"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">a/b</button>
+                            <button type="button" onclick="insertLatex('^{}')" title="Exponent"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">x²</button>
+                            <button type="button" onclick="insertLatex('_{}')" title="Subscript"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">x₁</button>
+                            <button type="button" onclick="insertLatex('$\\sqrt{}$')" title="Square Root"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">√</button>
+                            <button type="button" onclick="insertLatex('$\\sum_{i=1}^{n}$')" title="Summation"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">Σ</button>
+                            <button type="button" onclick="insertLatex('$\\int_{a}^{b}$')" title="Integral"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">∫</button>
+                            <button type="button" onclick="insertLatex('$\\alpha$')" title="Alpha"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">α</button>
+                            <button type="button" onclick="insertLatex('$\\beta$')" title="Beta"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">β</button>
+                            <button type="button" onclick="insertLatex('$\\pi$')" title="Pi"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">π</button>
+                            <button type="button" onclick="insertLatex('$\\theta$')" title="Theta"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">θ</button>
+                            <button type="button" onclick="insertLatex('$\\infty$')" title="Infinity"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">∞</button>
+                            <button type="button" onclick="insertLatex('$\\leq$')" title="Less or Equal"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">≤</button>
+                            <button type="button" onclick="insertLatex('$\\geq$')" title="Greater or Equal"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">≥</button>
+                            <button type="button" onclick="insertLatex('$\\neq$')" title="Not Equal"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">≠</button>
+                            <button type="button" onclick="insertLatex('$\\cdot$')" title="Dot"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">·</button>
+                            <button type="button" onclick="insertLatex('$\\times$')" title="Times"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">×</button>
+                            <button type="button" onclick="insertLatex('$\\div$')" title="Divide"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">÷</button>
+                            <button type="button" onclick="insertLatex('$$\\\\n\\\\n$$')" title="Display Math Block"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px;">$$</button>
+                            <button type="button" onclick="insertLatex('\\textbf{}')" title="Bold"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">B</button>
+                            <button type="button" onclick="insertLatex('\\textit{}')" title="Italic"
+                                style="padding: 6px 10px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-style: italic;">I</button>
+                        </div>
+                        <textarea id="latexInput" placeholder="Write your proof using LaTeX here..."></textarea>
+                    </div>
+                    <div class="latex-preview-section">
+                        <h3>Live Preview</h3>
+                        <div id="latexPreview">Your formatted proof will appear here...</div>
+                    </div>
+                </div>
+
+                <div id="q3Status" class="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sponsor-footer">
+        <span class="sponsor-label">Proudly Sponsored By</span>
+        <div class="sponsor-logos">
+            <img src="https://aimforsevausa.org/wp-content/uploads/2018/09/Copy-of-AoPS-Logo.jpg"
+                alt="Art of Problem Solving" class="sponsor-logo" style="height: 40px;">
+        </div>
+    </div>
+
+    <!-- Submission Summary Modal -->
+    <div id="submissionSummaryModal" class="confirmation-modal">
+        <div class="confirmation-content">
+            <h2>Ready to Submit?</h2>
+            <p>Here is the status of your answers:</p>
+            <ul id="submissionSummaryList" style="list-style: none; padding: 0;">
+                <!-- Populated by JS -->
+            </ul>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                Once submitted, you cannot edit your answers.
+            </p>
+            <div class="confirmation-buttons">
+                <button class="confirm-btn cancel" onclick="closeSubmissionSummary()">Go Back</button>
+                <button class="confirm-btn start" onclick="confirmSubmission()">Submit Test</button>
+            </div>
+        </div>
+    </div>
+    <script src="student-firebase.js"></script>
+</body>
+
+</html>

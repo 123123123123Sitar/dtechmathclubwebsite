@@ -50,7 +50,7 @@ export default function ContactForm() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-border-accent bg-surface-3 px-4 py-3 text-txt placeholder:text-txt-dim focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand transition-all duration-200";
+    "w-full rounded-2xl border border-border-accent bg-white/84 px-4 py-3 text-txt placeholder:text-txt-dim shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] focus:outline-none focus:ring-2 focus:ring-brand/35 focus:border-brand transition-all duration-200";
 
   return (
     <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
@@ -64,7 +64,7 @@ export default function ContactForm() {
       </div>
 
       <label className="grid gap-1.5">
-        <span className="text-sm font-semibold text-txt">Write a message *</span>
+        <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Message *</span>
         <textarea
           name="message"
           rows="5"
@@ -88,7 +88,7 @@ export default function ContactForm() {
         <AnimatePresence>
           {submitted && (
             <motion.p
-              className="text-emerald-400 font-semibold text-sm"
+              className="text-sm font-semibold text-emerald-600"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
@@ -105,7 +105,7 @@ export default function ContactForm() {
 function Field({ label, error, inputClass, ...props }) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-sm font-semibold text-txt">{label}</span>
+      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
       <input className={inputClass} {...props} />
       {error && <small className="text-red-400 text-xs">{error}</small>}
     </label>

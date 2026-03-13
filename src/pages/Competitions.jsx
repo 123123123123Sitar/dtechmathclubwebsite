@@ -16,7 +16,7 @@ const events = [
     location: "Online in our website's D.PotD portal",
     imageLabel: "Math problems and scratch work",
     accent: "accent-dpotd",
-    to: "/dpotd",
+    to: "/dpotd/about",
   },
   {
     title: "D.Tech Puzzle Night",
