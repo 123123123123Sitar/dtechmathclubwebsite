@@ -253,18 +253,14 @@ export default function ProfileAuthPanel({
         </form>
       ) : (
         <form className="mt-6 grid gap-4" onSubmit={submitRegister} noValidate>
-          <p className="text-sm leading-relaxed text-txt-muted">
-            This account is the shared website login. Choose whether you are signing up as a
-            student or a coach, and the profile will start with the right role.
-          </p>
           <div className="grid gap-2">
             <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              Signup Type
+              Role
             </span>
             <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
               {[
-                ["student", "Student Signup"],
-                ["coach", "Coach Signup"],
+                ["student", "Student"],
+                ["coach", "Coach"],
               ].map(([value, label]) => (
                 <button
                   key={value}
@@ -300,14 +296,16 @@ export default function ProfileAuthPanel({
               required
               value={registerForm.lastName}
             />
-            <Field
-              label="Email"
-              name="email"
-              onChange={handleRegisterChange}
-              required
-              type="email"
-              value={registerForm.email}
-            />
+            <div className="sm:col-span-2">
+              <Field
+                label="Email"
+                name="email"
+                onChange={handleRegisterChange}
+                required
+                type="email"
+                value={registerForm.email}
+              />
+            </div>
             <Field
               label={registerType === "coach" ? "School Affiliation" : "School"}
               name="school"
@@ -324,17 +322,9 @@ export default function ProfileAuthPanel({
                 required
                 value={registerForm.grade}
               />
-            ) : (
-              <div className="grid gap-2">
-                <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                  Coach Access
-                </span>
-                <p className="border-t border-border-subtle pt-3 text-sm leading-relaxed text-txt-muted">
-                  Coach accounts can go straight into DTMT school registration and roster
-                  management after signup.
-                </p>
-              </div>
-            )}
+            ) : null}
+          </div>
+          <div className="grid gap-4">
             <Field
               label="Password"
               name="password"
@@ -343,16 +333,14 @@ export default function ProfileAuthPanel({
               type="password"
               value={registerForm.password}
             />
-            <div className="sm:col-span-2">
-              <Field
-                label="Confirm Password"
-                name="confirmPassword"
-                onChange={handleRegisterChange}
-                required
-                type="password"
-                value={registerForm.confirmPassword}
-              />
-            </div>
+            <Field
+              label="Confirm Password"
+              name="confirmPassword"
+              onChange={handleRegisterChange}
+              required
+              type="password"
+              value={registerForm.confirmPassword}
+            />
           </div>
           <button
             className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"

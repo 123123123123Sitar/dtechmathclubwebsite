@@ -59,47 +59,6 @@ export default function ProfileHub() {
     });
   }, [profile, user]);
 
-  const heroActions = useMemo(() => {
-    if (!authReady || !user) {
-      return [];
-    }
-
-    if (activeView === "puzzle-night") {
-      return [
-        { label: "Profile", to: "/profile?view=profile" },
-        { label: "DTMT", to: "/profile?view=dtmt", variant: "ghost" },
-      ];
-    }
-
-    if (activeView === "dtmt") {
-      return [
-        { label: "Profile", to: "/profile?view=profile" },
-        {
-          label: isCoachAccount ? "Puzzle Night" : hasDpotdAccess ? "D.PotD" : "Puzzle Night",
-          to: isCoachAccount ? "/profile?view=puzzle-night" : hasDpotdAccess ? "/profile?view=dpotd" : "/profile?view=puzzle-night",
-          variant: "ghost",
-        },
-      ];
-    }
-
-    if (activeView === "dpotd") {
-      return [
-        { label: "Open Testing Portal", href: "/dpotd-portal/student.html" },
-        { label: "Profile", to: "/profile?view=profile", variant: "ghost" },
-      ];
-    }
-
-    return isCoachAccount
-      ? [
-          { label: "Puzzle Night", to: "/profile?view=puzzle-night" },
-          { label: "DTMT", to: "/profile?view=dtmt", variant: "ghost" },
-        ]
-      : [
-          { label: "Puzzle Night", to: "/profile?view=puzzle-night" },
-          { label: "DTMT", to: "/profile?view=dtmt", variant: "ghost" },
-          ...(hasDpotdAccess ? [{ label: "D.PotD", to: "/profile?view=dpotd", variant: "ghost" }] : []),
-        ];
-  }, [activeView, authReady, hasDpotdAccess, isCoachAccount, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -123,22 +82,14 @@ export default function ProfileHub() {
   return (
     <>
       <PageHero
-        actions={heroActions}
         aside={
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
-            badge={authReady && user ? "Account Dashboard" : "Shared Account"}
-            caption={
-              authReady && user
-                ? "This one account changes what you can do based on whether it is a coach or student account."
-                : "Create one account first, then use the matching coach or student dashboard for Puzzle Night, DTMT, and D.PotD."
-            }
             imageClassName="object-contain p-8 md:p-10"
             src="/dtechmathclublogolarger.jpg"
           />
         }
         description="The account dashboard is role-based. Coaches manage school registrations and rosters. Students submit event forms and track their own status from the same signed-in account."
-        highlights={["Coach and Student Accounts", "Role-Based Event Pages", "One Shared Sign-In"]}
         title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Dashboard"}
       />
 
@@ -208,36 +159,6 @@ export default function ProfileHub() {
                   />
                 }
               />
-            </section>
-          </FlowSection>
-
-          <FlowSection glow="muted">
-            <section className="py-18">
-              <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
-                <SectionHeader
-                  align="center"
-                  description="Coach accounts get coach forms and school rosters. Student accounts get student registration forms and D.PotD access."
-                  title="Account Types"
-                />
-                <div className="mt-8 grid gap-5 md:grid-cols-2">
-                  <ModuleCard
-                    actionLabel="Create Coach Account"
-                    actionTo={buildProfileNextHref("/profile?view=dtmt")}
-                    title="Coach Dashboard"
-                  >
-                    Coach accounts unlock DTMT and Puzzle Night dashboard pages after sign-in,
-                    including school registration, coach RSVP forms, and student roster visibility.
-                  </ModuleCard>
-                  <ModuleCard
-                    actionLabel="Create Student Account"
-                    actionTo={buildProfileNextHref("/profile?view=puzzle-night")}
-                    title="Student Dashboard"
-                  >
-                    Student accounts unlock DTMT, Puzzle Night, D.PotD, and profile pages after
-                    sign-in, with forms attached directly to that student account.
-                  </ModuleCard>
-                </div>
-              </div>
             </section>
           </FlowSection>
         </>
@@ -389,33 +310,6 @@ function ProfilePanel({
             </StatusLine>
           </div>
         </SurfaceCard>
-      </div>
-
-      <div className={`grid gap-5 ${isCoachAccount ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
-        <ModuleCard
-          actionLabel="Open Puzzle Night"
-          actionTo="/profile?view=puzzle-night"
-          title="Puzzle Night"
-        >
-          {isCoachAccount
-            ? "Submit the coach RSVP and track students from your school who sign up."
-            : "Submit the student Puzzle Night form. School selection is optional but helps your coach track attendance."}
-        </ModuleCard>
-        {!isCoachAccount ? (
-          <ModuleCard
-            actionLabel="Open D.PotD"
-            actionTo="/profile?view=dpotd"
-            title="D.PotD"
-          >
-            Submit the student D.PotD registration, then use the portal and dashboard from this
-            same account.
-          </ModuleCard>
-        ) : null}
-        <ModuleCard actionLabel="Open DTMT" actionTo="/profile?view=dtmt" title="DTMT">
-          {isCoachAccount
-            ? "Register your school, RSVP for coach attendance, review student submissions, and build teams."
-            : "Choose a coach-registered school or sign up as an individual, then submit lunch, waiver, payment, and round preferences."}
-        </ModuleCard>
       </div>
     </div>
   );

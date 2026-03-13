@@ -41,7 +41,7 @@ export default function PageHero({
               description={description}
               eyebrow={eyebrow}
               title={title}
-              titleClassName={titleClassName}
+              titleClassName={`w-full max-w-none text-left ${titleClassName}`}
             />
             {actions.length ? (
               <div className={`mt-6 flex flex-wrap gap-3 ${centered ? "justify-center" : ""}`}>

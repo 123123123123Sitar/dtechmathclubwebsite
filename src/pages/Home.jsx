@@ -31,7 +31,7 @@ const events = [
     to: "/dpotd/about",
   },
   {
-    title: "D.Tech Puzzle Night",
+    title: "Design Tech Puzzle Night",
     date: "Late November",
     location: "Design Tech High School",
     imageLabel: "Puzzle pieces and collaborative tables",
