@@ -1,7 +1,6 @@
 import PageHero from "../components/PageHero";
 import FlowSection from "../components/FlowSection";
 import SectionHeader from "../components/SectionHeader";
-import SurfaceCard from "../components/SurfaceCard";
 import { donationImpact } from "../content/sponsorship";
 
 const givingTemplate = [
@@ -15,7 +14,7 @@ export default function AboutDonate() {
     <>
       <PageHero
         aside={
-          <SurfaceCard className="p-8">
+          <div className="text-left">
             <h2 className="text-3xl font-black text-txt">Payment Integration Ready</h2>
             <p className="mt-4 leading-relaxed text-txt-muted">
               Wire future donation buttons to Stripe Checkout or Payment Links here. The page
@@ -25,11 +24,10 @@ export default function AboutDonate() {
               Suggested future hook: one-time gifts, recurring support, sponsor acknowledgement,
               and post-payment thank-you messaging.
             </div>
-          </SurfaceCard>
+          </div>
         }
         description="This page is the donation template in the site's orange visual system. Stripe can be connected here later without redesigning the structure."
         eyebrow="Donate"
-        highlights={["Individual support", "Prizes and materials", "Stripe-ready layout"]}
         title="Support the Design Tech Math Club"
       />
 

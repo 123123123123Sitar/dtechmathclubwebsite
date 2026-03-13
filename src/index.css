@@ -35,11 +35,13 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   body {
     position: relative;
     margin: 0;
+    overflow-x: hidden;
     font-family: var(--font-sans);
     color: var(--color-txt);
     background:
@@ -71,6 +73,10 @@
       radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.72), transparent 22%),
       radial-gradient(circle at 82% 88%, rgba(255, 255, 255, 0.55), transparent 18%);
     opacity: 0.75;
+  }
+
+  #root {
+    overflow-x: hidden;
   }
 
   a {

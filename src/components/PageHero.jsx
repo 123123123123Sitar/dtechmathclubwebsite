@@ -68,6 +68,7 @@ export default function PageHero({
 
           {aside ? (
             <motion.div
+              className="border-t border-border-subtle pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08, ease: "easeOut" }}

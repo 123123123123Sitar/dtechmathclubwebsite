@@ -9,6 +9,7 @@ const initialLogin = {
 };
 
 const initialRegister = {
+  accountType: "student",
   firstName: "",
   lastName: "",
   email: "",
@@ -20,6 +21,7 @@ const initialRegister = {
 
 export default function ProfileAuthPanel({
   defaultMode = "signin",
+  embedded = false,
   redirectTo = "/profile",
   signedInCopy = "This browser already has an active Design Tech Math Club account session.",
 }) {
@@ -40,6 +42,7 @@ export default function ProfileAuthPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const registerType = registerForm.accountType === "coach" ? "coach" : "student";
 
   function handleLoginChange(event) {
     const { name, value } = event.target;
@@ -132,19 +135,22 @@ export default function ProfileAuthPanel({
 
   if (!authReady) {
     return (
-      <SurfaceCard className="p-8 text-center">
+      <PanelShell className="p-8 text-center" embedded={embedded}>
         <p className="text-sm font-semibold text-txt-muted">Checking your site profile session...</p>
-      </SurfaceCard>
+      </PanelShell>
     );
   }
 
   if (user) {
     return (
-      <SurfaceCard className="p-8">
+      <PanelShell className="p-8" embedded={embedded}>
         <h2 className="text-3xl font-black text-txt">{profile?.name || user.email}</h2>
         <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
         <p className="mt-4 leading-relaxed text-txt-muted">{signedInCopy}</p>
         <p className="mt-3 text-sm text-txt-muted">
+          Account type: {profile?.accountType === "coach" ? "coach" : "student"}
+        </p>
+        <p className="mt-2 text-sm text-txt-muted">
           D.PotD access: {hasDpotdAccess ? "active" : "not activated yet"}
         </p>
         <button
@@ -154,12 +160,12 @@ export default function ProfileAuthPanel({
         >
           Continue
         </button>
-      </SurfaceCard>
+      </PanelShell>
     );
   }
 
   return (
-    <SurfaceCard className="p-8">
+    <PanelShell className="p-8" embedded={embedded}>
       <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
         {[
           ["signin", "Sign In"],
@@ -219,9 +225,37 @@ export default function ProfileAuthPanel({
       ) : (
         <form className="mt-6 grid gap-4" onSubmit={submitRegister} noValidate>
           <p className="text-sm leading-relaxed text-txt-muted">
-            This account is the shared website login. School and grade can be added now or later
-            when a competition workflow needs them.
+            This account is the shared website login. Choose whether you are signing up as a
+            student or a coach, and the profile will start with the right role.
           </p>
+          <div className="grid gap-2">
+            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+              Signup Type
+            </span>
+            <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
+              {[
+                ["student", "Student Signup"],
+                ["coach", "Coach Signup"],
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  className={`rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
+                    registerType === value ? "bg-brand text-white shadow-md shadow-brand-glow" : "text-txt-muted"
+                  }`}
+                  onClick={() =>
+                    setRegisterForm((current) => ({
+                      ...current,
+                      accountType: value,
+                      grade: value === "coach" ? "" : current.grade,
+                    }))
+                  }
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="First Name"
@@ -243,18 +277,30 @@ export default function ProfileAuthPanel({
               value={registerForm.email}
             />
             <Field
-              label="School (Optional)"
+              label={registerType === "coach" ? "School Affiliation (Optional)" : "School (Optional)"}
               name="school"
               onChange={handleRegisterChange}
               value={registerForm.school}
             />
-            <Field
-              label="Grade (Optional)"
-              name="grade"
-              onChange={handleRegisterChange}
-              placeholder="Student grade if applicable"
-              value={registerForm.grade}
-            />
+            {registerType === "student" ? (
+              <Field
+                label="Grade (Optional)"
+                name="grade"
+                onChange={handleRegisterChange}
+                placeholder="Student grade if applicable"
+                value={registerForm.grade}
+              />
+            ) : (
+              <div className="grid gap-2">
+                <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                  Coach Access
+                </span>
+                <p className="border-t border-border-subtle pt-3 text-sm leading-relaxed text-txt-muted">
+                  Coach accounts can later create the DTMT coach profile, register a school, and
+                  manage rosters.
+                </p>
+              </div>
+            )}
             <Field
               label="Password"
               name="password"
@@ -284,8 +330,16 @@ export default function ProfileAuthPanel({
 
       {error ? <p className="mt-4 text-sm font-semibold text-red-500">{error}</p> : null}
       {message ? <p className="mt-4 text-sm font-semibold text-emerald-500">{message}</p> : null}
-    </SurfaceCard>
+    </PanelShell>
   );
+}
+
+function PanelShell({ embedded, className, children }) {
+  if (embedded) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return <SurfaceCard className={className}>{children}</SurfaceCard>;
 }
 
 function Field({ label, ...props }) {

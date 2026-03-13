@@ -111,16 +111,17 @@ export default function ProfileHub() {
         aside={
           <ProfileAuthPanel
             defaultMode="signin"
+            embedded
             redirectTo={`/profile?view=${activeView}`}
             signedInCopy={
               hasDpotdAccess
                 ? "This shared account is active and already connected to D.PotD. DTMT roles and event registrations can also attach to this same profile."
-                : "This shared account is active. Event access appears here as you complete registrations and role-specific forms."
+                : "This shared account is active. Event access appears here as you complete registrations and account steps."
             }
           />
         }
-        description="This is the shared website account for the Design Tech Math Club. Puzzle Night can register directly from a form, D.PotD unlocks a profile dashboard after registration, and DTMT coach or student workflows attach to this same account."
-        highlights={["One Account", "Event Access by Workflow", "No Separate D.PotD Login"]}
+        description="This is the shared website account for the Design Tech Math Club. Puzzle Night, D.PotD, and DTMT registration details all attach to this same account."
+        highlights={["One Account", "Event Access by Registration", "No Separate D.PotD Login"]}
         title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Dashboard"}
       />
 
@@ -173,20 +174,19 @@ export default function ProfileHub() {
             <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
               <SectionHeader
                 align="center"
-                description="Create one website account first when you want account-based features. Puzzle Night can still be a simple form flow, while D.PotD and DTMT management build on this shared profile."
+                description="Create one website account first when you want account-based features. Puzzle Night, D.PotD, and DTMT all build on this shared profile."
                 title="How the System Works"
               />
               <div className="mt-8 grid gap-5 md:grid-cols-3">
                 <ModuleCard actionLabel="Puzzle Night" actionTo="/puzzle-night/register" title="Simple Form Registration">
-                  Puzzle Night stays lightweight. Students can submit the event form directly, and
-                  signed-in users can optionally have that registration show up inside this
-                  account.
+                  Puzzle Night stays lightweight, but it still uses the shared account. Sign in,
+                  submit the form, and the registration is saved directly to this profile.
                 </ModuleCard>
                 <ModuleCard actionLabel="D.PotD Dashboard" actionTo="/dpotd/register" title="Portal Unlock After Registration">
                   Students first create a website account, then submit the D.PotD form. That
                   submission provisions the D.PotD portal for the same account.
                 </ModuleCard>
-                <ModuleCard actionLabel="DTMT Workflow" actionTo="/dtmt/register" title="Coach and Student Roles">
+                <ModuleCard actionLabel="DTMT Registration" actionTo="/dtmt/register" title="Coach and Student Roles">
                   DTMT adds role-based data. Coaches create coach profiles and school entries;
                   students register under a school, complete waiver and payment steps, then see
                   team assignments later.
@@ -246,7 +246,7 @@ function OverviewPanel({
         <SurfaceCard className="p-8">
           <SectionHeader
             title="Profile Details"
-            description="Keep the shared account details current here. Event workflows reuse this information instead of making students and coaches start over each time."
+            description="Keep the shared account details current here. Event registrations reuse this information instead of making students and coaches start over each time."
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
@@ -282,6 +282,9 @@ function OverviewPanel({
             description="These statuses are attached to this one account and determine which account-based features become available."
           />
           <div className="mt-4 grid gap-4">
+            <StatusLine label="Account Type">
+              {profile?.accountType === "coach" ? "Coach account" : "Student account"}
+            </StatusLine>
             <StatusLine label="D.PotD">
               {hasDpotdAccess ? "Registered and dashboard-ready" : "Account active, registration not submitted yet"}
             </StatusLine>
@@ -311,7 +314,7 @@ function OverviewPanel({
         >
           {puzzleNightRegistration
             ? `This account already has a Puzzle Night registration saved${profile?.email ? ` under ${profile.email}` : ""}.`
-            : "Puzzle Night stays a simple form-based registration. If you are signed in, the registration can also be attached to this account."}
+            : "Puzzle Night stays a simple form-based registration, but it is saved directly to this account."}
         </ModuleCard>
         <ModuleCard
           actionLabel={hasDpotdAccess ? "Open D.PotD Dashboard" : "Register for D.PotD"}
@@ -323,7 +326,7 @@ function OverviewPanel({
             : "D.PotD requires this shared account first. Once the form is submitted, the portal profile is provisioned automatically for this same account."}
         </ModuleCard>
         <ModuleCard
-          actionLabel="Open DTMT Workflow"
+          actionLabel="Open DTMT Registration"
           actionTo="/dtmt/register"
           title="DTMT"
         >
@@ -372,7 +375,7 @@ function DtmtStatusPanel({ dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration
       <SurfaceCard className="p-8">
         <SectionHeader
           title="Next Step"
-          description="The detailed DTMT workflow lives on the DTMT registration page. This profile tab is the summary view, while the dedicated DTMT page handles coach setup, school registration, student registration, waiver capture, payment status, roster visibility, and team assignment."
+          description="The detailed DTMT registration page is where coach setup, school registration, student registration, waiver capture, payment status, roster visibility, and team assignment are handled. This profile tab is the summary view."
         />
         <div className="mt-4 grid gap-4">
           {[
@@ -380,7 +383,7 @@ function DtmtStatusPanel({ dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration
               ? "Coach permissions are already attached to this account."
               : "Create a coach profile first if this account needs school management permissions.",
             dtmtSchool
-              ? "Your school registration is active and the roster table is available from the DTMT workflow page."
+              ? "Your school registration is active and the roster table is available from the DTMT registration page."
               : "Once a coach profile exists, the next step is registering the school.",
             dtmtStudentRegistration
               ? "Your student registration is saved and visible to the selected school coach."
@@ -395,7 +398,7 @@ function DtmtStatusPanel({ dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration
               className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
               to="/dtmt/register"
             >
-              Open DTMT Workflow
+              Open DTMT Registration
             </Link>
             <Link
               className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"

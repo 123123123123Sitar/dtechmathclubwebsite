@@ -75,10 +75,12 @@ export default function DTMTRegister() {
   useEffect(() => {
     if (dtmtCoachProfile || dtmtSchool) {
       setRoleView("coach");
+    } else if (profile?.accountType === "coach") {
+      setRoleView("coach");
     } else if (dtmtStudentRegistration) {
       setRoleView("student");
     }
-  }, [dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration]);
+  }, [dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration, profile?.accountType]);
 
   useEffect(() => {
     setCoachForm({
@@ -268,14 +270,15 @@ export default function DTMTRegister() {
           ) : (
             <ProfileAuthPanel
               defaultMode="register"
+              embedded
               redirectTo="/dtmt/register"
-              signedInCopy="DTMT uses the shared website account. Coach permissions, school registration, student registration, waiver status, payment status, and team assignment all attach to this same account system."
+              signedInCopy="DTMT uses the shared website account. Coach permissions, school registration, student registration, waiver status, payment status, and team assignment all attach to this same account."
             />
           )
         }
-        description="DTMT is the most structured workflow on the site. Coaches create coach profiles and school entries, while students register under a school, choose rounds, complete the waiver, record payment, and later receive team assignments."
+        description="DTMT is the most detailed registration on the site. Coaches create coach profiles and school entries, while students register under a school, choose rounds, complete the waiver, record payment, and later receive team assignments."
         highlights={["Coach and Student Roles", "School Roster Management", "Waiver and Payment Tracking"]}
-        title="DTMT Registration Workflow"
+        title="DTMT Registration"
       />
 
       <FlowSection glow="muted">
@@ -290,13 +293,13 @@ export default function DTMTRegister() {
                 <InfoCard title="Account First">
                   DTMT management features only become available after a website account exists.
                 </InfoCard>
-                <InfoCard title="Coach Workflow">
+                <InfoCard title="For Coaches">
                   Coaches create coach profiles, register schools, then manage roster visibility and
                   team assignment.
                 </InfoCard>
-                <InfoCard title="Student Workflow">
+                <InfoCard title="For Students">
                   Students register under a school, choose subject rounds, complete the waiver, and
-                  submit the payment step from this same account system.
+                  submit the payment step from this same account.
                 </InfoCard>
               </div>
             ) : (
@@ -311,7 +314,7 @@ export default function DTMTRegister() {
                     onClick={() => setRoleView("student")}
                     type="button"
                   >
-                    Student Workflow
+                    Student Registration
                   </button>
                   <button
                     className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
@@ -322,7 +325,7 @@ export default function DTMTRegister() {
                     onClick={() => setRoleView("coach")}
                     type="button"
                   >
-                    Coach Workflow
+                    Coach Registration
                   </button>
                 </div>
 
@@ -368,7 +371,7 @@ export default function DTMTRegister() {
                               {studentRoundOptions.map((round) => (
                                 <label
                                   key={round}
-                                  className="flex items-start gap-3 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-sm leading-relaxed text-txt-muted"
+                                  className="flex items-start gap-3 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted first:border-t-0 first:pt-0"
                                 >
                                   <input
                                     checked={studentForm.subjectRounds.includes(round)}
@@ -432,7 +435,7 @@ export default function DTMTRegister() {
                                   type="checkbox"
                                 />
                                 <span>
-                                  I understand that payment status is being recorded here as part of the registration workflow. Live checkout can be integrated later without changing the account structure.
+                                  I understand that payment status is being recorded here as part of registration. Live checkout can be integrated later without changing the account structure.
                                 </span>
                               </label>
                             </div>
@@ -642,7 +645,7 @@ export default function DTMTRegister() {
 
 function DtmtStatusCard({ coachProfile, school, studentRegistration }) {
   return (
-    <SurfaceCard className="p-8">
+    <div className="p-1 text-left">
       <h2 className="text-3xl font-black text-txt">DTMT Account Status</h2>
       <div className="mt-5 grid gap-4">
         <StatusRow label="Coach Profile">{coachProfile ? "Active" : "Not created yet"}</StatusRow>
@@ -651,7 +654,7 @@ function DtmtStatusCard({ coachProfile, school, studentRegistration }) {
           {studentRegistration ? studentRegistration.schoolName : "No student registration yet"}
         </StatusRow>
       </div>
-    </SurfaceCard>
+    </div>
   );
 }
 

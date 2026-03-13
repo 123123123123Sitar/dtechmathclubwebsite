@@ -7,7 +7,6 @@ import {
   signOut,
 } from "firebase/auth";
 import {
-  addDoc,
   collection,
   doc,
   getDoc,
@@ -144,8 +143,12 @@ async function loadDtmtStudentRegistration(user) {
 }
 
 function mergeProfiles(user, siteProfile, portalProfile, puzzleNightRegistration, dtmtCoachProfile, dtmtSchool, dtmtStudentRegistration) {
+  const accountType =
+    siteProfile?.accountType || (dtmtCoachProfile ? "coach" : "student");
+
   return {
     id: siteProfile?.id || portalProfile?.id || user?.uid || null,
+    accountType,
     name:
       siteProfile?.name ||
       dtmtStudentRegistration?.name ||
@@ -294,11 +297,12 @@ export function DpotdAuthProvider({ children }) {
   }
 
   async function registerSiteAccount(values) {
+    const accountType = values.accountType === "coach" ? "coach" : "student";
     const firstName = values.firstName.trim();
     const lastName = values.lastName.trim();
     const email = values.email.trim().toLowerCase();
     const school = values.school.trim();
-    const grade = values.grade.trim();
+    const grade = accountType === "student" ? values.grade.trim() : "";
     const password = values.password;
     const name = [firstName, lastName].filter(Boolean).join(" ").trim();
 
@@ -306,6 +310,9 @@ export function DpotdAuthProvider({ children }) {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
 
       await setDoc(doc(db, SITE_PROFILE_COLLECTION, credential.user.uid), {
+        accountType,
+        coachAccount: accountType === "coach",
+        studentAccount: accountType === "student",
         name,
         email,
         school,
@@ -413,6 +420,10 @@ export function DpotdAuthProvider({ children }) {
   }
 
   async function registerPuzzleNight(values) {
+    if (!auth.currentUser) {
+      return { ok: false, error: "You need to be signed in before registering for Puzzle Night." };
+    }
+
     const name = values.name.trim();
     const email = values.email.trim().toLowerCase();
     const school = values.school.trim();
@@ -420,7 +431,7 @@ export function DpotdAuthProvider({ children }) {
     const parentName = values.parentName.trim();
     const parentEmail = values.parentEmail.trim().toLowerCase();
     const notes = values.notes.trim();
-    const accountUid = auth.currentUser?.uid || null;
+    const accountUid = auth.currentUser.uid;
 
     if (!name || !email || !grade) {
       return { ok: false, error: "Fill in the participant name, email, and grade before continuing." };
@@ -436,37 +447,32 @@ export function DpotdAuthProvider({ children }) {
         notes,
         parentEmail,
         parentName,
-        registrationSource: accountUid ? "signed-in-account" : "guest-form",
+        registrationSource: "signed-in-account",
         school,
         status: "registered",
         submittedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
-      if (accountUid) {
-        await Promise.all([
-          setDoc(doc(db, PUZZLE_NIGHT_COLLECTION, accountUid), payload, { merge: true }),
-          setDoc(
-            doc(db, SITE_PROFILE_COLLECTION, accountUid),
-            {
-              ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
-              name,
-              email: (auth.currentUser.email || email).trim().toLowerCase(),
-              school,
-              grade,
-              puzzleNightRegistered: true,
-              puzzleNightRegisteredAt: serverTimestamp(),
-              updatedAt: serverTimestamp(),
-            },
-            { merge: true },
-          ),
-        ]);
+      await Promise.all([
+        setDoc(doc(db, PUZZLE_NIGHT_COLLECTION, accountUid), payload, { merge: true }),
+        setDoc(
+          doc(db, SITE_PROFILE_COLLECTION, accountUid),
+          {
+            ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            name,
+            email: (auth.currentUser.email || email).trim().toLowerCase(),
+            school,
+            grade,
+            puzzleNightRegistered: true,
+            puzzleNightRegisteredAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        ),
+      ]);
 
-        await refreshProfile();
-        return { ok: true };
-      }
-
-      await addDoc(collection(db, PUZZLE_NIGHT_COLLECTION), payload);
+      await refreshProfile();
       return { ok: true };
     } catch (_) {
       return { ok: false, error: "Unable to submit Puzzle Night registration right now." };
@@ -510,11 +516,14 @@ export function DpotdAuthProvider({ children }) {
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, uid),
           {
+            accountType: "coach",
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            coachAccount: true,
             dtmtCoachActive: true,
             dtmtCoachProfileCompletedAt: serverTimestamp(),
             email,
             name: siteProfile?.name || coachName,
+            studentAccount: false,
             updatedAt: serverTimestamp(),
           },
           { merge: true },
@@ -571,11 +580,14 @@ export function DpotdAuthProvider({ children }) {
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, uid),
           {
+            accountType: "coach",
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            coachAccount: true,
             dtmtCoachActive: true,
             dtmtSchoolRegistered: true,
             dtmtSchoolRegisteredAt: serverTimestamp(),
             school: schoolName,
+            studentAccount: false,
             updatedAt: serverTimestamp(),
           },
           { merge: true },
@@ -625,13 +637,16 @@ export function DpotdAuthProvider({ children }) {
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, uid),
           {
+            accountType: "student",
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
+            coachAccount: false,
             dtmtStudentRegistered: true,
             dtmtStudentRegistrationCompletedAt: serverTimestamp(),
             email,
             grade,
             name,
             school: schoolName,
+            studentAccount: true,
             updatedAt: serverTimestamp(),
           },
           { merge: true },
@@ -748,6 +763,7 @@ export function DpotdAuthProvider({ children }) {
       const uid = auth.currentUser.uid;
       const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
       const sharedProfile = {
+        accountType: profile?.accountType || siteProfile?.accountType || "student",
         email,
         grade: values.grade.trim(),
         name: values.name.trim(),
@@ -766,6 +782,9 @@ export function DpotdAuthProvider({ children }) {
             ...(profile?.dtmtCoachActive ? { dtmtCoachActive: true } : {}),
             ...(profile?.dtmtSchoolRegistered ? { dtmtSchoolRegistered: true } : {}),
             ...(profile?.dtmtStudentRegistered ? { dtmtStudentRegistered: true } : {}),
+            ...(profile?.accountType === "coach"
+              ? { accountType: "coach", coachAccount: true, studentAccount: false }
+              : { accountType: "student", coachAccount: false, studentAccount: true }),
           },
           { merge: true },
         ),

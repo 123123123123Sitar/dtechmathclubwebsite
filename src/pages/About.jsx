@@ -4,7 +4,6 @@ import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import OrbitSponsorSection from "../components/OrbitSponsorSection";
 import ScrollReveal from "../components/ScrollReveal";
-import SurfaceCard from "../components/SurfaceCard";
 import { sponsorTiers } from "../data";
 
 const competitions = [
@@ -80,14 +79,14 @@ export default function About() {
     <>
       <PageHero
         aside={
-          <SurfaceCard className="overflow-hidden p-0">
+          <div className="overflow-hidden rounded-[30px]">
             <div className="relative min-h-[300px] bg-linear-to-br from-[#1d4875]/45 to-[#8ec6a3]/35">
               <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
               <span className="absolute bottom-5 left-5 right-5 z-10 text-sm font-medium text-white">
                 Design Tech High School campus
               </span>
             </div>
-          </SurfaceCard>
+          </div>
         }
         description="Welcome to the Design Tech Math Club. We are a community of students who explore mathematics through competitions, collaboration, and outreach built for younger problem solvers."
         title="About Design Tech Math Club"

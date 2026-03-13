@@ -47,24 +47,24 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
                 <h3 className="mb-5 text-center text-lg font-bold text-brand">
                   {tier.name}
                 </h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
                   {tier.sponsors.map((sponsor, j) => (
                     <motion.a
                       key={sponsor.name}
                       href={sponsor.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="group block rounded-2xl border border-[rgba(234,109,74,0.12)] bg-[#fffaf6] p-5 text-center transition-all duration-200 hover:bg-brand hover:border-brand"
+                      className="group block border-t border-border-subtle pt-5 text-center transition-all duration-200 first:border-t-0 first:pt-0 hover:text-brand"
                       initial={{ opacity: 0, scale: 0.85, rotateY: -15 }}
                       whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                       viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.5, delay: i * 0.1 + j * 0.08 }}
-                      whileHover={{ y: -4, scale: 1.05 }}
+                      whileHover={{ y: -2 }}
                     >
-                      <span className="mb-1 block font-extrabold text-brand group-hover:text-white">
+                      <span className="mb-1 block font-extrabold text-brand group-hover:text-brand-light">
                         {sponsor.name}
                       </span>
-                      <span className="text-sm leading-snug text-txt-muted group-hover:text-white/80">
+                      <span className="text-sm leading-snug text-txt-muted group-hover:text-txt">
                         {sponsor.copy}
                       </span>
                     </motion.a>

@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import PageHero from "../components/PageHero";
 import FlowSection from "../components/FlowSection";
 import SectionHeader from "../components/SectionHeader";
-import SurfaceCard from "../components/SurfaceCard";
 import { sponsorPrograms, sponsorTierTemplate } from "../content/sponsorship";
 
 const initialForm = {
@@ -35,7 +34,7 @@ export default function AboutSponsor() {
     <>
       <PageHero
         aside={
-          <SurfaceCard className="p-8">
+          <div className="text-left">
             <h2 className="text-3xl font-black text-txt">Let's Partner</h2>
             <div className="mt-5 grid gap-3 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
               <p>275 Oracle Parkway</p>
@@ -46,7 +45,7 @@ export default function AboutSponsor() {
               Interested in sponsoring the Design Tech Math Club? Contact us through the form below
               or by email.
             </p>
-          </SurfaceCard>
+          </div>
         }
         description="The Design Tech High School Math Club is a student-run Mu Alpha Theta chapter on the Oracle campus in Redwood City, California. We organize math programs for middle school students in the Bay Area and beyond, with a focus on reasoning, problem solving, and analytical thinking."
         eyebrow="Sponsor Us"

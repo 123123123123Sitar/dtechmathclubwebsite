@@ -31,7 +31,7 @@ const routeMeta = {
   "/puzzle-night/register": {
     title: "Puzzle Night Registration | Design Tech Math Club",
     description:
-      "Register for Puzzle Night through the website form, with optional account linking for signed-in users.",
+      "Register for Puzzle Night through the website form attached to your Design Tech Math Club account.",
   },
   "/dpotd/about": {
     title: "D.PotD About | Design Tech Math Club",
@@ -61,7 +61,7 @@ const routeMeta = {
   "/dtmt/register": {
     title: "DTMT Registration | Design Tech Math Club",
     description:
-      "Use the shared account system to manage DTMT coach profiles, school registration, student registration, waivers, payment status, and team assignments.",
+      "Use one account to manage DTMT coach profiles, school registration, student registration, waivers, payment status, and team assignments.",
   },
   "/about/our-team": {
     title: "Our Team | Design Tech Math Club",

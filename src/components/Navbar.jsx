@@ -47,6 +47,19 @@ function dropdownActive(item, location) {
   return location.pathname.startsWith(item.match);
 }
 
+function getProfileButtonLabel(authReady, profile, user) {
+  if (!authReady || !user) {
+    return "Profile";
+  }
+
+  const candidate = String(profile?.name || user.displayName || "").trim();
+  if (candidate && !candidate.includes("@")) {
+    return candidate.split(" ")[0];
+  }
+
+  return "Profile";
+}
+
 export default function Navbar() {
   const location = useLocation();
   const { authReady, profile, user } = useDpotdAuth();
@@ -60,11 +73,7 @@ export default function Navbar() {
     setMobileDropdown(null);
   }, [location.pathname]);
 
-  const profileLabel = !authReady
-    ? "Profile"
-    : user
-      ? `${(profile?.name || user.email || "Profile").split(" ")[0]}`
-      : "Profile";
+  const profileLabel = getProfileButtonLabel(authReady, profile, user);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-brand/20 bg-[rgba(248,241,234,0.82)] shadow-[0_20px_46px_-36px_rgba(49,30,17,0.46)] backdrop-blur-2xl">

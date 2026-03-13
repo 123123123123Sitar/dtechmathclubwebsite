@@ -1,7 +1,6 @@
 import FlowSection from "../components/FlowSection";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
-import SurfaceCard from "../components/SurfaceCard";
 import {
   dpotdArchive,
   dpotdFeatureCards,
@@ -111,7 +110,7 @@ export default function DPotDAbout() {
                 title="Awards and Sponsors"
                 description="The top three performing students receive AoPS gift cards, and top performers who also participate in DTMT receive additional prizes. Awards are sent one to two weeks after the challenge concludes."
               />
-              <div className="rounded-[28px] border border-brand/15 bg-brand/6 p-6">
+              <div className="border-t border-border-subtle pt-5">
                 <h3 className="text-2xl font-black text-txt">Art of Problem Solving</h3>
                 <p className="mt-3 leading-relaxed text-txt-muted">
                   This year's prizes are supported by Art of Problem Solving. Their sponsorship
@@ -137,7 +136,7 @@ export default function DPotDAbout() {
                 {dpotdWinners.map((winner, index) => (
                   <div
                     key={winner}
-                    className="flex items-center justify-between rounded-2xl border border-border-subtle bg-white/75 px-5 py-4"
+                    className="flex items-center justify-between border-t border-border-subtle py-4 first:border-t-0 first:pt-0"
                   >
                     <span className="font-bold text-txt">{winner}</span>
                     <span className="text-sm font-semibold text-brand">Top {index + 1}</span>
@@ -186,7 +185,7 @@ export default function DPotDAbout() {
 
 function AboutSummaryCard() {
   return (
-    <SurfaceCard className="p-7">
+    <div className="p-1 text-left">
       <div className="flex items-center gap-4">
         <img
           alt="D.PotD logo"
@@ -200,7 +199,7 @@ function AboutSummaryCard() {
           </span>
         </div>
       </div>
-      <div className="mt-6 grid gap-4 rounded-3xl bg-[#fffaf6] p-5">
+      <div className="mt-6 grid gap-4 border-t border-border-subtle pt-5">
         <InfoRow label="Date" value="Mon, Feb 23" />
         <InfoRow label="Location" value="Online in our website's D.PotD portal" />
         <InfoRow label="Status" value="Closed for the 2026 challenge cycle" />
@@ -210,7 +209,7 @@ function AboutSummaryCard() {
         Winners receive online recognition, and top students who also participate in DTMT receive
         additional prizes.
       </p>
-    </SurfaceCard>
+    </div>
   );
 }
 
@@ -229,7 +228,7 @@ function InfoRow({ label, value }) {
 
 function ScoreCard({ points, title, children }) {
   return (
-    <div className="rounded-[26px] border border-border-subtle bg-white/80 p-5">
+    <div className="border-t border-border-subtle pt-5 first:border-t-0 first:pt-0">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-lg font-black text-txt">{title}</p>
@@ -243,7 +242,7 @@ function ScoreCard({ points, title, children }) {
 
 function BulletCard({ children }) {
   return (
-    <div className="rounded-[24px] border border-border-subtle bg-white/80 p-5 text-sm leading-relaxed text-txt-muted">
+    <div className="border-t border-border-subtle pt-5 text-sm leading-relaxed text-txt-muted first:border-t-0 first:pt-0">
       {children}
     </div>
   );

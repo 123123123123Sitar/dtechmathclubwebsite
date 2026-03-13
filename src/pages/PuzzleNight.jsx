@@ -3,7 +3,6 @@ import FlowSection from "../components/FlowSection";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
-import SurfaceCard from "../components/SurfaceCard";
 
 const puzzleSponsors = [
   {
@@ -62,7 +61,7 @@ export default function PuzzleNight() {
         ]}
         align="center"
         aside={
-          <SurfaceCard className="p-8 text-left">
+          <div className="text-left">
             <h3 className="text-2xl font-black text-txt">Interactive stations and prizes</h3>
             <p className="mt-3 text-sm leading-relaxed text-txt-muted">
               Exploration activities, estimation, countdown, and raffle energy all live in the
@@ -72,7 +71,7 @@ export default function PuzzleNight() {
               Expect logic, modeling, geometry, and collaborative problem solving throughout the
               evening.
             </div>
-          </SurfaceCard>
+          </div>
         }
         description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event features interactive puzzle stations that show the fun side of mathematics."
         title="Design Tech Puzzle Night"

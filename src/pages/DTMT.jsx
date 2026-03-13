@@ -4,7 +4,6 @@ import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
-import SurfaceCard from "../components/SurfaceCard";
 import { sponsorTiers } from "../data";
 
 const schedule = [
@@ -32,16 +31,16 @@ export default function DTMT() {
     <>
       <PageHero
         actions={[
-          { label: "Open DTMT Workflow", to: "/dtmt/register" },
+          { label: "Open DTMT Registration", to: "/dtmt/register" },
           { label: "Open Profile", to: "/profile?view=dtmt", variant: "ghost" },
         ]}
         align="center"
         aside={
-          <SurfaceCard className="p-8">
+          <div className="text-left">
             <h2 className="text-3xl font-black text-txt">Closed</h2>
             <p className="mt-3 text-sm text-txt-muted">Deadline: March 3</p>
             <p className="mt-1 text-sm text-txt-muted">Fee: $10</p>
-          </SurfaceCard>
+          </div>
         }
         description="The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking."
         highlights={["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"]}
@@ -71,7 +70,7 @@ export default function DTMT() {
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
               href="/dtmt/register"
             >
-              Open Registration Workflow
+              Open Registration
             </a>
           </motion.div>
         </div>

@@ -76,9 +76,9 @@ export default function DPotDRegister() {
         }
         aside={
           !authReady ? (
-            <SurfaceCard className="p-8 text-center">
+            <div className="p-8 text-center">
               <p className="text-sm font-semibold text-txt-muted">Checking your account...</p>
-            </SurfaceCard>
+            </div>
           ) : user ? (
             <RegistrationStatusCard
               email={profile?.email || user.email || ""}
@@ -88,6 +88,7 @@ export default function DPotDRegister() {
           ) : (
             <ProfileAuthPanel
               defaultMode="register"
+              embedded
               redirectTo="/dpotd/register"
               signedInCopy="You are signed in. Complete the D.PotD registration form below to unlock the D.PotD dashboard for this account."
             />
@@ -237,13 +238,13 @@ export default function DPotDRegister() {
 
 function RegistrationStatusCard({ email, hasDpotdAccess, name }) {
   return (
-    <SurfaceCard className="p-8">
+    <div className="p-1 text-left">
       <h2 className="text-3xl font-black text-txt">{name}</h2>
       <p className="mt-2 text-sm text-txt-muted">{email}</p>
       <div className="mt-5 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
         D.PotD status: {hasDpotdAccess ? "registered and portal-ready" : "account active, registration not submitted yet"}
       </div>
-    </SurfaceCard>
+    </div>
   );
 }
 
@@ -263,9 +264,7 @@ function ReadonlyField({ label, value }) {
   return (
     <label className="grid gap-2">
       <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
-      <div className="rounded-2xl border border-[rgba(234,109,74,0.12)] bg-white/76 px-4 py-3 text-sm text-txt-muted">
-        {value}
-      </div>
+      <div className="border-t border-border-subtle pt-3 text-sm text-txt-muted">{value}</div>
     </label>
   );
 }
