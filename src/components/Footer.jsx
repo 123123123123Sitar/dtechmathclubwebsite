@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const quickLinks = [
   { label: "Profile", to: "/profile" },
-  { label: "d.PotD Portal", to: "/dpotd/portal" },
+  { label: "d.PotD Portal", to: "/profile?view=dpotd" },
   { label: "Our Team", to: "/about/our-team" },
   { label: "Sponsor Us", to: "/about/sponsor-us" },
   { label: "Contact Us", href: "mailto:dtechmathclub@gmail.com" },

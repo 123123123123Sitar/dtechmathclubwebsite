@@ -31,6 +31,10 @@ export default function DTMT() {
   return (
     <>
       <PageHero
+        actions={[
+          { label: "Open DTMT Workflow", to: "/dtmt/register" },
+          { label: "Open Profile", to: "/profile?view=dtmt", variant: "ghost" },
+        ]}
         align="center"
         aside={
           <SurfaceCard className="p-8">
@@ -40,7 +44,6 @@ export default function DTMT() {
           </SurfaceCard>
         }
         description="The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking."
-        eyebrow="Signature Competition"
         highlights={["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"]}
         title="Design Tech Math Tournament"
         titleClassName="whitespace-nowrap text-[clamp(1.9rem,3.6vw,3.5rem)]"
@@ -66,11 +69,9 @@ export default function DTMT() {
             </a>
             <a
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
-              href="https://forms.gle"
-              target="_blank"
-              rel="noreferrer"
+              href="/dtmt/register"
             >
-              Register Now!
+              Open Registration Workflow
             </a>
           </motion.div>
         </div>

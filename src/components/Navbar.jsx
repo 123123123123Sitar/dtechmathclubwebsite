@@ -12,7 +12,7 @@ const navItems = [
     match: "/dpotd",
     items: [
       { to: "/dpotd/about", label: "About" },
-      { to: "/dpotd/portal", label: "Portal" },
+      { to: "/profile?view=dpotd", label: "Portal" },
     ],
   },
   { type: "link", to: "/dtmt", label: "DTMT" },
@@ -36,8 +36,15 @@ function linkClass(isActive) {
   }`;
 }
 
-function dropdownActive(item, pathname) {
-  return pathname.startsWith(item.match);
+function dropdownActive(item, location) {
+  if (item.match === "/dpotd") {
+    return (
+      location.pathname.startsWith("/dpotd") ||
+      (location.pathname.startsWith("/profile") && location.search.includes("view=dpotd"))
+    );
+  }
+
+  return location.pathname.startsWith(item.match);
 }
 
 export default function Navbar() {
@@ -92,7 +99,7 @@ export default function Navbar() {
                 );
               }
 
-              const active = dropdownActive(item, location.pathname);
+              const active = dropdownActive(item, location);
 
               return (
                 <div
@@ -218,7 +225,7 @@ export default function Navbar() {
                   );
                 }
 
-                const active = dropdownActive(item, location.pathname);
+                const active = dropdownActive(item, location);
                 const expanded = mobileDropdown === item.label;
 
                 return (

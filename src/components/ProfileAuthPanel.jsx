@@ -76,9 +76,16 @@ export default function ProfileAuthPanel({
   async function submitRegister(event) {
     event.preventDefault();
 
-    const values = Object.values(registerForm).map((value) => value.trim());
-    if (values.some((value) => !value)) {
-      setError("Fill in all account fields before continuing.");
+    const requiredValues = [
+      registerForm.firstName,
+      registerForm.lastName,
+      registerForm.email,
+      registerForm.password,
+      registerForm.confirmPassword,
+    ].map((value) => value.trim());
+
+    if (requiredValues.some((value) => !value)) {
+      setError("Fill in the required account fields before continuing.");
       return;
     }
 
@@ -138,7 +145,7 @@ export default function ProfileAuthPanel({
         <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
         <p className="mt-4 leading-relaxed text-txt-muted">{signedInCopy}</p>
         <p className="mt-3 text-sm text-txt-muted">
-          D.PotD portal access: {hasDpotdAccess ? "active" : "not activated yet"}
+          D.PotD access: {hasDpotdAccess ? "active" : "not activated yet"}
         </p>
         <button
           className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
@@ -211,6 +218,10 @@ export default function ProfileAuthPanel({
         </form>
       ) : (
         <form className="mt-6 grid gap-4" onSubmit={submitRegister} noValidate>
+          <p className="text-sm leading-relaxed text-txt-muted">
+            This account is the shared website login. School and grade can be added now or later
+            when a competition workflow needs them.
+          </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
               label="First Name"
@@ -232,16 +243,16 @@ export default function ProfileAuthPanel({
               value={registerForm.email}
             />
             <Field
-              label="School"
+              label="School (Optional)"
               name="school"
               onChange={handleRegisterChange}
               value={registerForm.school}
             />
             <Field
-              label="Grade"
+              label="Grade (Optional)"
               name="grade"
               onChange={handleRegisterChange}
-              placeholder="6, 7, or 8"
+              placeholder="Student grade if applicable"
               value={registerForm.grade}
             />
             <Field

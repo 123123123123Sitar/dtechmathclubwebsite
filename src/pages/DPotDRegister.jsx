@@ -57,7 +57,7 @@ export default function DPotDRegister() {
       return;
     }
 
-    navigate("/dpotd/portal");
+    navigate("/profile?view=dpotd");
   }
 
   return (
@@ -66,7 +66,7 @@ export default function DPotDRegister() {
         actions={
           authReady && user && hasDpotdAccess
             ? [
-                { label: "Open D.PotD Portal", to: "/dpotd/portal" },
+                { label: "Open D.PotD Dashboard", to: "/profile?view=dpotd" },
                 { label: "Open Profile", to: "/profile", variant: "ghost" },
               ]
             : [
@@ -89,11 +89,11 @@ export default function DPotDRegister() {
             <ProfileAuthPanel
               defaultMode="register"
               redirectTo="/dpotd/register"
-              signedInCopy="You are signed in. Complete the D.PotD registration form below to activate portal access for this account."
+              signedInCopy="You are signed in. Complete the D.PotD registration form below to unlock the D.PotD dashboard for this account."
             />
           )
         }
-        description="D.PotD registration is attached to the student account that is currently signed in. Submitting the form below is what provisions the portal profile and links leaderboard history, submissions, and portal access to that same account."
+        description="D.PotD registration is attached to the website account that is currently signed in. Submitting the form below provisions D.PotD access for that account, and the dashboard then becomes visible inside the profile page."
         highlights={[
           "One D.Tech Math Club account",
           "D.PotD registration attached to that account",
@@ -126,9 +126,9 @@ export default function DPotDRegister() {
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                    to="/dpotd/portal"
+                    to="/profile?view=dpotd"
                   >
-                    Open D.PotD Portal
+                    Open D.PotD Dashboard
                   </Link>
                   <Link
                     className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
@@ -143,7 +143,7 @@ export default function DPotDRegister() {
                 <SurfaceCard className="p-8">
                   <SectionHeader
                     title="Complete the D.PotD Form"
-                    description="Submitting this form attaches D.PotD registration to your signed-in website account and automatically creates the portal profile used for testing, submissions, and leaderboard history."
+                    description="Submitting this form attaches D.PotD registration to your signed-in website account and automatically creates the portal profile used for testing, submissions, leaderboard history, and the D.PotD dashboard inside your profile."
                   />
                   <form className="mt-8 grid gap-5" onSubmit={handleSubmit} noValidate>
                     <ReadonlyField label="Signed-In Email" value={profile?.email || user.email || ""} />
@@ -163,8 +163,8 @@ export default function DPotDRegister() {
                       />
                       <span>
                         I understand that this D.PotD registration is being attached to my signed-in
-                        Design Tech Math Club account and that the same account will be used for
-                        portal access, submissions, and leaderboard records.
+                        Design Tech Math Club account and that the same account will be used for the
+                        dashboard, testing access, submissions, and leaderboard records.
                       </span>
                     </label>
 

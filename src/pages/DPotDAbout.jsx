@@ -15,7 +15,7 @@ export default function DPotDAbout() {
       <PageHero
         actions={[
           { label: "Register for D.PotD", to: "/dpotd/register" },
-          { label: "Open D.PotD Portal", to: "/dpotd/portal", variant: "ghost" },
+          { label: "Open D.PotD Dashboard", to: "/profile?view=dpotd", variant: "ghost" },
         ]}
         aside={<AboutSummaryCard />}
         description="The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them."
@@ -42,7 +42,6 @@ export default function DPotDAbout() {
         <section className="py-18">
           <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
             <SectionHeader
-              eyebrow="Format"
               title="Challenge Structure"
               description="The D.PotD portal is designed to give students a short, focused daily contest experience with both numerical and proof-based work."
               align="center"
@@ -157,7 +156,6 @@ export default function DPotDAbout() {
         <section className="py-18">
           <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
             <SectionHeader
-              eyebrow="Archive"
               title="Past Problems"
               description="The archive layout is now in place for the 2026 D.PotD problems. You can attach PDFs, portal deep-links, or solution files to these cards later."
               align="center"

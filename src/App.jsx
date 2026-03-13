@@ -11,9 +11,11 @@ const DPotDAbout = lazy(() => import("./pages/DPotDAbout"));
 const DPotDPortal = lazy(() => import("./pages/DPotDPortal"));
 const DPotDRegister = lazy(() => import("./pages/DPotDRegister"));
 const DTMT = lazy(() => import("./pages/DTMT"));
+const DTMTRegister = lazy(() => import("./pages/DTMTRegister"));
 const Home = lazy(() => import("./pages/Home"));
 const ProfileHub = lazy(() => import("./pages/ProfileHub"));
 const PuzzleNight = lazy(() => import("./pages/PuzzleNight"));
+const PuzzleNightRegister = lazy(() => import("./pages/PuzzleNightRegister"));
 
 const routeMeta = {
   "/": {
@@ -26,6 +28,11 @@ const routeMeta = {
     description:
       "Explore Design Tech Puzzle Night, an interactive event for middle schoolers in the Bay Area.",
   },
+  "/puzzle-night/register": {
+    title: "Puzzle Night Registration | Design Tech Math Club",
+    description:
+      "Register for Puzzle Night through the website form, with optional account linking for signed-in users.",
+  },
   "/dpotd/about": {
     title: "D.PotD About | Design Tech Math Club",
     description:
@@ -34,7 +41,7 @@ const routeMeta = {
   "/dpotd/portal": {
     title: "D.PotD Portal | Design Tech Math Club",
     description:
-      "Access the D.PotD portal dashboard, current challenge status, leaderboard information, and support details.",
+      "Open the shared-account D.PotD dashboard, current challenge status, leaderboard information, and support details.",
   },
   "/dpotd/register": {
     title: "D.PotD Registration | Design Tech Math Club",
@@ -44,12 +51,17 @@ const routeMeta = {
   "/profile": {
     title: "Profile | Design Tech Math Club",
     description:
-      "Manage your Design Tech Math Club account, student details, and competition access from one profile page.",
+      "Manage your Design Tech Math Club account, event access, D.PotD dashboard, and DTMT role status from one profile page.",
   },
   "/dtmt": {
     title: "DTMT | Design Tech Math Club",
     description:
       "Design Tech Math Tournament information, schedule, registration, and problem archives.",
+  },
+  "/dtmt/register": {
+    title: "DTMT Registration | Design Tech Math Club",
+    description:
+      "Use the shared account system to manage DTMT coach profiles, school registration, student registration, waivers, payment status, and team assignments.",
   },
   "/about/our-team": {
     title: "Our Team | Design Tech Math Club",
@@ -122,12 +134,14 @@ function AppShell() {
               <Routes location={location}>
                 <Route path="/" element={<Home />} />
                 <Route path="/puzzle-night" element={<PuzzleNight />} />
+                <Route path="/puzzle-night/register" element={<PuzzleNightRegister />} />
                 <Route path="/dpotd" element={<Navigate to="/dpotd/about" replace />} />
                 <Route path="/dpotd/about" element={<DPotDAbout />} />
                 <Route path="/dpotd/portal" element={<DPotDPortal />} />
                 <Route path="/dpotd/register" element={<DPotDRegister />} />
                 <Route path="/profile" element={<ProfileHub />} />
                 <Route path="/dtmt" element={<DTMT />} />
+                <Route path="/dtmt/register" element={<DTMTRegister />} />
                 <Route path="/about" element={<Navigate to="/about/our-team" replace />} />
                 <Route path="/about/our-team" element={<About />} />
                 <Route path="/about/donate" element={<AboutDonate />} />

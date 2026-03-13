@@ -56,6 +56,10 @@ export default function PuzzleNight() {
   return (
     <>
       <PageHero
+        actions={[
+          { label: "Register for Puzzle Night", to: "/puzzle-night/register" },
+          { label: "Open Profile", to: "/profile", variant: "ghost" },
+        ]}
         align="center"
         aside={
           <SurfaceCard className="p-8 text-left">

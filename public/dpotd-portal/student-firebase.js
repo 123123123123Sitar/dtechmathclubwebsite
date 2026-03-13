@@ -140,6 +140,7 @@ appAuth.onAuthStateChanged(async (user) => {
             mainPortal.classList.add('hidden');
         }
         if (!mainPortal) pendingMainRender = true;
+        window.location.href = '/profile?view=dpotd';
         return;
     }
 
@@ -334,7 +335,7 @@ function logout() {
     currentUser = null;
     localStorage.removeItem('dpotdUser');
     document.getElementById('mainPortal').classList.add('hidden');
-    document.getElementById('authScreen').classList.remove('hidden');
+    window.location.href = '/profile?view=overview';
 }
 
 function showMainPortal() {
