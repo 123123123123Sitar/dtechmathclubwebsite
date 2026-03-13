@@ -16,7 +16,7 @@ const stats = [
 const events = [
   {
     title: "Design Tech Math Tournament (DTMT 2026)",
-    date: "Sun, Mar 08",
+    date: "Early March",
     location: "Design Tech High School",
     imageLabel: "Students competing in timed rounds",
     accent: "accent-dtmt",
@@ -24,7 +24,7 @@ const events = [
   },
   {
     title: "Design Tech Problem of the Day Challenge (D.PotD)",
-    date: "Mon, Feb 23",
+    date: "February",
     location: "Online in our website's D.PotD portal",
     imageLabel: "Math problems and scratch work",
     accent: "accent-dpotd",
@@ -32,7 +32,7 @@ const events = [
   },
   {
     title: "D.Tech Puzzle Night",
-    date: "Fri, Dec 05",
+    date: "Late November",
     location: "Design Tech High School",
     imageLabel: "Puzzle pieces and collaborative tables",
     accent: "accent-puzzle",
@@ -95,12 +95,6 @@ export default function Home() {
               >
                 Learn More →
               </Link>
-              <Link
-                to="/profile"
-                className="inline-flex items-center px-7 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
-              >
-                Open Profile
-              </Link>
             </motion.div>
           </motion.div>
         </div>
@@ -157,11 +151,11 @@ export default function Home() {
 
       {/* ── Contact ───────────────────────────────────────── */}
       <FlowSection>
-        <section className="py-20">
+        <section className="py-16" id="contact">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader title="Contact Us" align="center" />
           <motion.div
-            className="max-w-[1000px] mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-8 md:p-10"
+            className="max-w-[1000px] mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm py-3 px-6 md:py-5 md:px-8 text-[0.8rem]"
             {...fadeUp}
           >
             <ContactForm />

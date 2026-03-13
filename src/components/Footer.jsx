@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 
 const quickLinks = [
-  { label: "Profile", to: "/profile" },
-  { label: "d.PotD Portal", to: "/profile?view=dpotd" },
-  { label: "Our Team", to: "/about/our-team" },
+  { label: "About", to: "/about/our-team" },
   { label: "Sponsor Us", to: "/about/sponsor-us" },
-  { label: "Contact Us", href: "mailto:dtechmathclub@gmail.com" },
+  { label: "Contact Us", to: "/#contact" },
 ];
 
 export default function Footer() {
@@ -55,26 +53,40 @@ export default function Footer() {
 
           <div>
             <h3 className="text-lg font-bold text-white">Quick Links</h3>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {quickLinks.map((link) =>
-                link.to ? (
-                  <Link
-                    key={link.label}
-                    className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-[#f7ede6] transition-all duration-200 hover:border-brand/50 hover:bg-brand hover:text-white"
-                    to={link.to}
-                  >
-                    {link.label}
-                  </Link>
-                ) : (
+            <div className="mt-4 flex flex-col gap-2 max-w-xs w-full">
+              {quickLinks.map((link) => {
+                if (link.label === "Contact Us") {
+                  return (
+                    <a
+                      key={link.label}
+                      className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-[#f7ede6] transition-all duration-200 hover:border-brand/50 hover:bg-brand hover:text-white w-full max-w-xs mx-auto"
+                      href="/#contact"
+                    >
+                      {link.label}
+                    </a>
+                  );
+                }
+                if (link.to) {
+                  return (
+                    <Link
+                      key={link.label}
+                      className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-[#f7ede6] transition-all duration-200 hover:border-brand/50 hover:bg-brand hover:text-white w-full max-w-xs mx-auto"
+                      to={link.to}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                }
+                return (
                   <a
                     key={link.label}
-                    className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-[#f7ede6] transition-all duration-200 hover:border-brand/50 hover:bg-brand hover:text-white"
+                    className="inline-flex rounded-full border border-white/12 bg-white/6 px-4 py-2 text-sm font-semibold text-[#f7ede6] transition-all duration-200 hover:border-brand/50 hover:bg-brand hover:text-white w-full max-w-xs mx-auto"
                     href={link.href}
                   >
                     {link.label}
                   </a>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
         </div>
