@@ -33,6 +33,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /contactSubmissions/{submissionId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /sponsorshipInquiries/{inquiryId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /puzzleNightRegistrations/{registrationId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.accountUid == request.auth.uid;

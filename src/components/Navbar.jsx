@@ -3,22 +3,50 @@ import { NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
-const navItems = [
-  { type: "link", to: "/", label: "Home" },
-  { type: "link", to: "/puzzle-night", label: "Puzzle Night" },
-  { type: "link", to: "/dpotd", label: "d.PotD" },
-  { type: "link", to: "/dtmt", label: "DTMT" },
-  {
-    type: "dropdown",
-    label: "About",
-    match: "/about",
-    items: [
-      { to: "/about/our-team", label: "Our Team" },
-      { to: "/about/donate", label: "Donation" },
-      { to: "/about/sponsor-us", label: "Sponsor Us" },
-    ],
-  },
-];
+function buildNavItems(isCoachAccount) {
+  return [
+    { type: "link", to: "/", label: "Home" },
+    {
+      type: "dropdown",
+      label: "Puzzle Night",
+      match: "/puzzle-night",
+      items: isCoachAccount
+        ? [{ to: "/puzzle-night", label: "Overview" }]
+        : [
+            { to: "/puzzle-night", label: "Overview" },
+            { to: "/puzzle-night/register", label: "Register Here" },
+          ],
+    },
+    {
+      type: "dropdown",
+      label: "d.PotD",
+      match: "/dpotd",
+      items: [
+        { to: "/dpotd/about", label: "About" },
+        { to: "/dpotd/register", label: "Register Here" },
+      ],
+    },
+    {
+      type: "dropdown",
+      label: "DTMT",
+      match: "/dtmt",
+      items: [
+        { to: "/dtmt", label: "Overview" },
+        { to: "/dtmt/register", label: "Register Here" },
+      ],
+    },
+    {
+      type: "dropdown",
+      label: "About",
+      match: "/about",
+      items: [
+        { to: "/about/our-team", label: "Our Team" },
+        { to: "/about/donate", label: "Donation" },
+        { to: "/about/sponsor-us", label: "Sponsor Us" },
+      ],
+    },
+  ];
+}
 
 function linkClass(isActive) {
   return `px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
@@ -29,13 +57,6 @@ function linkClass(isActive) {
 }
 
 function dropdownActive(item, location) {
-  if (item.match === "/dpotd") {
-    return (
-      location.pathname.startsWith("/dpotd") ||
-      (location.pathname.startsWith("/profile") && location.search.includes("view=dpotd"))
-    );
-  }
-
   return location.pathname.startsWith(item.match);
 }
 
@@ -58,6 +79,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopDropdown, setDesktopDropdown] = useState(null);
   const [mobileDropdown, setMobileDropdown] = useState(null);
+  const navItems = buildNavItems(profile?.accountType === "coach");
 
   useEffect(() => {
     setMobileOpen(false);

@@ -1,69 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import SectionHeader from "./SectionHeader";
 import SurfaceCard from "./SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
-const initialCoachForm = {
-  coachAttending: "yes",
-  name: "",
-  notes: "",
-  schoolId: "",
-  schoolName: "",
-};
-
 const initialStudentForm = {
   grade: "",
+  teacherEmail: "",
   name: "",
   notes: "",
   parentEmail: "",
   parentName: "",
-  schoolId: "",
   schoolName: "",
 };
 
 export default function PuzzleNightDashboardPanel() {
-  const {
-    listPuzzleNightSchools,
-    loadPuzzleNightRoster,
-    profile,
-    puzzleNightRegistration,
-    registerPuzzleNight,
-    user,
-  } = useDpotdAuth();
-  const [coachForm, setCoachForm] = useState(initialCoachForm);
+  const { profile, puzzleNightRegistration, registerPuzzleNight } = useDpotdAuth();
   const [studentForm, setStudentForm] = useState(initialStudentForm);
-  const [schoolOptions, setSchoolOptions] = useState([]);
-  const [roster, setRoster] = useState([]);
-  const [rosterLoading, setRosterLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const isCoachAccount = profile?.accountType === "coach";
-
-  useEffect(() => {
-    setCoachForm({
-      coachAttending:
-        puzzleNightRegistration?.registrationType === "coach" && puzzleNightRegistration?.coachAttending === false
-          ? "no"
-          : "yes",
-      name: puzzleNightRegistration?.name || profile?.name || "",
-      notes: puzzleNightRegistration?.notes || "",
-      schoolId: user?.uid || "",
-      schoolName:
-        puzzleNightRegistration?.schoolName || puzzleNightRegistration?.school || profile?.school || "",
-    });
-  }, [profile, puzzleNightRegistration, user]);
+  const hasSubmittedRegistration = puzzleNightRegistration?.registrationType === "student";
 
   useEffect(() => {
     setStudentForm({
       grade: puzzleNightRegistration?.grade || profile?.grade || "",
+      teacherEmail: puzzleNightRegistration?.teacherEmail || "",
       name: puzzleNightRegistration?.name || profile?.name || "",
       notes: puzzleNightRegistration?.notes || "",
       parentEmail: puzzleNightRegistration?.parentEmail || "",
       parentName: puzzleNightRegistration?.parentName || "",
-      schoolId:
-        puzzleNightRegistration?.registrationType === "student"
-          ? puzzleNightRegistration?.schoolId || ""
-          : "",
       schoolName:
         puzzleNightRegistration?.registrationType === "student"
           ? puzzleNightRegistration?.schoolName || puzzleNightRegistration?.school || ""
@@ -71,81 +36,10 @@ export default function PuzzleNightDashboardPanel() {
     });
   }, [profile, puzzleNightRegistration]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      const schools = await listPuzzleNightSchools();
-      if (!cancelled) {
-        setSchoolOptions(schools);
-      }
-    }
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [listPuzzleNightSchools, puzzleNightRegistration]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      if (!isCoachAccount) {
-        setRoster([]);
-        setRosterLoading(false);
-        return;
-      }
-
-      setRosterLoading(true);
-      const nextRoster = await loadPuzzleNightRoster(user?.uid);
-      if (!cancelled) {
-        setRoster(nextRoster);
-        setRosterLoading(false);
-      }
-    }
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isCoachAccount, loadPuzzleNightRoster, puzzleNightRegistration, user]);
-
-  const selectedSchoolLabel = useMemo(() => {
-    if (!studentForm.schoolId) return "";
-    return schoolOptions.find((option) => option.id === studentForm.schoolId)?.schoolName || "";
-  }, [schoolOptions, studentForm.schoolId]);
-
-  function handleCoachChange(event) {
-    const { name, value } = event.target;
-    setCoachForm((current) => ({ ...current, [name]: value }));
-    setMessage("");
-  }
-
   function handleStudentChange(event) {
     const { name, value } = event.target;
-    setStudentForm((current) => {
-      if (name === "schoolId") {
-        const schoolName = schoolOptions.find((item) => item.id === value)?.schoolName || "";
-        return { ...current, schoolId: value, schoolName };
-      }
-
-      return { ...current, [name]: value };
-    });
+    setStudentForm((current) => ({ ...current, [name]: value }));
     setMessage("");
-  }
-
-  async function handleCoachSubmit(event) {
-    event.preventDefault();
-    setBusy(true);
-    const result = await registerPuzzleNight({
-      ...coachForm,
-      registrationType: "coach",
-    });
-    setBusy(false);
-    setMessage(result.ok ? "Puzzle Night coach RSVP saved." : result.error);
   }
 
   async function handleStudentSubmit(event) {
@@ -154,107 +48,27 @@ export default function PuzzleNightDashboardPanel() {
     const result = await registerPuzzleNight({
       ...studentForm,
       registrationType: "student",
-      schoolName: studentForm.schoolName || selectedSchoolLabel,
     });
     setBusy(false);
     setMessage(result.ok ? "Puzzle Night registration saved." : result.error);
   }
 
-  return isCoachAccount ? (
-    <div className="grid gap-8 lg:grid-cols-[0.98fr_1.02fr]">
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="Coach Puzzle Night RSVP"
-          description="Coach accounts only see the coach RSVP form here. Register your school, say whether you are attending, and students who choose your school will appear in the roster."
-        />
-        <form className="mt-8 grid gap-5" onSubmit={handleCoachSubmit} noValidate>
-          <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
-          <Field label="Coach Name" name="name" onChange={handleCoachChange} required value={coachForm.name} />
-          <Field
-            label="School"
-            name="schoolName"
-            onChange={handleCoachChange}
-            required
-            value={coachForm.schoolName}
-          />
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              Are you attending?
-            </span>
-            <select
-              className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="coachAttending"
-              onChange={handleCoachChange}
-              value={coachForm.coachAttending}
-            >
-              <option value="yes">Yes, I am coming</option>
-              <option value="no">No, I am not coming</option>
-            </select>
-          </label>
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Notes</span>
-            <textarea
-              className="min-h-[140px] rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="notes"
-              onChange={handleCoachChange}
-              placeholder="Share anything helpful about your school group or coach attendance."
-              value={coachForm.notes}
-            />
-          </label>
-          <MessageCopy message={message} successCopy="Puzzle Night coach RSVP saved." />
-          <button
-            className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={busy}
-            type="submit"
-          >
-            {busy ? "Saving..." : puzzleNightRegistration ? "Update Coach RSVP" : "Save Coach RSVP"}
-          </button>
-        </form>
-      </SurfaceCard>
+  if (isCoachAccount) {
+    return null;
+  }
 
+  return (
+    <div className={`grid gap-8 ${hasSubmittedRegistration ? "lg:grid-cols-[1fr_0.92fr]" : ""}`}>
       <SurfaceCard className="p-8">
         <SectionHeader
-          title="Student Roster"
-          description="Students who selected your school on the Puzzle Night student form appear here so you can track who is attending."
-        />
-        {rosterLoading ? (
-          <p className="mt-6 text-sm leading-relaxed text-txt-muted">Loading student registrations...</p>
-        ) : !roster.length ? (
-          <p className="mt-6 text-sm leading-relaxed text-txt-muted">
-            No students from your school have submitted Puzzle Night registrations yet.
-          </p>
-        ) : (
-          <div className="mt-6 grid gap-4">
-            {roster.map((student) => (
-              <div key={student.id} className="rounded-[24px] border border-border-subtle bg-white/70 p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-lg font-black text-txt">{student.name}</p>
-                    <p className="text-sm text-txt-muted">Grade {student.grade}</p>
-                  </div>
-                  <div className="text-sm text-txt-muted">
-                    <p>{student.parentName}</p>
-                    <p>{student.parentEmail}</p>
-                  </div>
-                </div>
-                {student.notes ? (
-                  <p className="mt-3 text-sm leading-relaxed text-txt-muted">{student.notes}</p>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        )}
-      </SurfaceCard>
-    </div>
-  ) : (
-    <div className="grid gap-8 lg:grid-cols-[1fr_0.92fr]">
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="Puzzle Night Student Form"
-          description="Student accounts can sign up here after signing in. Picking your school is optional, but doing so lets your coach see that you are attending."
+          title={hasSubmittedRegistration ? "Edit Puzzle Night Submission" : "Puzzle Night Student Form"}
+          description="Puzzle Night uses one saved submission per student account. School is optional, and after the first save you can return here to edit the same registration."
         />
         <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
-          <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
+          <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
+            This student account keeps one Puzzle Night registration on file. Save it once, then
+            come back here any time to update the same submission.
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Student Name" name="name" onChange={handleStudentChange} required value={studentForm.name} />
             <Field label="Grade" name="grade" onChange={handleStudentChange} required value={studentForm.grade} />
@@ -276,24 +90,21 @@ export default function PuzzleNightDashboardPanel() {
               value={studentForm.parentEmail}
             />
           </div>
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              School
-            </span>
-            <select
-              className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="schoolId"
-              onChange={handleStudentChange}
-              value={studentForm.schoolId}
-            >
-              <option value="">No school selected</option>
-              {schoolOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.schoolName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Field
+            label="Math Teacher Email"
+            name="teacherEmail"
+            onChange={handleStudentChange}
+            placeholder="Optional math teacher email"
+            type="email"
+            value={studentForm.teacherEmail}
+          />
+          <Field
+            label="School (Optional)"
+            name="schoolName"
+            onChange={handleStudentChange}
+            placeholder="Optional school name"
+            value={studentForm.schoolName}
+          />
           <label className="grid gap-2">
             <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Notes</span>
             <textarea
@@ -310,31 +121,39 @@ export default function PuzzleNightDashboardPanel() {
             disabled={busy}
             type="submit"
           >
-            {busy ? "Saving..." : puzzleNightRegistration ? "Update Puzzle Night Signup" : "Save Puzzle Night Signup"}
+            {busy ? "Saving..." : hasSubmittedRegistration ? "Save Changes" : "Submit Registration"}
           </button>
         </form>
       </SurfaceCard>
 
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="Your Status"
-          description="This account holds your Puzzle Night signup. If you choose a school, the matching coach can see that you are attending."
-        />
-        <div className="mt-4 grid gap-4">
-          <StatusLine label="Registration">
-            {puzzleNightRegistration ? "Submitted" : "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Selected School">
-            {puzzleNightRegistration?.schoolName || selectedSchoolLabel || "No school selected"}
-          </StatusLine>
-          <StatusLine label="Parent Contact">
-            {puzzleNightRegistration?.parentEmail || "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Notes">
-            {puzzleNightRegistration?.notes || "No notes added"}
-          </StatusLine>
-        </div>
-      </SurfaceCard>
+      {hasSubmittedRegistration ? (
+        <SurfaceCard className="p-8">
+          <SectionHeader
+            title="Current Submission"
+            description="This is the Puzzle Night registration currently saved for your account."
+          />
+          <div className="mt-4 grid gap-4">
+            <StatusLine label="Student Name">
+              {puzzleNightRegistration?.name || "Not submitted yet"}
+            </StatusLine>
+            <StatusLine label="Grade">
+              {puzzleNightRegistration?.grade || "Not submitted yet"}
+            </StatusLine>
+            <StatusLine label="School">
+              {puzzleNightRegistration?.schoolName || "Left blank"}
+            </StatusLine>
+            <StatusLine label="Parent Contact">
+              {puzzleNightRegistration?.parentEmail || "Not submitted yet"}
+            </StatusLine>
+            <StatusLine label="Math Teacher Email">
+              {puzzleNightRegistration?.teacherEmail || "Left blank"}
+            </StatusLine>
+            <StatusLine label="Notes">
+              {puzzleNightRegistration?.notes || "No notes added"}
+            </StatusLine>
+          </div>
+        </SurfaceCard>
+      ) : null}
     </div>
   );
 }
@@ -347,17 +166,6 @@ function Field({ label, ...props }) {
         className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
         {...props}
       />
-    </label>
-  );
-}
-
-function ReadonlyField({ label, value }) {
-  return (
-    <label className="grid gap-2">
-      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
-      <div className="rounded-2xl border border-border-subtle bg-white/70 px-4 py-3 text-sm text-txt-muted">
-        {value || "Not available"}
-      </div>
     </label>
   );
 }

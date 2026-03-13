@@ -3,6 +3,14 @@ import DtmtCoachRosterPanel from "./DtmtCoachRosterPanel";
 import SectionHeader from "./SectionHeader";
 import SurfaceCard from "./SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
+import {
+  DTMT_PAYMENT_METHOD_OPTIONS,
+  DTMT_PAYMENT_RESPONSIBILITY,
+  formatDtmtPaymentSummary,
+  getDtmtPaymentResponsibilityLabel,
+  isCoachManagedDtmtPayment,
+  normalizeDtmtPaymentResponsibility,
+} from "../lib/dtmtPayment";
 
 const studentRoundOptions = [
   "Algebra",
@@ -19,11 +27,17 @@ const lunchOptions = [
   "I will bring my own lunch",
 ];
 
-const paymentOptions = [
-  ["card-confirmation", "Card payment confirmation"],
-  ["invoice", "Invoice or coach-collected payment"],
-  ["cash", "Cash at check-in"],
-  ["other", "Other recorded method"],
+const coachPaymentOptions = [
+  [
+    DTMT_PAYMENT_RESPONSIBILITY.COACH,
+    "Coach pays for all students",
+    "Students from this school will not enter separate DTMT payment details.",
+  ],
+  [
+    DTMT_PAYMENT_RESPONSIBILITY.STUDENT,
+    "Students pay for themselves",
+    "Each student from this school must record their own payment in the DTMT form.",
+  ],
 ];
 
 const initialCoachForm = {
@@ -32,6 +46,7 @@ const initialCoachForm = {
   coachEventNotes: "",
   coachName: "",
   maxStudents: "",
+  paymentResponsibility: DTMT_PAYMENT_RESPONSIBILITY.STUDENT,
   phone: "",
   schoolName: "",
   shortName: "",
@@ -93,6 +108,7 @@ export default function DtmtDashboardPanel() {
       coachEventNotes: dtmtCoachProfile?.coachEventNotes || dtmtSchool?.coachEventNotes || "",
       coachName: dtmtCoachProfile?.coachName || profile?.name || "",
       maxStudents: dtmtSchool?.maxStudents || "",
+      paymentResponsibility: normalizeDtmtPaymentResponsibility(dtmtSchool?.paymentResponsibility),
       phone: dtmtCoachProfile?.phone || "",
       schoolName: dtmtSchool?.schoolName || dtmtCoachProfile?.schoolAffiliation || profile?.school || "",
       shortName: dtmtSchool?.shortName || "",
@@ -171,6 +187,39 @@ export default function DtmtDashboardPanel() {
     return schoolOptions.find((option) => option.id === studentForm.schoolId)?.schoolName || "";
   }, [schoolOptions, studentForm.schoolId]);
 
+  const selectedSchool = useMemo(
+    () => schoolOptions.find((option) => option.id === studentForm.schoolId) || null,
+    [schoolOptions, studentForm.schoolId],
+  );
+
+  const selectedPaymentResponsibility = useMemo(() => {
+    if (studentForm.registrationMode !== "school") {
+      return DTMT_PAYMENT_RESPONSIBILITY.STUDENT;
+    }
+
+    if (selectedSchool) {
+      return normalizeDtmtPaymentResponsibility(selectedSchool.paymentResponsibility);
+    }
+
+    if (dtmtStudentRegistration?.schoolId === studentForm.schoolId) {
+      return normalizeDtmtPaymentResponsibility(dtmtStudentRegistration?.paymentResponsibility);
+    }
+
+    return DTMT_PAYMENT_RESPONSIBILITY.STUDENT;
+  }, [
+    dtmtStudentRegistration?.paymentResponsibility,
+    dtmtStudentRegistration?.schoolId,
+    selectedSchool,
+    studentForm.registrationMode,
+    studentForm.schoolId,
+  ]);
+
+  const requiresStudentPayment =
+    studentForm.registrationMode === "individual" ||
+    (studentForm.registrationMode === "school" &&
+      Boolean(studentForm.schoolId) &&
+      !isCoachManagedDtmtPayment(selectedPaymentResponsibility));
+
   function handleCoachChange(event) {
     const { name, value } = event.target;
     setCoachForm((current) => ({ ...current, [name]: value }));
@@ -181,8 +230,28 @@ export default function DtmtDashboardPanel() {
     const { checked, name, type, value } = event.target;
     setStudentForm((current) => {
       if (name === "schoolId") {
-        const schoolName = schoolOptions.find((option) => option.id === value)?.schoolName || "";
-        return { ...current, schoolId: value, schoolName };
+        const schoolRecord = schoolOptions.find((option) => option.id === value) || null;
+        const schoolName = schoolRecord?.schoolName || "";
+        const coachManagedPayment =
+          Boolean(value) && isCoachManagedDtmtPayment(schoolRecord?.paymentResponsibility);
+
+        return {
+          ...current,
+          schoolId: value,
+          schoolName,
+          paymentAcknowledged:
+            coachManagedPayment
+              ? true
+              : current.paymentMethod === "coach-covered"
+                ? false
+                : current.paymentAcknowledged,
+          paymentMethod:
+            coachManagedPayment
+              ? "coach-covered"
+              : current.paymentMethod === "coach-covered"
+                ? ""
+                : current.paymentMethod,
+        };
       }
 
       return { ...current, [name]: type === "checkbox" ? checked : value };
@@ -196,6 +265,14 @@ export default function DtmtDashboardPanel() {
       registrationMode: mode,
       schoolId: mode === "school" ? current.schoolId : "",
       schoolName: mode === "school" ? current.schoolName : "",
+      paymentAcknowledged:
+        mode === "individual" && current.paymentMethod === "coach-covered"
+          ? false
+          : current.paymentAcknowledged,
+      paymentMethod:
+        mode === "individual" && current.paymentMethod === "coach-covered"
+          ? ""
+          : current.paymentMethod,
     }));
     setStudentMessage("");
   }
@@ -309,6 +386,38 @@ export default function DtmtDashboardPanel() {
               <Field label="State" name="state" onChange={handleCoachChange} required value={coachForm.state} />
               <Field label="Max Students" name="maxStudents" onChange={handleCoachChange} required value={coachForm.maxStudents} />
             </div>
+            <div className="grid gap-3 border-t border-border-subtle pt-4">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Student Payment Plan
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {coachPaymentOptions.map(([value, label, description]) => (
+                  <button
+                    key={value}
+                    className={`rounded-[24px] border px-5 py-4 text-left transition-all duration-200 ${
+                      coachForm.paymentResponsibility === value
+                        ? "border-brand bg-brand text-white shadow-md shadow-brand-glow"
+                        : "border-border-subtle bg-white/70 text-txt hover:border-brand/40"
+                    }`}
+                    onClick={() =>
+                      setCoachForm((current) => ({
+                        ...current,
+                        paymentResponsibility: value,
+                      }))
+                    }
+                    type="button"
+                  >
+                    <p className="text-sm font-black uppercase tracking-[0.14em]">
+                      {label}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed opacity-90">{description}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm leading-relaxed text-txt-muted">
+                This controls what students from your school see in the DTMT payment section.
+              </p>
+            </div>
             <label className="grid gap-2">
               <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                 Coach Notes
@@ -347,6 +456,11 @@ export default function DtmtDashboardPanel() {
             <StatusLine label="Registered Students">
               {coachRoster.length ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}` : "No student registrations yet"}
             </StatusLine>
+            <StatusLine label="Payment Plan">
+              {dtmtSchool
+                ? getDtmtPaymentResponsibilityLabel(dtmtSchool.paymentResponsibility)
+                : "Not configured yet"}
+            </StatusLine>
             <StatusLine label="Teams">
               {Array.isArray(dtmtSchool?.teamLabels) && dtmtSchool.teamLabels.length
                 ? dtmtSchool.teamLabels.join(", ")
@@ -372,11 +486,11 @@ export default function DtmtDashboardPanel() {
     </div>
   ) : (
     <div className="grid gap-8 lg:grid-cols-[1fr_0.94fr]">
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="DTMT Student Form"
-          description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
-        />
+        <SurfaceCard className="p-8">
+          <SectionHeader
+            title="DTMT Student Form"
+            description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
+          />
         <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
           <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -435,6 +549,16 @@ export default function DtmtDashboardPanel() {
               into an independent team automatically after submission.
             </div>
           )}
+
+          <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
+            {studentForm.registrationMode === "individual"
+              ? "Independent entries handle their own DTMT payment during registration."
+              : !studentForm.schoolId
+                ? "Choose a registered school above to load that coach's DTMT payment plan."
+                : isCoachManagedDtmtPayment(selectedPaymentResponsibility)
+                  ? `${selectedSchoolLabel || studentForm.schoolName} is marked as coach-paid. You do not need to enter a separate student payment method.`
+                  : `${selectedSchoolLabel || studentForm.schoolName} requires each student to record their own payment below.`}
+          </div>
 
           <label className="grid gap-2">
             <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
@@ -511,36 +635,49 @@ export default function DtmtDashboardPanel() {
           </div>
 
           <div className="grid gap-4 border-t border-border-subtle pt-4">
-            <label className="grid gap-2">
-              <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                Payment Method
-              </span>
-              <select
-                className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                name="paymentMethod"
-                onChange={handleStudentChange}
-                required
-                value={studentForm.paymentMethod}
-              >
-                <option value="">Select a payment method</option>
-                {paymentOptions.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
-              <input
-                checked={studentForm.paymentAcknowledged}
-                className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
-                name="paymentAcknowledged"
-                onChange={handleStudentChange}
-                required
-                type="checkbox"
-              />
-              <span>I understand that payment status is recorded as part of registration.</span>
-            </label>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Payment</p>
+            {!requiresStudentPayment ? (
+              <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
+                {studentForm.registrationMode === "school" && !studentForm.schoolId
+                  ? "Choose a registered school above to see whether your coach is paying for everyone or each student pays separately."
+                  : studentForm.registrationMode === "school" && studentForm.schoolId
+                  ? "This school's coach is covering DTMT payment for all students from that roster."
+                  : "Choose how you are registering to continue to the payment step."}
+              </div>
+            ) : (
+              <>
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                    Payment Method
+                  </span>
+                  <select
+                    className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                    name="paymentMethod"
+                    onChange={handleStudentChange}
+                    required
+                    value={studentForm.paymentMethod}
+                  >
+                    <option value="">Select a payment method</option>
+                    {DTMT_PAYMENT_METHOD_OPTIONS.map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
+                  <input
+                    checked={studentForm.paymentAcknowledged}
+                    className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
+                    name="paymentAcknowledged"
+                    onChange={handleStudentChange}
+                    required
+                    type="checkbox"
+                  />
+                  <span>I understand that payment status is recorded as part of registration.</span>
+                </label>
+              </>
+            )}
           </div>
 
           <MessageCopy message={studentMessage} successCopy="DTMT registration saved." />
@@ -568,6 +705,13 @@ export default function DtmtDashboardPanel() {
               ? "Independent entry"
               : dtmtStudentRegistration?.schoolName || selectedSchoolLabel || "Not selected yet"}
           </StatusLine>
+          <StatusLine label="Payment Plan">
+            {dtmtStudentRegistration
+              ? getDtmtPaymentResponsibilityLabel(dtmtStudentRegistration.paymentResponsibility)
+              : studentForm.registrationMode === "school" && studentForm.schoolId
+                ? getDtmtPaymentResponsibilityLabel(selectedPaymentResponsibility)
+                : "Not submitted yet"}
+          </StatusLine>
           <StatusLine label="Lunch Preference">
             {dtmtStudentRegistration?.lunchPreference || "Not submitted yet"}
           </StatusLine>
@@ -577,8 +721,8 @@ export default function DtmtDashboardPanel() {
               : "Not submitted yet"}
           </StatusLine>
           <StatusLine label="Payment">
-            {dtmtStudentRegistration?.paymentStatus
-              ? `${dtmtStudentRegistration.paymentStatus} via ${dtmtStudentRegistration.paymentMethod}`
+            {dtmtStudentRegistration
+              ? formatDtmtPaymentSummary(dtmtStudentRegistration)
               : "Not submitted yet"}
           </StatusLine>
           <StatusLine label="Team Assignment">

@@ -16,20 +16,20 @@ export default function DPotDAbout() {
   const { authReady, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
   const registrationPath = hasSignedInAccount
-    ? "/profile?view=dpotd"
-    : buildProfileNextHref("/profile?view=dpotd");
+    ? "/dpotd/register"
+    : buildProfileNextHref("/dpotd/register");
 
   return (
     <>
       <PageHero
         actions={[
           {
-            label: hasSignedInAccount ? "Open D.PotD Dashboard" : "Sign In for D.PotD",
+            label: hasSignedInAccount ? "Register Here" : "Sign In for D.PotD",
             to: registrationPath,
           },
           {
-            label: hasSignedInAccount ? "Open D.PotD Dashboard" : "Open Profile",
-            to: hasSignedInAccount ? "/profile?view=dpotd" : "/profile",
+            label: hasSignedInAccount ? "Open Portal Status" : "Open Profile",
+            to: hasSignedInAccount ? "/dpotd/register" : "/profile",
             variant: "ghost",
           },
         ]}

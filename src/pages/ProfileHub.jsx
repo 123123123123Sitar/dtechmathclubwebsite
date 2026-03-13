@@ -1,22 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import DpotdDashboardPanel from "../components/DpotdDashboardPanel";
-import DtmtDashboardPanel from "../components/DtmtDashboardPanel";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
-import PuzzleNightDashboardPanel from "../components/PuzzleNightDashboardPanel";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 import { buildProfileNextHref, normalizeNextPath } from "../lib/siteAccountRouting";
 
-const dashboardViews = new Set(["profile", "overview", "puzzle-night", "dpotd", "dtmt"]);
+const legacyViewRoutes = {
+  dtmt: "/dtmt/register",
+  "puzzle-night": "/puzzle-night/register",
+  dpotd: "/dpotd/register",
+  overview: "/profile",
+};
 
 export default function ProfileHub() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const {
     authReady,
     dtmtCoachProfile,
@@ -36,20 +38,12 @@ export default function ProfileHub() {
   });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [preferredSignupType, setPreferredSignupType] = useState("student");
+  const [signupIntentVersion, setSignupIntentVersion] = useState(0);
   const isCoachAccount = profile?.accountType === "coach";
   const nextParam = searchParams.get("next");
   const rawView = searchParams.get("view");
-  const activeView = normalizeDashboardView(rawView, isCoachAccount, hasDpotdAccess);
-  const postAuthDestination = normalizeNextPath(nextParam, `/profile?view=${activeView}`);
-
-  useEffect(() => {
-    const desiredView = activeView;
-    if (rawView !== desiredView) {
-      const nextSearchParams = new URLSearchParams(searchParams);
-      nextSearchParams.set("view", desiredView);
-      setSearchParams(nextSearchParams, { replace: true });
-    }
-  }, [activeView, rawView, searchParams, setSearchParams]);
+  const postAuthDestination = normalizeNextPath(nextParam, "/profile");
 
   useEffect(() => {
     setForm({
@@ -59,6 +53,21 @@ export default function ProfileHub() {
     });
   }, [profile, user]);
 
+  const heroActions = useMemo(() => {
+    if (!authReady || !user) {
+      return [];
+    }
+
+    return isCoachAccount
+      ? [
+          { label: "DTMT", to: "/dtmt/register" },
+        ]
+      : [
+          { label: "Puzzle Night", to: "/puzzle-night/register" },
+          { label: "DTMT", to: "/dtmt/register", variant: "ghost" },
+          { label: "D.PotD", to: "/dpotd/register", variant: "ghost" },
+        ];
+  }, [authReady, isCoachAccount, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -79,59 +88,55 @@ export default function ProfileHub() {
     setMessage("");
   }
 
+  function openSignup(accountType) {
+    setPreferredSignupType(accountType === "coach" ? "coach" : "student");
+    setSignupIntentVersion((current) => current + 1);
+  }
+
+  if (rawView && legacyViewRoutes[rawView]) {
+    return <Navigate replace to={legacyViewRoutes[rawView]} />;
+  }
+
   return (
     <>
       <PageHero
+        actions={heroActions}
         aside={
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
+            badge={authReady && user ? "Account Profile" : "Shared Account"}
+            caption={
+              authReady && user
+                ? "Use this page for your account details, then open the separate event registration pages from here."
+                : "Create one account first, then open the separate DTMT, Puzzle Night, and D.PotD registration pages after sign-in."
+            }
             imageClassName="object-contain p-8 md:p-10"
             src="/dtechmathclublogolarger.jpg"
           />
         }
-        description="The account dashboard is role-based. Coaches manage school registrations and rosters. Students submit event forms and track their own status from the same signed-in account."
-        title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Dashboard"}
+        description="This page is only for the shared account profile. Event registration forms live on their own DTMT, Puzzle Night, and D.PotD pages."
+        highlights={["One Shared Sign-In", "Separate Registration Pages", "Coach and Student Accounts"]}
+        title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Profile"}
       />
 
       {authReady && user ? (
-        <FlowSection>
-          <section className="py-8">
-            <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
-              <DashboardNav
-                activeView={activeView}
-                hasDpotdAccess={hasDpotdAccess}
-                isCoachAccount={isCoachAccount}
-              />
-            </div>
-          </section>
-        </FlowSection>
-      ) : null}
-
-      {authReady && user ? (
-        <FlowSection glow={activeView === "profile" ? "muted" : undefined}>
+        <FlowSection glow="muted">
           <section className="py-10">
             <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
-              {activeView === "profile" ? (
-                <ProfilePanel
-                  dtmtCoachProfile={dtmtCoachProfile}
-                  dtmtSchool={dtmtSchool}
-                  dtmtStudentRegistration={dtmtStudentRegistration}
-                  form={form}
-                  handleChange={handleChange}
-                  handleSignOut={handleSignOut}
-                  handleSubmit={handleSubmit}
-                  hasDpotdAccess={hasDpotdAccess}
-                  isCoachAccount={isCoachAccount}
-                  message={message}
-                  profile={profile}
-                  puzzleNightRegistration={puzzleNightRegistration}
-                  saving={saving}
-                />
-              ) : null}
-
-              {activeView === "puzzle-night" ? <PuzzleNightDashboardPanel /> : null}
-              {activeView === "dtmt" ? <DtmtDashboardPanel /> : null}
-              {activeView === "dpotd" ? <DpotdDashboardPanel /> : null}
+              <ProfilePanel
+                dtmtCoachProfile={dtmtCoachProfile}
+                dtmtSchool={dtmtSchool}
+                dtmtStudentRegistration={dtmtStudentRegistration}
+                form={form}
+                handleChange={handleChange}
+                handleSignOut={handleSignOut}
+                handleSubmit={handleSubmit}
+                hasDpotdAccess={hasDpotdAccess}
+                isCoachAccount={isCoachAccount}
+                message={message}
+                puzzleNightRegistration={puzzleNightRegistration}
+                saving={saving}
+              />
             </div>
           </section>
         </FlowSection>
@@ -144,74 +149,81 @@ export default function ProfileHub() {
                   <>
                     <h2 className="text-3xl font-black text-txt">Create your shared account</h2>
                     <p className="mt-4 leading-relaxed text-txt-muted">
-                      Choose coach or student when you create the account. The dashboard changes
-                      based on that role after sign-in.
+                      Choose coach or student when you create the account. The profile page stays
+                      separate from the event registration pages.
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button
+                        className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
+                        onClick={() => openSignup("coach")}
+                        type="button"
+                      >
+                        Create Coach Account
+                      </button>
+                      <button
+                        className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
+                        onClick={() => openSignup("student")}
+                        type="button"
+                      >
+                        Create Student Account
+                      </button>
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-txt-muted">
+                      These buttons jump directly into the matching signup form on the right.
                     </p>
                   </>
                 }
                 right={
                   <ProfileAuthPanel
-                    coachRedirectTo={nextParam ? null : "/profile?view=dtmt"}
                     defaultMode={nextParam ? "signin" : "register"}
                     embedded
                     hideWhenSignedIn
+                    preferredSignupType={preferredSignupType}
                     redirectTo={postAuthDestination}
+                    signupIntentVersion={signupIntentVersion}
                   />
                 }
               />
             </section>
           </FlowSection>
+          <FlowSection glow="muted">
+            <section className="py-18">
+              <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
+                <SectionHeader
+                  align="center"
+                  description="Create your account here first, then open the separate event registration pages."
+                  title="After Sign-In"
+                />
+                <div className="mt-8 grid gap-5 md:grid-cols-3">
+                  <ModuleCard
+                    actionLabel="Sign In for Puzzle Night"
+                    actionTo={buildProfileNextHref("/puzzle-night/register")}
+                    title="Puzzle Night"
+                  >
+                    Puzzle Night registration happens on its own page after sign-in.
+                  </ModuleCard>
+                  <ModuleCard
+                    actionLabel="Sign In for DTMT"
+                    actionTo={buildProfileNextHref("/dtmt/register")}
+                    title="DTMT"
+                  >
+                    DTMT registration, school management, and team building happen on the DTMT
+                    registration page.
+                  </ModuleCard>
+                  <ModuleCard
+                    actionLabel="Sign In for D.PotD"
+                    actionTo={buildProfileNextHref("/dpotd/register")}
+                    title="D.PotD"
+                  >
+                    D.PotD registration and portal status live on the D.PotD page, not here.
+                  </ModuleCard>
+                </div>
+              </div>
+            </section>
+          </FlowSection>
         </>
       )}
     </>
-  );
-}
-
-function normalizeDashboardView(view, isCoachAccount, hasDpotdAccess) {
-  if (!dashboardViews.has(view)) {
-    return "profile";
-  }
-
-  if (view === "overview") {
-    return "profile";
-  }
-
-  if (view === "dpotd" && (isCoachAccount || !hasDpotdAccess)) {
-    return isCoachAccount ? "profile" : "dpotd";
-  }
-
-  return view;
-}
-
-function DashboardNav({ activeView, hasDpotdAccess, isCoachAccount }) {
-  const items = [
-    ["profile", "Profile"],
-    ["puzzle-night", "Puzzle Night"],
-    ["dtmt", "DTMT"],
-  ];
-
-  if (!isCoachAccount) {
-    items.splice(2, 0, ["dpotd", "D.PotD"]);
-  }
-
-  return (
-    <div className="flex flex-wrap gap-3">
-      {items
-        .filter(([value]) => value !== "dpotd" || hasDpotdAccess || !isCoachAccount)
-        .map(([value, label]) => (
-          <Link
-            key={value}
-            className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
-              activeView === value
-                ? "bg-brand text-white shadow-md shadow-brand-glow"
-                : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
-            }`}
-            to={`/profile?view=${value}`}
-          >
-            {label}
-          </Link>
-        ))}
-    </div>
   );
 }
 
@@ -226,7 +238,6 @@ function ProfilePanel({
   hasDpotdAccess,
   isCoachAccount,
   message,
-  profile,
   puzzleNightRegistration,
   saving,
 }) {
@@ -236,7 +247,7 @@ function ProfilePanel({
         <SurfaceCard className="p-8">
           <SectionHeader
             title="Profile Details"
-            description="Keep the account name, school, and grade current here. The event pages reuse this information instead of making you type it again."
+            description="Keep the account name, school, and grade current here. The separate event pages reuse this information."
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
@@ -276,17 +287,19 @@ function ProfilePanel({
         <SurfaceCard className="p-8">
           <SectionHeader
             title="Current Access"
-            description="The dashboard pages below are determined by this account type and the event forms already attached to this account."
+            description="This account type controls which separate registration pages and forms are available."
           />
           <div className="mt-4 grid gap-4">
             <StatusLine label="Account Type">
               {isCoachAccount ? "Coach account" : "Student account"}
             </StatusLine>
-            <StatusLine label="Puzzle Night">
-              {puzzleNightRegistration
-                ? `${puzzleNightRegistration.registrationType === "coach" ? "Coach" : "Student"} registration saved`
-                : "No Puzzle Night registration yet"}
-            </StatusLine>
+            {!isCoachAccount ? (
+              <StatusLine label="Puzzle Night">
+                {puzzleNightRegistration?.registrationType === "student"
+                  ? "Student registration saved"
+                  : "No Puzzle Night registration yet"}
+              </StatusLine>
+            ) : null}
             <StatusLine label="DTMT">
               {isCoachAccount
                 ? dtmtSchool
@@ -298,7 +311,7 @@ function ProfilePanel({
             </StatusLine>
             {!isCoachAccount ? (
               <StatusLine label="D.PotD">
-                {hasDpotdAccess ? "Registered and dashboard-ready" : "Not registered yet"}
+                {hasDpotdAccess ? "Registered and ready" : "Not registered yet"}
               </StatusLine>
             ) : null}
             <StatusLine label="Coach Details">
@@ -311,7 +324,71 @@ function ProfilePanel({
           </div>
         </SurfaceCard>
       </div>
+      <div className={`grid gap-5 ${isCoachAccount ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
+        {!isCoachAccount ? (
+          <ModuleCard
+            actionLabel="Register Here"
+            actionTo="/puzzle-night/register"
+            title="Puzzle Night"
+          >
+            {puzzleNightRegistration?.registrationType === "student"
+              ? "Open the separate Puzzle Night registration page to review or edit your saved student form."
+              : "Open the separate Puzzle Night registration page to submit the student form."}
+          </ModuleCard>
+        ) : null}
+        {!isCoachAccount ? (
+          <ModuleCard actionLabel="Register Here" actionTo="/dpotd/register" title="D.PotD">
+            Open the separate D.PotD page to register and manage portal access.
+          </ModuleCard>
+        ) : null}
+        <ModuleCard actionLabel="Register Here" actionTo="/dtmt/register" title="DTMT">
+          {isCoachAccount
+            ? "Open the separate DTMT registration page to register your school and manage teams."
+            : "Open the separate DTMT registration page to submit the student competition form."}
+        </ModuleCard>
+      </div>
+
+      {!isCoachAccount && puzzleNightRegistration?.registrationType === "student" ? (
+        <PuzzleNightSubmissionCard registration={puzzleNightRegistration} />
+      ) : null}
     </div>
+  );
+}
+
+function PuzzleNightSubmissionCard({ registration }) {
+  return (
+    <SurfaceCard className="p-8">
+      <SectionHeader
+        title="Puzzle Night Submission"
+        description="This is the Puzzle Night registration currently saved for your student account. Use the event page if you need to edit it."
+      />
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <StatusLine label="Student Name">
+          {registration.name || "Not submitted yet"}
+        </StatusLine>
+        <StatusLine label="Grade">
+          {registration.grade || "Not submitted yet"}
+        </StatusLine>
+        <StatusLine label="School">
+          {registration.schoolName || "Left blank"}
+        </StatusLine>
+        <StatusLine label="Parent Contact">
+          {registration.parentEmail || "Not submitted yet"}
+        </StatusLine>
+        <StatusLine label="Math Teacher Email">
+          {registration.teacherEmail || "Left blank"}
+        </StatusLine>
+        <StatusLine label="Notes">
+          {registration.notes || "No notes added"}
+        </StatusLine>
+      </div>
+      <Link
+        className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
+        to="/puzzle-night/register"
+      >
+        Edit Puzzle Night Submission
+      </Link>
+    </SurfaceCard>
   );
 }
 

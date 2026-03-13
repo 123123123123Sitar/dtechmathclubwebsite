@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import SectionHeader from "./SectionHeader";
 import SurfaceCard from "./SurfaceCard";
+import {
+  formatDtmtPaymentSummary,
+  getDtmtPaymentResponsibilityLabel,
+} from "../lib/dtmtPayment";
 
 export default function DtmtCoachRosterPanel({
   dtmtSchool,
@@ -209,11 +213,10 @@ export default function DtmtCoachRosterPanel({
                             <p>Rounds: {student.subjectRounds?.join(", ") || "None selected"}</p>
                             <p>Waiver: {student.waiverAccepted ? "Complete" : "Pending"}</p>
                             <p>
-                              Payment:{" "}
-                              {student.paymentStatus
-                                ? `${student.paymentStatus} via ${student.paymentMethod || "unspecified"}`
-                                : "Pending"}
+                              Payment Plan:{" "}
+                              {getDtmtPaymentResponsibilityLabel(student.paymentResponsibility)}
                             </p>
+                            <p>Payment: {formatDtmtPaymentSummary(student)}</p>
                           </div>
                         </button>
                       ))

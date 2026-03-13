@@ -19,6 +19,11 @@ import {
   where,
 } from "firebase/firestore";
 import { auth, db } from "../lib/dpotdFirebase";
+import {
+  DTMT_PAYMENT_RESPONSIBILITY,
+  isCoachManagedDtmtPayment,
+  normalizeDtmtPaymentResponsibility,
+} from "../lib/dtmtPayment";
 
 const SITE_PROFILE_COLLECTION = "siteProfiles";
 const COACH_ACCOUNT_COLLECTION = "coachAccounts";
@@ -28,6 +33,8 @@ const PUZZLE_NIGHT_COLLECTION = "puzzleNightRegistrations";
 const DTMT_COACH_COLLECTION = "dtmtCoachProfiles";
 const DTMT_SCHOOL_COLLECTION = "dtmtSchools";
 const DTMT_STUDENT_COLLECTION = "dtmtStudentRegistrations";
+const CONTACT_SUBMISSION_COLLECTION = "contactSubmissions";
+const SPONSOR_INQUIRY_COLLECTION = "sponsorshipInquiries";
 
 const PUZZLE_NIGHT_EVENT_KEY = "puzzle-night-2026";
 const DTMT_EVENT_KEY = "dtmt-2026";
@@ -90,7 +97,7 @@ function formatFirestoreError(error, fallback) {
   const code = error?.code ?? "";
 
   if (code.includes("permission-denied")) {
-    return "Firestore is blocking this save. Update the Firestore rules for siteProfiles, coachAccounts, dtmtCoachProfiles, dtmtSchools, dtmtStudentRegistrations, puzzleNightRegistrations, and dpotdRegistrations.";
+    return "Firestore is blocking this save. Update the Firestore rules for siteProfiles, coachAccounts, dtmtCoachProfiles, dtmtSchools, dtmtStudentRegistrations, puzzleNightRegistrations, dpotdRegistrations, contactSubmissions, and sponsorshipInquiries.";
   }
   if (code.includes("unavailable")) {
     return "Firestore is temporarily unavailable. Try again in a moment.";
@@ -796,49 +803,34 @@ export function DpotdAuthProvider({ children }) {
     }
 
     const accountType = profile?.accountType || siteProfile?.accountType || "student";
-    const registrationType = values.registrationType === "coach" ? "coach" : "student";
-    const name = values.name.trim();
-    const email = (auth.currentUser.email || values.email || profile?.email || "").trim().toLowerCase();
-    const schoolId = registrationType === "coach" ? auth.currentUser.uid : values.schoolId.trim();
-    const schoolName = (values.schoolName || values.school || "").trim();
+    const registrationType = "student";
+    const name = String(values.name || "").trim();
+    const email = String(auth.currentUser.email || values.email || profile?.email || "").trim().toLowerCase();
+    const schoolId = String(values.schoolId || "").trim();
+    const schoolName = String(values.schoolName || values.school || "").trim();
     const schoolKey = normalizeSchoolKey(schoolName);
-    const grade = values.grade.trim();
-    const parentName = values.parentName.trim();
-    const parentEmail = values.parentEmail.trim().toLowerCase();
-    const notes = values.notes.trim();
-    const coachAttending = coerceBooleanChoice(
-      values.coachAttending,
-      puzzleNightRegistration?.coachAttending ?? true,
-    );
+    const grade = String(values.grade || "").trim();
+    const teacherEmail = String(values.teacherEmail || "").trim().toLowerCase();
+    const parentName = String(values.parentName || "").trim();
+    const parentEmail = String(values.parentEmail || "").trim().toLowerCase();
+    const notes = String(values.notes || "").trim();
     const accountUid = auth.currentUser.uid;
 
-    if (accountType === "coach" && registrationType !== "coach") {
-      return { ok: false, error: "Coach accounts can only submit the coach Puzzle Night form." };
+    if (accountType === "coach" || values.registrationType === "coach") {
+      return {
+        ok: false,
+        error: "Puzzle Night registration is only available for student accounts.",
+      };
     }
 
-    if (accountType !== "coach" && registrationType === "coach") {
-      return { ok: false, error: "Only coach accounts can submit the coach Puzzle Night form." };
-    }
-
-    if (registrationType === "coach") {
-      if (!name || !email || !schoolName) {
-        return {
-          ok: false,
-          error: "Fill in every required Puzzle Night coach detail before continuing.",
-        };
-      }
-    } else if (!name || !email || !grade || !parentName || !parentEmail) {
+    if (!name || !email || !grade || !parentName || !parentEmail) {
       return {
         ok: false,
         error: "Fill in every required Puzzle Night detail before continuing.",
       };
     }
 
-    const nameError = validateTextField(
-      name,
-      registrationType === "coach" ? "Coach name" : "Student name",
-      { requireLetter: true },
-    );
+    const nameError = validateTextField(name, "Student name", { requireLetter: true });
     if (nameError) {
       return { ok: false, error: nameError };
     }
@@ -848,29 +840,34 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: emailError };
     }
 
-    if (registrationType === "coach") {
-      const schoolError = validateTextField(schoolName, "School", { requireLetter: true });
-      if (schoolError) {
-        return { ok: false, error: schoolError };
+    const gradeError = validateTextField(grade, "Grade", { minLength: 1 });
+    if (gradeError) {
+      return { ok: false, error: gradeError };
+    }
+
+    const parentNameError = validateTextField(parentName, "Parent or guardian name", {
+      requireLetter: true,
+    });
+    if (parentNameError) {
+      return { ok: false, error: parentNameError };
+    }
+
+    const parentEmailError = validateEmailField(parentEmail, "Parent or guardian email");
+    if (parentEmailError) {
+      return { ok: false, error: parentEmailError };
+    }
+
+    if (teacherEmail) {
+      const teacherEmailError = validateEmailField(teacherEmail, "Math teacher email");
+      if (teacherEmailError) {
+        return { ok: false, error: teacherEmailError };
       }
     }
 
-    if (registrationType === "student") {
-      const gradeError = validateTextField(grade, "Grade", { minLength: 1 });
-      if (gradeError) {
-        return { ok: false, error: gradeError };
-      }
-
-      const parentNameError = validateTextField(parentName, "Parent or guardian name", {
-        requireLetter: true,
-      });
-      if (parentNameError) {
-        return { ok: false, error: parentNameError };
-      }
-
-      const parentEmailError = validateEmailField(parentEmail, "Parent or guardian email");
-      if (parentEmailError) {
-        return { ok: false, error: parentEmailError };
+    if (schoolName) {
+      const schoolError = validateTextField(schoolName, "School", { requireLetter: true });
+      if (schoolError) {
+        return { ok: false, error: schoolError };
       }
     }
 
@@ -879,20 +876,21 @@ export function DpotdAuthProvider({ children }) {
         accountUid,
         email,
         eventKey: PUZZLE_NIGHT_EVENT_KEY,
-        grade: registrationType === "coach" ? "" : grade,
+        grade,
         name,
         notes,
-        coachAttending: registrationType === "coach" ? coachAttending : null,
-        parentEmail: registrationType === "coach" ? "" : parentEmail,
-        parentName: registrationType === "coach" ? "" : parentName,
+        coachAttending: null,
+        parentEmail,
+        parentName,
         registrationType,
         registrationSource: "signed-in-account",
         schoolId,
         schoolKey,
         schoolName,
         status: "registered",
-        submittedAt: serverTimestamp(),
+        teacherEmail,
         updatedAt: serverTimestamp(),
+        ...(puzzleNightRegistration ? {} : { submittedAt: serverTimestamp() }),
       };
 
       const writes = [
@@ -901,13 +899,13 @@ export function DpotdAuthProvider({ children }) {
           doc(db, SITE_PROFILE_COLLECTION, accountUid),
           {
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
-            ...(accountType === "coach"
-              ? { accountType: "coach", coachAccount: true, studentAccount: false }
-              : { accountType: "student", coachAccount: false, studentAccount: true }),
+            accountType: "student",
+            coachAccount: false,
+            studentAccount: true,
             name,
             email: (auth.currentUser.email || email).trim().toLowerCase(),
             school: schoolName || siteProfile?.school || "",
-            grade: registrationType === "coach" ? siteProfile?.grade || "" : grade,
+            grade,
             puzzleNightRegistered: true,
             puzzleNightRegisteredAt: serverTimestamp(),
             puzzleNightRegistrationType: registrationType,
@@ -916,25 +914,6 @@ export function DpotdAuthProvider({ children }) {
           { merge: true },
         ),
       ];
-
-      if (accountType === "coach") {
-        writes.push(
-          setDoc(
-            doc(db, COACH_ACCOUNT_COLLECTION, accountUid),
-            {
-              accountType: "coach",
-              accountUid,
-              email,
-              name,
-              school: schoolName,
-              status: "active",
-              updatedAt: serverTimestamp(),
-              ...(coachAccountRecord ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
-            },
-            { merge: true },
-          ),
-        );
-      }
 
       await Promise.all(writes);
 
@@ -948,35 +927,94 @@ export function DpotdAuthProvider({ children }) {
     }
   }
 
-  async function listPuzzleNightSchools() {
+  async function submitContactInquiry(values) {
+    const firstName = values.firstName.trim();
+    const lastName = values.lastName.trim();
+    const email = values.email.trim().toLowerCase();
+    const organization = values.organization.trim();
+    const position = values.position.trim();
+    const subject = values.subject.trim();
+    const message = values.message.trim();
+
+    const validationErrors = [
+      validateTextField(firstName, "First name", { requireLetter: true }),
+      validateTextField(lastName, "Last name", { requireLetter: true }),
+      validateEmailField(email, "Email"),
+      validateTextField(organization, "School or organization", { requireLetter: true }),
+      validateTextField(subject, "Subject", { requireLetter: true }),
+      validateTextField(message, "Message", { minLength: 10, requireLetter: true }),
+    ].filter(Boolean);
+
+    if (validationErrors.length) {
+      return { ok: false, error: validationErrors[0] };
+    }
+
     try {
-      const snapshot = await getDocs(
-        query(collection(db, PUZZLE_NIGHT_COLLECTION), where("registrationType", "==", "coach")),
+      await setDoc(
+        doc(collection(db, CONTACT_SUBMISSION_COLLECTION)),
+        {
+          email,
+          firstName,
+          lastName,
+          message,
+          organization,
+          position,
+          source: "website-contact-form",
+          status: "new",
+          subject,
+          submittedAt: serverTimestamp(),
+        },
       );
 
-      return snapshot.docs
-        .map((item) => ({ id: item.id, ...item.data() }))
-        .filter((item) => item.status === "registered" && item.schoolName)
-        .sort((left, right) => left.schoolName.localeCompare(right.schoolName));
-    } catch (_) {
-      return [];
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to submit the contact form right now."),
+      };
     }
   }
 
-  async function loadPuzzleNightRoster(schoolId = auth.currentUser?.uid) {
-    if (!schoolId) return [];
+  async function submitSponsorInquiry(values) {
+    const firstName = values.firstName.trim();
+    const lastName = values.lastName.trim();
+    const email = values.email.trim().toLowerCase();
+    const company = values.company.trim();
+    const message = values.message.trim();
+
+    const validationErrors = [
+      validateTextField(firstName, "First name", { requireLetter: true }),
+      validateTextField(lastName, "Last name", { requireLetter: true }),
+      validateEmailField(email, "Email"),
+      validateTextField(company, "Company or organization", { requireLetter: true }),
+      validateTextField(message, "Message", { minLength: 10, requireLetter: true }),
+    ].filter(Boolean);
+
+    if (validationErrors.length) {
+      return { ok: false, error: validationErrors[0] };
+    }
 
     try {
-      const snapshot = await getDocs(
-        query(collection(db, PUZZLE_NIGHT_COLLECTION), where("schoolId", "==", schoolId)),
+      await setDoc(
+        doc(collection(db, SPONSOR_INQUIRY_COLLECTION)),
+        {
+          company,
+          email,
+          firstName,
+          lastName,
+          message,
+          source: "website-sponsorship-form",
+          status: "new",
+          submittedAt: serverTimestamp(),
+        },
       );
 
-      return snapshot.docs
-        .map((item) => ({ id: item.id, ...item.data() }))
-        .filter((item) => item.registrationType === "student")
-        .sort((left, right) => left.name.localeCompare(right.name));
-    } catch (_) {
-      return [];
+      return { ok: true };
+    } catch (error) {
+      return {
+        ok: false,
+        error: formatFirestoreError(error, "Unable to submit the sponsorship form right now."),
+      };
     }
   }
 
@@ -1070,6 +1108,9 @@ export function DpotdAuthProvider({ children }) {
     const city = values.city.trim();
     const state = values.state.trim();
     const maxStudents = values.maxStudents.trim();
+    const paymentResponsibility = normalizeDtmtPaymentResponsibility(
+      values.paymentResponsibility || dtmtSchool?.paymentResponsibility,
+    );
     const coachName = dtmtCoachProfile?.coachName || profile?.name || siteProfile?.name || "";
     const coachEmail = (dtmtCoachProfile?.email || profile?.email || auth.currentUser.email || "")
       .trim()
@@ -1134,6 +1175,7 @@ export function DpotdAuthProvider({ children }) {
             coachUid: uid,
             eventKey: DTMT_EVENT_KEY,
             maxStudents,
+            paymentResponsibility,
             schoolName,
             schoolKey: normalizeSchoolKey(schoolName),
             shortName,
@@ -1189,6 +1231,9 @@ export function DpotdAuthProvider({ children }) {
     const city = values.city.trim();
     const state = values.state.trim();
     const maxStudents = values.maxStudents.trim();
+    const paymentResponsibility = normalizeDtmtPaymentResponsibility(
+      values.paymentResponsibility || dtmtSchool?.paymentResponsibility,
+    );
     const coachAttending = coerceBooleanChoice(
       values.coachAttending,
       dtmtCoachProfile?.coachAttending ?? true,
@@ -1264,6 +1309,7 @@ export function DpotdAuthProvider({ children }) {
             coachUid: uid,
             eventKey: DTMT_EVENT_KEY,
             maxStudents,
+            paymentResponsibility,
             schoolKey: normalizeSchoolKey(schoolName),
             schoolName,
             shortName,
@@ -1368,7 +1414,7 @@ export function DpotdAuthProvider({ children }) {
     const subjectRounds = values.subjectRounds.filter(Boolean);
     const lunchPreference = values.lunchPreference.trim();
     const dietaryNotes = values.dietaryNotes.trim();
-    const paymentMethod = values.paymentMethod.trim();
+    let paymentMethod = values.paymentMethod.trim();
     const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
 
     if (!name || !grade) {
@@ -1385,10 +1431,6 @@ export function DpotdAuthProvider({ children }) {
 
     if (!values.waiverAccepted || !waiverSignerName) {
       return { ok: false, error: "Complete the waiver section before registering for DTMT." };
-    }
-
-    if (!values.paymentAcknowledged || !paymentMethod) {
-      return { ok: false, error: "Complete the payment section before registering for DTMT." };
     }
 
     const nameError = validateTextField(name, "Student name", { requireLetter: true });
@@ -1408,14 +1450,51 @@ export function DpotdAuthProvider({ children }) {
       return { ok: false, error: waiverNameError };
     }
 
-    if (registrationMode === "school" && !requestedSchoolName) {
-      return { ok: false, error: "Choose a registered school or continue as an individual." };
-    }
-
     try {
       const uid = auth.currentUser.uid;
-      const schoolId = registrationMode === "school" ? requestedSchoolId : "independent";
-      const schoolName = registrationMode === "school" ? requestedSchoolName : "Independent Entry";
+      let schoolId = "independent";
+      let schoolName = "Independent Entry";
+      let paymentResponsibility = DTMT_PAYMENT_RESPONSIBILITY.STUDENT;
+
+      if (registrationMode === "school") {
+        const schoolSnapshot = await getDoc(doc(db, DTMT_SCHOOL_COLLECTION, requestedSchoolId));
+
+        if (!schoolSnapshot.exists()) {
+          return {
+            ok: false,
+            error: "Choose a currently registered school or continue as an individual.",
+          };
+        }
+
+        const schoolRecord = schoolSnapshot.data() || {};
+
+        if (schoolRecord.status !== "registered") {
+          return {
+            ok: false,
+            error: "That school is not currently open for DTMT registration.",
+          };
+        }
+
+        schoolId = requestedSchoolId;
+        schoolName = String(schoolRecord.schoolName || requestedSchoolName || "").trim();
+        paymentResponsibility = normalizeDtmtPaymentResponsibility(schoolRecord.paymentResponsibility);
+
+        if (!schoolName) {
+          return { ok: false, error: "Choose a registered school or continue as an individual." };
+        }
+      }
+
+      const requiresDirectPayment =
+        registrationMode === "individual" || !isCoachManagedDtmtPayment(paymentResponsibility);
+
+      if (requiresDirectPayment && (!values.paymentAcknowledged || !paymentMethod)) {
+        return { ok: false, error: "Complete the payment section before registering for DTMT." };
+      }
+
+      if (!requiresDirectPayment) {
+        paymentMethod = "coach-covered";
+      }
+
       const teamLabel =
         registrationMode === "school"
           ? dtmtStudentRegistration?.registrationMode === "individual"
@@ -1451,8 +1530,9 @@ export function DpotdAuthProvider({ children }) {
             lunchPreference,
             dietaryNotes,
             name,
+            paymentResponsibility,
             paymentMethod,
-            paymentStatus: "submitted",
+            paymentStatus: requiresDirectPayment ? "submitted" : "coach-managed",
             registrationStatus: "registered",
             registrationMode,
             schoolId,
@@ -1730,9 +1810,7 @@ export function DpotdAuthProvider({ children }) {
         hasDpotdAccess: Boolean(portalProfile),
         hasDtmtCoachAccess: (profile?.accountType || siteProfile?.accountType) === "coach",
         listDtmtSchools,
-        listPuzzleNightSchools,
         loadDtmtRoster,
-        loadPuzzleNightRoster,
         portalProfile,
         profile,
         puzzleNightRegistration,
@@ -1746,8 +1824,10 @@ export function DpotdAuthProvider({ children }) {
         signInSiteAccount,
         signOutAccount,
         siteProfile,
+        submitContactInquiry,
         submitDpotdRegistration,
         submitDtmtStudentRegistration,
+        submitSponsorInquiry,
         updateSiteProfile,
         user,
         createDtmtCoachProfile,

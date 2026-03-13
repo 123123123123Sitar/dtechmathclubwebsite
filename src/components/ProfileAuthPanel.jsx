@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SurfaceCard from "./SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
@@ -26,10 +26,13 @@ export default function ProfileAuthPanel({
   defaultMode = "signin",
   embedded = false,
   hideWhenSignedIn = false,
+  preferredSignupType = null,
   redirectTo = "/profile",
   signedInCopy = "This browser already has an active Design Tech Math Club account session.",
+  signupIntentVersion = 0,
 }) {
   const navigate = useNavigate();
+  const panelRef = useRef(null);
   const {
     authReady,
     profile,
@@ -47,6 +50,31 @@ export default function ProfileAuthPanel({
   const [message, setMessage] = useState("");
   const registerType = registerForm.accountType === "coach" ? "coach" : "student";
   const canShowTabs = allowRegister;
+
+  function setRegisterAccountType(nextType) {
+    setRegisterForm((current) => ({
+      ...current,
+      accountType: nextType === "coach" ? "coach" : "student",
+      grade: nextType === "coach" ? "" : current.grade,
+    }));
+  }
+
+  useEffect(() => {
+    if (!allowRegister || !signupIntentVersion || !preferredSignupType) {
+      return;
+    }
+
+    setMode("register");
+    setRegisterAccountType(preferredSignupType);
+    setError("");
+    setMessage("");
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [allowRegister, preferredSignupType, signupIntentVersion]);
 
   function handleLoginChange(event) {
     const { name, value } = event.target;
@@ -151,7 +179,7 @@ export default function ProfileAuthPanel({
 
   if (!authReady) {
     return (
-      <PanelShell className="p-8 text-center" embedded={embedded}>
+      <PanelShell className="p-8 text-center" embedded={embedded} panelRef={panelRef}>
         <p className="text-sm font-semibold text-txt-muted">Checking your site profile session...</p>
       </PanelShell>
     );
@@ -163,7 +191,7 @@ export default function ProfileAuthPanel({
     }
 
     return (
-      <PanelShell className="p-8" embedded={embedded}>
+      <PanelShell className="p-8" embedded={embedded} panelRef={panelRef}>
         <h2 className="text-3xl font-black text-txt">{profile?.name || "Member"}</h2>
         <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
         <p className="mt-4 leading-relaxed text-txt-muted">{signedInCopy}</p>
@@ -182,7 +210,7 @@ export default function ProfileAuthPanel({
   }
 
   return (
-    <PanelShell className="p-8" embedded={embedded}>
+    <PanelShell className="p-8" embedded={embedded} panelRef={panelRef}>
       {canShowTabs ? (
         <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
           {[
@@ -267,13 +295,7 @@ export default function ProfileAuthPanel({
                   className={`rounded-full px-4 py-2 text-sm font-bold transition-all duration-200 ${
                     registerType === value ? "bg-brand text-white shadow-md shadow-brand-glow" : "text-txt-muted"
                   }`}
-                  onClick={() =>
-                    setRegisterForm((current) => ({
-                      ...current,
-                      accountType: value,
-                      grade: value === "coach" ? "" : current.grade,
-                    }))
-                  }
+                  onClick={() => setRegisterAccountType(value)}
                   type="button"
                 >
                   {label}
@@ -358,12 +380,20 @@ export default function ProfileAuthPanel({
   );
 }
 
-function PanelShell({ embedded, className, children }) {
+function PanelShell({ embedded, className, children, panelRef }) {
   if (embedded) {
-    return <div className={className}>{children}</div>;
+    return (
+      <div className={className} ref={panelRef}>
+        {children}
+      </div>
+    );
   }
 
-  return <SurfaceCard className={className}>{children}</SurfaceCard>;
+  return (
+    <div ref={panelRef}>
+      <SurfaceCard className={className}>{children}</SurfaceCard>
+    </div>
+  );
 }
 
 function Field({ label, ...props }) {

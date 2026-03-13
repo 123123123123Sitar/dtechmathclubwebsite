@@ -230,7 +230,7 @@ export default function DpotdDashboardPanel() {
       <SurfaceCard className="p-8">
         <SectionHeader
           title="Sign Into Your Website Account First"
-          description="D.PotD uses the same Design Tech Math Club account as the rest of the site. Sign in above, then this dashboard will load here inside your profile."
+          description="D.PotD uses the same Design Tech Math Club account as the rest of the site. Sign in first, then this page will load your D.PotD status."
         />
       </SurfaceCard>
     );
@@ -247,7 +247,7 @@ export default function DpotdDashboardPanel() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-              to="/profile?view=dpotd"
+              to="/dpotd/register"
             >
               Register for D.PotD
             </Link>
@@ -296,7 +296,7 @@ export default function DpotdDashboardPanel() {
           <SurfaceCard className="p-8">
             <SectionHeader
               title="Challenge Status"
-              description="This dashboard is attached to your website profile. During an active test, integrity signals such as tab switches, visibility changes, fullscreen exits, and attempted closes may be recorded for review."
+              description="This D.PotD status page is attached to your website account. During an active test, integrity signals such as tab switches, visibility changes, fullscreen exits, and attempted closes may be recorded for review."
             />
             {dashboardLoading ? (
               <p className="text-sm font-semibold text-txt-muted">Loading live D.PotD data...</p>
@@ -423,7 +423,7 @@ export default function DpotdDashboardPanel() {
           <SurfaceCard className="p-8">
             <SectionHeader
               title="Terms and Support"
-              description="These reminders stay visible in the profile dashboard so students do not need to hunt through separate portal pages."
+              description="These reminders stay visible on the D.PotD page so students do not need to hunt through separate portal pages."
             />
             <div className="mt-4 grid gap-4">
               <StatusRow label="Integrity Review">

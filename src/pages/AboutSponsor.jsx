@@ -5,6 +5,7 @@ import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
+import { useDpotdAuth } from "../context/DpotdAuthContext";
 import { sponsorPrograms, sponsorTierTemplate } from "../content/sponsorship";
 
 const initialForm = {
@@ -16,20 +17,33 @@ const initialForm = {
 };
 
 export default function AboutSponsor() {
+  const { submitSponsorInquiry } = useDpotdAuth();
   const [form, setForm] = useState(initialForm);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
     setSubmitted(false);
+    setSubmitError("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    console.log("Sponsor inquiry submitted", form);
+    setSubmitting(true);
+    const result = await submitSponsorInquiry(form);
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
+
     setForm(initialForm);
     setSubmitted(true);
+    setSubmitError("");
   }
 
   return (
@@ -241,9 +255,10 @@ export default function AboutSponsor() {
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   className="inline-flex rounded-full bg-brand px-7 py-3 font-bold text-white transition-all duration-200 hover:bg-brand-light"
+                  disabled={submitting}
                   type="submit"
                 >
-                  Send
+                  {submitting ? "Sending..." : "Send"}
                 </button>
                 {submitted ? (
                   <p className="text-sm font-semibold text-emerald-500">
@@ -251,6 +266,7 @@ export default function AboutSponsor() {
                   </p>
                 ) : null}
               </div>
+              {submitError ? <p className="text-sm font-semibold text-red-500">{submitError}</p> : null}
               <p className="text-sm leading-relaxed text-txt-muted">
                 Please note that this form is only for corporate sponsorships. For individual
                 donations, please use the donations page.

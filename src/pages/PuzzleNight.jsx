@@ -56,18 +56,29 @@ const fadeUp = {
 };
 
 export default function PuzzleNight() {
-  const { authReady, user } = useDpotdAuth();
+  const { authReady, profile, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
+  const isCoachAccount = profile?.accountType === "coach";
   const registrationPath = hasSignedInAccount
-    ? "/profile?view=puzzle-night"
-    : buildProfileNextHref("/profile?view=puzzle-night");
+    ? "/puzzle-night/register"
+    : buildProfileNextHref("/puzzle-night/register");
+  const heroActions = isCoachAccount
+    ? [
+        { label: "DTMT Register Here", to: "/dtmt/register" },
+        { label: "Open Profile", to: "/profile", variant: "ghost" },
+      ]
+    : [
+        {
+          label: hasSignedInAccount ? "Register Here" : "Sign In for Puzzle Night",
+          to: registrationPath,
+        },
+        { label: "Open Profile", to: "/profile", variant: "ghost" },
+      ];
 
   return (
     <>
       <PageHero
-        actions={[
-          { label: "Register for Puzzle Night", to: "/puzzle-night/register" },
-        ]}
+        actions={heroActions}
         align="center"
         aside={
           <HeroMediaPanel
@@ -78,7 +89,7 @@ export default function PuzzleNight() {
             src="/dtechmathclublogolarger.jpg"
           />
         }
-        description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event features interactive puzzle stations that show the fun side of mathematics."
+        description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event is designed as an individual student signup with interactive puzzle stations that show the fun side of mathematics."
         title="Design Tech Puzzle Night"
       />
 

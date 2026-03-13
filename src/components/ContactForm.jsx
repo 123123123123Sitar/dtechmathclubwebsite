@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDpotdAuth } from "../context/DpotdAuthContext";
 
 const initialState = {
   firstName: "",
@@ -14,9 +15,11 @@ const initialState = {
 const requiredFields = ["firstName", "lastName", "email", "organization", "subject", "message"];
 
 export default function ContactForm() {
+  const { submitContactInquiry } = useDpotdAuth();
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState({ error: "", success: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   function validate(values) {
     const next = {};
@@ -33,20 +36,29 @@ export default function ContactForm() {
     const { name, value } = e.target;
     setForm((c) => ({ ...c, [name]: value }));
     setErrors((c) => ({ ...c, [name]: "" }));
-    setSubmitted(false);
+    setStatus({ error: "", success: "" });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const next = validate(form);
     if (Object.keys(next).length) {
       setErrors(next);
       return;
     }
-    console.log("Contact form submitted", form);
+
+    setSubmitting(true);
+    const result = await submitContactInquiry(form);
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setStatus({ error: result.error, success: "" });
+      return;
+    }
+
     setForm(initialState);
     setErrors({});
-    setSubmitted(true);
+    setStatus({ error: "", success: "Thanks! Your message has been recorded." });
   }
 
   const inputClass =
@@ -79,25 +91,27 @@ export default function ContactForm() {
       <div className="flex items-center gap-4 flex-wrap">
         <motion.button
           type="submit"
+          disabled={submitting}
           className="px-6 py-3 rounded-full bg-brand text-white font-bold hover:bg-brand-light hover:shadow-lg hover:shadow-brand-glow transition-all duration-200 cursor-pointer"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          Submit
+          {submitting ? "Submitting..." : "Submit"}
         </motion.button>
         <AnimatePresence>
-          {submitted && (
+          {status.success ? (
             <motion.p
               className="text-sm font-semibold text-emerald-600"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0 }}
             >
-              ✓ Thanks! Your message has been recorded.
+              ✓ {status.success}
             </motion.p>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
+      {status.error ? <p className="text-sm font-semibold text-red-500">{status.error}</p> : null}
     </form>
   );
 }

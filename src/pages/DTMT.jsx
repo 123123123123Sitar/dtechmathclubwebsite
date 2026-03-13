@@ -35,18 +35,18 @@ export default function DTMT() {
   const { authReady, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
   const registrationPath = hasSignedInAccount
-    ? "/profile?view=dtmt"
-    : buildProfileNextHref("/profile?view=dtmt");
+    ? "/dtmt/register"
+    : buildProfileNextHref("/dtmt/register");
 
   return (
     <>
       <PageHero
         actions={[
           {
-            label: hasSignedInAccount ? "Open DTMT Dashboard" : "Sign In for DTMT",
+            label: hasSignedInAccount ? "Register Here" : "Sign In to Register",
             to: registrationPath,
           },
-          { label: "Open Profile", to: "/profile?view=dtmt", variant: "ghost" },
+          { label: "Open Profile", to: "/profile", variant: "ghost" },
         ]}
         align="center"
         aside={
