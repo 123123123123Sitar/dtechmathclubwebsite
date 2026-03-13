@@ -8,7 +8,7 @@ import FlowSection from "../components/FlowSection";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
 export default function ProfileHub() {
-  const { authReady, profile, signOutPortalAccount, updatePortalProfile, user } = useDpotdAuth();
+  const { authReady, hasDpotdAccess, profile, signOutAccount, updateSiteProfile, user } = useDpotdAuth();
   const [form, setForm] = useState({
     grade: "",
     name: "",
@@ -34,13 +34,13 @@ export default function ProfileHub() {
   async function handleSubmit(event) {
     event.preventDefault();
     setSaving(true);
-    const result = await updatePortalProfile(form);
+    const result = await updateSiteProfile(form);
     setSaving(false);
     setMessage(result.ok ? "Profile saved." : result.error);
   }
 
   async function handleSignOut() {
-    await signOutPortalAccount();
+    await signOutAccount();
     setMessage("");
   }
 
@@ -48,13 +48,18 @@ export default function ProfileHub() {
     <>
       <PageHero
         actions={
-          authReady && user
+          authReady && user && hasDpotdAccess
             ? [
                 { label: "Open D.PotD Portal", to: "/dpotd/portal" },
                 { label: "D.PotD Overview", to: "/dpotd/about", variant: "ghost" },
               ]
+            : authReady && user
+              ? [
+                  { label: "Complete D.PotD Registration", to: "/dpotd/register" },
+                  { label: "D.PotD Overview", to: "/dpotd/about", variant: "ghost" },
+                ]
             : [
-                { label: "Create Site Profile", to: "/dpotd/register" },
+                { label: "Register for D.PotD", to: "/dpotd/register" },
                 { label: "D.PotD Overview", to: "/dpotd/about", variant: "ghost" },
               ]
         }
@@ -62,16 +67,15 @@ export default function ProfileHub() {
           <ProfileAuthPanel
             defaultMode="signin"
             redirectTo="/profile"
-            signedInCopy="This Design Tech Math Club account is already active on this browser."
+            signedInCopy={
+              hasDpotdAccess
+                ? "This Design Tech Math Club account is active and already connected to D.PotD."
+                : "This Design Tech Math Club account is active. Finish the D.PotD form when you want to provision portal access."
+            }
           />
         }
-        description="This account hub is the shared profile space for the website. Students can use it for D.PotD access now, while keeping one reusable account for other account-based features added later."
-        eyebrow="Site Profile"
-        highlights={[
-          "Shared Sign In",
-          "Reusable Student Account",
-          "D.PotD Access",
-        ]}
+        description="This is the general student account for the website. D.PotD registration attaches to this signed-in account and only then provisions portal access, submissions, and leaderboard tracking."
+        highlights={["One Student Account", "D.PotD Registration Linked", "Reusable Across the Site"]}
         title={authReady && user ? `Welcome back, ${profile?.name || "Student"}` : "One Profile Across the Website"}
       />
 
@@ -82,10 +86,12 @@ export default function ProfileHub() {
               <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-8 lg:grid-cols-[0.96fr_1.04fr]">
                 <SurfaceCard className="p-8">
                   <SectionHeader
-                    eyebrow="Account"
                     title="Profile Details"
-                    description="Update the shared account information that the current D.PotD system reads now and future registration flows can reuse later."
+                    description="Update the student details attached to your main account. If you register for D.PotD, the portal profile is kept in sync from this account."
                   />
+                  <p className="mb-5 text-sm text-txt-muted">
+                    D.PotD registration status: {hasDpotdAccess ? "active" : "not registered yet"}
+                  </p>
                   <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
                     <Field
                       label="Full Name"
@@ -131,18 +137,17 @@ export default function ProfileHub() {
 
                 <div className="grid gap-5">
                   <ModuleCard
-                    actionLabel="Open D.PotD Portal"
-                    actionTo="/dpotd/portal"
-                    eyebrow="Current Access"
+                    actionLabel={hasDpotdAccess ? "Open D.PotD Portal" : "Complete Registration"}
+                    actionTo={hasDpotdAccess ? "/dpotd/portal" : "/dpotd/register"}
                     title="D.PotD"
                   >
-                    Use this account to enter the D.PotD dashboard, open the testing portal, and
-                    keep your student information current.
+                    {hasDpotdAccess
+                      ? "Your D.PotD portal profile is active. Testing access, submissions, and leaderboard history now follow this same signed-in account."
+                      : "When you submit the D.PotD form while signed in, portal access is provisioned automatically and attached to this account."}
                   </ModuleCard>
                   <ModuleCard
                     actionLabel="DTMT Page"
                     actionTo="/dtmt"
-                    eyebrow="Future Use"
                     title="Event Confirmations"
                   >
                     This account structure can later support registration confirmations,
@@ -152,7 +157,6 @@ export default function ProfileHub() {
                   <ModuleCard
                     actionLabel="Our Team"
                     actionTo="/about/our-team"
-                    eyebrow="Profile Center"
                     title="Keep Details Ready"
                   >
                     Name, school, and grade can stay in one place so account-connected features
@@ -170,19 +174,18 @@ export default function ProfileHub() {
               <SectionHeader
                 align="center"
                 description="This page is the main account entry point for the website. It is designed so one student account can support D.PotD now and other event features later."
-                eyebrow="Roadmap"
                 title="What This Profile Is For"
               />
               <div className="mt-8 grid gap-5 md:grid-cols-3">
-                <ModuleCard actionLabel="D.PotD" actionTo="/dpotd/about" eyebrow="Now" title="Competition Access">
-                  Sign in once, open the D.PotD portal, and keep the account reusable for future
-                  competition flows.
+                <ModuleCard actionLabel="D.PotD" actionTo="/dpotd/about" title="Competition Access">
+                  Create one website account first, then attach D.PotD registration to that same
+                  account when you are ready.
                 </ModuleCard>
-                <ModuleCard actionLabel="DTMT" actionTo="/dtmt" eyebrow="Later" title="Event Confirmations">
+                <ModuleCard actionLabel="DTMT" actionTo="/dtmt" title="Event Confirmations">
                   Registration confirmations, roster details, and participant-specific notices can
                   plug into this same account when you are ready to add them.
                 </ModuleCard>
-                <ModuleCard actionLabel="Profile" actionTo="/profile" eyebrow="Always" title="Student Details">
+                <ModuleCard actionLabel="Profile" actionTo="/profile" title="Student Details">
                   Keep student information in one place so any account-enabled page can reuse it
                   without asking students to start over.
                 </ModuleCard>
@@ -207,7 +210,7 @@ function Field({ label, ...props }) {
   );
 }
 
-function ModuleCard({ actionLabel, actionTo, eyebrow, title, children }) {
+function ModuleCard({ actionLabel, actionTo, title, children }) {
   return (
     <SurfaceCard className="p-7">
       <h3 className="text-2xl font-black text-txt">{title}</h3>

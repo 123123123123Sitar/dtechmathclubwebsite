@@ -18,7 +18,7 @@ export default function SectionHeader({
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <h2
-        className={`m-0 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-[0.98] tracking-[-0.045em] ${
+        className={`m-0 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-[1.06] tracking-[-0.045em] ${
           light ? "text-white" : "text-txt"
         } ${titleClassName}`}
       >

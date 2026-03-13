@@ -21,16 +21,17 @@ const initialRegister = {
 export default function ProfileAuthPanel({
   defaultMode = "signin",
   redirectTo = "/profile",
-  signedInCopy = "This browser already has an active site profile session.",
+  signedInCopy = "This browser already has an active Design Tech Math Club account session.",
 }) {
   const navigate = useNavigate();
   const {
     authReady,
+    hasDpotdAccess,
     profile,
     refreshProfile,
-    registerPortalAccount,
-    requestPortalPasswordReset,
-    signInPortalAccount,
+    registerSiteAccount,
+    requestAccountPasswordReset,
+    signInSiteAccount,
     user,
   } = useDpotdAuth();
   const [mode, setMode] = useState(defaultMode);
@@ -60,7 +61,7 @@ export default function ProfileAuthPanel({
     setError("");
     setMessage("");
 
-    const result = await signInPortalAccount(loginForm.email, loginForm.password);
+    const result = await signInSiteAccount(loginForm.email, loginForm.password);
     setBusy(false);
 
     if (!result.ok) {
@@ -77,7 +78,7 @@ export default function ProfileAuthPanel({
 
     const values = Object.values(registerForm).map((value) => value.trim());
     if (values.some((value) => !value)) {
-      setError("Fill in all registration fields before continuing.");
+      setError("Fill in all account fields before continuing.");
       return;
     }
 
@@ -90,7 +91,7 @@ export default function ProfileAuthPanel({
     setError("");
     setMessage("");
 
-    const result = await registerPortalAccount(registerForm);
+    const result = await registerSiteAccount(registerForm);
     setBusy(false);
 
     if (!result.ok) {
@@ -111,7 +112,7 @@ export default function ProfileAuthPanel({
     setError("");
     setMessage("");
 
-    const result = await requestPortalPasswordReset(loginForm.email);
+    const result = await requestAccountPasswordReset(loginForm.email);
     setBusy(false);
 
     if (!result.ok) {
@@ -136,6 +137,9 @@ export default function ProfileAuthPanel({
         <h2 className="text-3xl font-black text-txt">{profile?.name || user.email}</h2>
         <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
         <p className="mt-4 leading-relaxed text-txt-muted">{signedInCopy}</p>
+        <p className="mt-3 text-sm text-txt-muted">
+          D.PotD portal access: {hasDpotdAccess ? "active" : "not activated yet"}
+        </p>
         <button
           className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
           onClick={() => navigate(redirectTo)}
@@ -152,7 +156,7 @@ export default function ProfileAuthPanel({
       <div className="grid grid-cols-2 gap-2 rounded-full bg-[#efe6dd] p-1">
         {[
           ["signin", "Sign In"],
-          ["register", "Create Profile"],
+          ["register", "Create Account"],
         ].map(([value, label]) => (
           <button
             key={value}
@@ -262,7 +266,7 @@ export default function ProfileAuthPanel({
             disabled={busy}
             type="submit"
           >
-            {busy ? "Creating Profile..." : "Create Profile"}
+            {busy ? "Creating Account..." : "Create Account"}
           </button>
         </form>
       )}

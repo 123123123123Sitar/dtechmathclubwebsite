@@ -101,6 +101,34 @@ function formatMinutes(seconds) {
     return `${mins.toFixed(2)} min`;
 }
 
+async function resolveStudentPortalAccess(user) {
+    let hasPortalAccess = false;
+    let isAdmin = false;
+    let name = user.email;
+
+    try {
+        const userDoc = await firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+            const d = userDoc.data();
+            hasPortalAccess = true;
+            isAdmin = !!d.isAdmin;
+            name = d.name || user.email;
+        } else {
+            const snap = await firestore.collection('users').where('email', '==', user.email || '').limit(1).get();
+            if (!snap.empty) {
+                const d = snap.docs[0].data();
+                hasPortalAccess = true;
+                isAdmin = !!d.isAdmin;
+                name = d.name || user.email;
+            }
+        }
+    } catch (e) {
+        // Keep the fallback values and let the caller decide how to proceed.
+    }
+
+    return { hasPortalAccess, isAdmin, name };
+}
+
 // ------------------ Auth lifecycle ------------------
 appAuth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -115,31 +143,17 @@ appAuth.onAuthStateChanged(async (user) => {
         return;
     }
 
-    // Determine if this account is an admin; if so, redirect to admin page
-    let isAdmin = false;
-    let name = user.email;
-    try {
-        const userDoc = await firestore.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-            const d = userDoc.data();
-            isAdmin = !!d.isAdmin;
-            name = d.name || user.email;
-        } else {
-            // fallback: legacy docs keyed by email
-            const snap = await firestore.collection('users').where('email', '==', user.email || '').limit(1).get();
-            if (!snap.empty) {
-                const d = snap.docs[0].data();
-                isAdmin = !!d.isAdmin;
-                name = d.name || user.email;
-            }
-        }
-    } catch (e) {
-        // ...existing code...
-    }
+    const { hasPortalAccess, isAdmin, name } = await resolveStudentPortalAccess(user);
 
     if (isAdmin) {
         // Redirect admin users to the admin UI instead of using the student portal
         window.location.href = '/dpotd-portal/admin.html';
+        return;
+    }
+
+    if (!hasPortalAccess) {
+        localStorage.removeItem('dpotdUser');
+        window.location.href = '/dpotd/register';
         return;
     }
 
@@ -291,30 +305,17 @@ async function login() {
     try {
         const cred = await appAuth.signInWithEmailAndPassword(email, password);
 
-        // After sign-in, verify this account is not an admin
-        let isAdmin = false;
-        let name = email;
-        try {
-            const userDoc = await firestore.collection('users').doc(cred.user.uid).get();
-            if (userDoc.exists) {
-                const d = userDoc.data();
-                isAdmin = !!d.isAdmin;
-                name = d.name || email;
-            } else {
-                const snap = await firestore.collection('users').where('email', '==', email).limit(1).get();
-                if (!snap.empty) {
-                    const d = snap.docs[0].data();
-                    isAdmin = !!d.isAdmin;
-                    name = d.name || email;
-                }
-            }
-        } catch (e) {
-            // ...existing code...
-        }
+        const { hasPortalAccess, isAdmin, name } = await resolveStudentPortalAccess(cred.user);
 
         if (isAdmin) {
             hideLoading();
             window.location.href = '/dpotd-portal/admin.html';
+            return;
+        }
+
+        if (!hasPortalAccess) {
+            hideLoading();
+            window.location.href = '/dpotd/register';
             return;
         }
 

@@ -171,7 +171,15 @@ async function loadPortalDashboard(user, email) {
 }
 
 export default function DPotDPortal() {
-  const { authReady, profile, signOutPortalAccount, updatePortalProfile, user } = useDpotdAuth();
+  const {
+    authReady,
+    hasDpotdAccess,
+    portalProfile,
+    profile,
+    signOutAccount,
+    updateSiteProfile,
+    user,
+  } = useDpotdAuth();
   const [profileForm, setProfileForm] = useState({
     grade: "",
     name: "",
@@ -195,7 +203,7 @@ export default function DPotDPortal() {
     let cancelled = false;
 
     async function run() {
-      if (!authReady || !user) {
+      if (!authReady || !user || !hasDpotdAccess) {
         setDashboard(initialDashboard);
         setDashboardLoading(false);
         setDashboardError("");
@@ -228,7 +236,7 @@ export default function DPotDPortal() {
     return () => {
       cancelled = true;
     };
-  }, [authReady, profile?.email, user]);
+  }, [authReady, hasDpotdAccess, profile?.email, user]);
 
   function handleProfileChange(event) {
     const { name, value } = event.target;
@@ -240,35 +248,40 @@ export default function DPotDPortal() {
     event.preventDefault();
     setSavingProfile(true);
 
-    const result = await updatePortalProfile(profileForm);
+    const result = await updateSiteProfile(profileForm);
 
     setSavingProfile(false);
     setProfileMessage(result.ok ? "Profile saved." : result.error);
   }
 
   async function handleSignOut() {
-    await signOutPortalAccount();
+    await signOutAccount();
     setProfileMessage("");
   }
 
-  const roleLabel = profile?.isAdmin ? "Admin" : profile?.isGrader ? "Grader" : "Student";
+  const roleLabel = portalProfile?.isAdmin ? "Admin" : portalProfile?.isGrader ? "Grader" : "Student";
 
   return (
     <>
       <PageHero
         actions={
-          authReady && user
+          authReady && user && hasDpotdAccess
             ? [
                 { label: "Enter Testing Portal", href: "/dpotd-portal/student.html" },
                 { label: "Open Profile Hub", to: "/profile", variant: "ghost" },
               ]
+            : authReady && user
+              ? [
+                  { label: "Complete D.PotD Registration", to: "/dpotd/register" },
+                  { label: "Open Profile Hub", to: "/profile", variant: "ghost" },
+                ]
             : [
                 { label: "Sign In Through Profile", to: "/profile" },
-                { label: "Create Account", to: "/dpotd/register", variant: "ghost" },
+                { label: "Open Registration", to: "/dpotd/register", variant: "ghost" },
               ]
         }
         aside={<PortalRulesPanel />}
-        description="Review your D.PotD status, leaderboard standing, and score history here. During active tests, the system may record integrity signals such as tab switches, leaving the page, fullscreen exits, and attempted closes."
+        description="Review your D.PotD status, leaderboard standing, and score history here. Portal access is only activated after the signed-in account has completed the D.PotD registration form."
         eyebrow="D.PotD Portal"
         highlights={[
           "Tab switches may be recorded",
@@ -342,7 +355,54 @@ export default function DPotDPortal() {
         </FlowSection>
       ) : null}
 
-      {authReady && user ? (
+      {authReady && user && !hasDpotdAccess ? (
+        <FlowSection>
+          <section className="py-16">
+            <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-6 lg:grid-cols-[1fr_1fr]">
+              <SurfaceCard className="p-8">
+                <SectionHeader
+                  title="Complete D.PotD Registration First"
+                  description="You are already signed into your Design Tech Math Club account, but this account does not have D.PotD portal access yet. Submit the D.PotD registration form first, and the portal profile will be created automatically for this same account."
+                />
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
+                    to="/dpotd/register"
+                  >
+                    Finish D.PotD Registration
+                  </Link>
+                  <Link
+                    className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
+                    to="/profile"
+                  >
+                    Open Profile Hub
+                  </Link>
+                </div>
+              </SurfaceCard>
+
+              <SurfaceCard className="p-8">
+                <SectionHeader
+                  title="What Gets Linked"
+                  description="Once the D.PotD form is submitted from this signed-in account, the system connects the portal profile, testing access, leaderboard history, and submissions to that same account."
+                />
+                <div className="mt-6 grid gap-4">
+                  {[
+                    "Portal access is provisioned only after the D.PotD form is submitted.",
+                    "The same signed-in account is then used for submissions and leaderboard data.",
+                    "If the AI helper is unavailable or scores are missing after the next-day update window, contact dtechmathclub@gmail.com.",
+                  ].map((item) => (
+                    <div key={item} className="border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </SurfaceCard>
+            </div>
+          </section>
+        </FlowSection>
+      ) : null}
+
+      {authReady && user && hasDpotdAccess ? (
         <>
           <FlowSection glow="muted">
             <section className="py-16">
@@ -501,7 +561,7 @@ export default function DPotDPortal() {
                       title="Account Details"
                       description="Keep your student details current here so your account information stays accurate across D.PotD and other account-based pages."
                     />
-                    <div className="rounded-[24px] border border-[rgba(234,109,74,0.12)] bg-[#fffaf6] p-5">
+                    <div className="border-t border-border-subtle pt-5">
                       <h3 className="text-2xl font-black text-txt">{profile?.name || user.email}</h3>
                       <p className="mt-2 text-sm text-txt-muted">{profile?.email || user.email}</p>
                       <div className="mt-4 inline-flex rounded-full bg-brand/10 px-4 py-2 text-sm font-bold text-brand">
@@ -602,9 +662,9 @@ function Field({ label, ...props }) {
 
 function NoticeCard({ title, children }) {
   return (
-    <div className="rounded-[24px] border border-[rgba(234,109,74,0.12)] bg-[#fffaf6] p-5">
-      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand">{title}</p>
-      <p className="mt-3 text-sm leading-relaxed text-txt-muted">{children}</p>
+    <div className="border-t border-border-subtle pt-4">
+      <p className="text-sm font-bold text-txt">{title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-txt-muted">{children}</p>
     </div>
   );
 }
@@ -641,9 +701,9 @@ function StatCard({ label, value }) {
 
 function StatusCard({ label, children }) {
   return (
-    <div className="rounded-[24px] border border-[rgba(234,109,74,0.12)] bg-[#fffaf6] p-5">
-      <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-brand">{label}</p>
-      <p className="mt-3 text-sm leading-relaxed text-txt-muted">{children}</p>
+    <div className="border-t border-border-subtle pt-4">
+      <p className="text-sm font-bold text-txt">{label}</p>
+      <p className="mt-2 text-sm leading-relaxed text-txt-muted">{children}</p>
     </div>
   );
 }

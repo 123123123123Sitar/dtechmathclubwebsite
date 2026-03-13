@@ -39,7 +39,7 @@ const routeMeta = {
   "/dpotd/register": {
     title: "D.PotD Registration | Design Tech Math Club",
     description:
-      "Create your Design Tech Math Club account to access the Problem of the Day Challenge and other account-based site features.",
+      "Sign into your Design Tech Math Club account and attach D.PotD registration to that same account to activate portal access.",
   },
   "/profile": {
     title: "Profile | Design Tech Math Club",

@@ -14,7 +14,7 @@ export default function DPotDAbout() {
     <>
       <PageHero
         actions={[
-          { label: "Create Site Profile", to: "/dpotd/register" },
+          { label: "Register for D.PotD", to: "/dpotd/register" },
           { label: "Open D.PotD Portal", to: "/dpotd/portal", variant: "ghost" },
         ]}
         aside={<AboutSummaryCard />}
