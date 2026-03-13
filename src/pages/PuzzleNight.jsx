@@ -58,23 +58,19 @@ export default function PuzzleNight() {
       <PageHero
         align="center"
         aside={
-          <SurfaceCard className="p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-5">
-              <div className="grid min-h-[96px] min-w-[96px] place-items-center rounded-2xl bg-linear-to-br from-[#ffcb57] to-brand text-sm font-extrabold text-white">
-                Puzzle Night
-              </div>
-              <div className="text-left">
-                <h3 className="text-lg font-bold text-txt">Interactive stations and prizes</h3>
-                <p className="mt-1 text-sm text-txt-muted">
-                  Exploration, raffle energy, and a sponsor-supported math night atmosphere.
-                </p>
-              </div>
+          <SurfaceCard className="p-8 text-left">
+            <h3 className="text-2xl font-black text-txt">Interactive stations and prizes</h3>
+            <p className="mt-3 text-sm leading-relaxed text-txt-muted">
+              Exploration activities, estimation, countdown, and raffle energy all live in the
+              same event flow instead of being split into separate boxed callouts.
+            </p>
+            <div className="mt-5 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
+              Expect logic, modeling, geometry, and collaborative problem solving throughout the
+              evening.
             </div>
           </SurfaceCard>
         }
         description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event features interactive puzzle stations that show the fun side of mathematics."
-        eyebrow="Community Event"
-        highlights={["Logic and modeling", "Interactive stations", "Raffle and prizes"]}
         title="Design Tech Puzzle Night"
       />
 

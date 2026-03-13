@@ -37,7 +37,7 @@ export default function AboutSponsor() {
         aside={
           <SurfaceCard className="p-8">
             <h2 className="text-3xl font-black text-txt">Let's Partner</h2>
-            <div className="mt-5 grid gap-3 rounded-[26px] bg-[#fffaf6] p-6 text-sm leading-relaxed text-txt-muted">
+            <div className="mt-5 grid gap-3 border-t border-border-subtle pt-4 text-sm leading-relaxed text-txt-muted">
               <p>275 Oracle Parkway</p>
               <p>Redwood City, CA 94065</p>
               <p>Email: dtechmathclub@gmail.com</p>
@@ -89,10 +89,7 @@ export default function AboutSponsor() {
               />
               <div className="grid gap-4">
                 {sponsorTierTemplate.map((tier) => (
-                  <article
-                    key={tier.name}
-                    className="rounded-[28px] border border-border-subtle bg-white/80 p-5"
-                  >
+                  <article key={tier.name} className="border-t border-border-subtle pt-5">
                     <div className="flex items-center gap-4">
                       <div className={`h-12 w-12 rounded-2xl bg-linear-to-br ${tier.accent}`} />
                       <div>
@@ -121,7 +118,7 @@ export default function AboutSponsor() {
                 title="Additional Ways to Support"
                 description="If you would like to speak as a guest speaker at the Design Tech Math Tournament, please contact us. We appreciate insights from the math community and would love to hear from you."
               />
-              <div className="rounded-[28px] border border-border-subtle bg-white/80 p-6">
+              <div className="border-t border-border-subtle pt-5">
                 <p className="leading-relaxed text-txt-muted">
                   Please note that this form is intended for corporate sponsorships. For
                   individual donations, use the donation page template instead.

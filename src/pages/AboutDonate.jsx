@@ -21,7 +21,7 @@ export default function AboutDonate() {
               Wire future donation buttons to Stripe Checkout or Payment Links here. The page
               layout, messaging, and impact sections are already in place.
             </p>
-            <div className="mt-6 rounded-[28px] border border-dashed border-brand/40 bg-brand/6 p-6 text-sm leading-relaxed text-txt-muted">
+            <div className="mt-6 border-t border-dashed border-brand/40 pt-4 text-sm leading-relaxed text-txt-muted">
               Suggested future hook: one-time gifts, recurring support, sponsor acknowledgement,
               and post-payment thank-you messaging.
             </div>

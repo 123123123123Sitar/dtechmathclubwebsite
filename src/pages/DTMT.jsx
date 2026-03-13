@@ -91,10 +91,10 @@ export default function DTMT() {
               description="Students compete in subject rounds covering Algebra, Geometry, Discrete, and a 6th Grade Test, followed by a Team Round and Sequence Round. The activities session includes Professor Ciprian Manolescu's presentation on Knot Theory, random math problem sets, math jeopardy, and a relay round. Tiebreakers use a Mathcounts-style Countdown round."
             />
           </div>
-          <SurfaceCard className="p-6">
+          <div className="border-t border-border-subtle pt-5 md:border-t-0 md:border-l md:pl-8">
             <h3 className="text-2xl font-extrabold text-txt">Competition Day</h3>
             <p className="text-txt-muted text-sm">Subject rounds, team rounds, speaker session, and awards</p>
-          </SurfaceCard>
+          </div>
         </motion.div>
         </section>
       </FlowSection>
