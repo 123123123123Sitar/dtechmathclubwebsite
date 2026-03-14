@@ -40,9 +40,9 @@ export default function DPotD() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <img
-                  src="/assets/dpotd-logo.png"
+                  src="/assets/dpotd_logo.png"
                   alt="D.PotD logo"
-                  style={{ maxWidth: 300, height: "auto", display: "block", borderRadius: 16 }}
+                  style={{ maxWidth: 350, height: "auto", display: "block", borderRadius: 16 }}
                 />
               </motion.div>
             </div>

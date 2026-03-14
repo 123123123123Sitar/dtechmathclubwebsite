@@ -9,14 +9,16 @@ import { useDpotdAuth } from "../context/DpotdAuthContext";
 import { sponsorTiers } from "../data";
 
 const schedule = [
-  ["8:00 AM", "Check-in, breakfast, and campus arrival"],
-  ["8:30 AM", "Opening remarks and rules briefing"],
-  ["9:00 AM", "Subject rounds begin"],
-  ["10:45 AM", "Team round"],
-  ["11:30 AM", "Lunch and speaker session"],
-  ["12:15 PM", "Sequence round, relay activities, and math jeopardy"],
-  ["1:15 PM", "Countdown tiebreakers if needed"],
-  ["1:30 PM", "Awards ceremony and closing"],
+    ["8:00 AM", "Check In"],
+    ["8:30 AM", "Introduction"],
+    ["8:45 AM", "Subject Round 1"],
+    ["9:45 AM", "Subject Round 2"],
+    ["10:30 AM", "Break"],
+    ["10:45 AM", "Team Round"],
+    ["11:15 AM", "Sequence Round"],
+    ["12:15 PM", "Lunch Break"],
+    ["12:45 PM", "Activities/Tiebreaks"],
+    ["1:25 PM", "Awards & Closing"],
 ];
 
 const archives2026 = ["Algebra", "Geometry", "Discrete", "6th Grade Test", "Team", "Sequence"];
@@ -93,7 +95,8 @@ export default function DTMT() {
             <StatBadge value="2" label="Speaker Session" />
             <StatBadge value="$3k" label="In Prizes" />
           </div>
-          <motion.div className="flex flex-wrap justify-center gap-4 mt-10" {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }}>
+          {/* Temproray disable: Registration has not opened and information have not been finalized */}
+          {/* <motion.div className="flex flex-wrap justify-center gap-4 mt-10" {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }}>
             <a
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
               href="https://drive.google.com"
@@ -102,7 +105,7 @@ export default function DTMT() {
             >
               Competition Handbook
             </a>
-            {/* <Link
+            <Link
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
               to={profilePath}
             >
@@ -111,8 +114,8 @@ export default function DTMT() {
                   ? "Open DTMT in Profile"
                   : "Open Profile to Sign Up"
                 : "Sign In to Register"}
-            </Link> */}
-          </motion.div>
+            </Link>
+          </motion.div> */}
         </div>
         </section>
       </FlowSection>
@@ -140,7 +143,50 @@ export default function DTMT() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           />
+          
         </motion.div>
+        </section>
+      </FlowSection>
+
+      {/* ── Rounds Overview ───────────────────────────────── */}
+      <FlowSection>
+        <section className="py-20">
+        <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
+          <SectionHeader title="Rounds Overview" />
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-border-subtle rounded-2xl bg-white/95 text-left shadow-lg">
+              <thead className="bg-brand/10">
+                <tr>
+                  <th className="px-6 py-4 font-bold text-txt text-lg">Round</th>
+                  <th className="px-6 py-4 font-bold text-txt text-lg">Time</th>
+                  <th className="px-6 py-4 font-bold text-txt text-lg">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-txt text-base">Subject Rounds 1 & 2</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">45 min each</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Each round has 10 questions. Students select 2 subjects from Algebra, Geometry, Discrete Math, or 6th Grade Math.</td>
+                </tr>
+                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-txt text-base">Sequence Round</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">45 min</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Teams solve 7 sets of 3 problems each, receiving the next set after submitting the previous one.</td>
+                </tr>
+                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-txt text-base">Team Round</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">20 min</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">10 collaborative problems. Teams submit a single answer sheet.</td>
+                </tr>
+                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-txt text-base">Tiebreakers</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Varies</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">By invitation only for competitors tied in points.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         </section>
       </FlowSection>
 
