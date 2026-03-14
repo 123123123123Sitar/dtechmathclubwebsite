@@ -59,20 +59,10 @@ export default function PuzzleNight() {
   const hasSignedInAccount = authReady && Boolean(user);
   const isCoachAccount = profile?.accountType === "coach";
   const profilePath = isCoachAccount ? "/profile" : "/profile?view=puzzle-night";
-  const heroActions = isCoachAccount
-    ? [{ label: "Open Profile", to: "/profile", variant: "ghost" }]
-    : [
-        {
-          label: hasSignedInAccount ? "Open Profile to Sign Up" : "Sign In to Sign Up",
-          to: profilePath,
-        },
-        { label: "Open Profile", to: "/profile", variant: "ghost" },
-      ];
 
   return (
     <>
       <PageHero
-        actions={heroActions}
         align="center"
         aside={
           <HeroMediaPanel

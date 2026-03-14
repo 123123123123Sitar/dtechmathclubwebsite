@@ -8,13 +8,10 @@ const About = lazy(() => import("./pages/About"));
 const AboutDonate = lazy(() => import("./pages/AboutDonate"));
 const AboutSponsor = lazy(() => import("./pages/AboutSponsor"));
 const DPotDAbout = lazy(() => import("./pages/DPotD"));
-const DPotDRegister = lazy(() => import("./pages/DPotDRegister"));
 const DTMT = lazy(() => import("./pages/DTMT"));
-const DTMTRegister = lazy(() => import("./pages/DTMTRegister"));
 const Home = lazy(() => import("./pages/Home"));
 const ProfileHub = lazy(() => import("./pages/ProfileHub"));
 const PuzzleNight = lazy(() => import("./pages/PuzzleNight"));
-const PuzzleNightRegister = lazy(() => import("./pages/PuzzleNightRegister"));
 const SiteAdminPortal = lazy(() => import("./pages/SiteAdminPortal"));
 
 const routeMeta = {
@@ -28,20 +25,10 @@ const routeMeta = {
     description:
       "Explore Design Tech Puzzle Night, an interactive event for middle schoolers in the Bay Area.",
   },
-  "/puzzle-night/register": {
-    title: "Puzzle Night Registration | Design Tech Math Club",
-    description:
-      "Register for Puzzle Night through the website form attached to your Design Tech Math Club account.",
-  },
   "/dpotd": {
     title: "D.PotD | Design Tech Math Club",
     description:
       "Learn about the Design Tech Problem of the Day Challenge, scoring, awards, and the 2026 archive layout.",
-  },
-  "/dpotd/register": {
-    title: "D.PotD Registration | Design Tech Math Club",
-    description:
-      "Sign into your Design Tech Math Club account and attach D.PotD registration to that same account to activate portal access.",
   },
   "/profile": {
     title: "Profile | Design Tech Math Club",
@@ -52,11 +39,6 @@ const routeMeta = {
     title: "DTMT | Design Tech Math Club",
     description:
       "Design Tech Math Tournament information, schedule, registration, and problem archives.",
-  },
-  "/dtmt/register": {
-    title: "DTMT Registration | Design Tech Math Club",
-    description:
-      "Use one account to manage DTMT coach profiles, school registration, student registration, waivers, payment status, and team assignments.",
   },
   "/about/our-team": {
     title: "Our Team | Design Tech Math Club",
@@ -134,13 +116,13 @@ function AppShell() {
               <Routes location={location}>
                 <Route path="/" element={<Home />} />
                 <Route path="/puzzle-night" element={<PuzzleNight />} />
-                <Route path="/puzzle-night/register" element={<PuzzleNightRegister />} />
+                <Route path="/puzzle-night/register" element={<Navigate to="/profile?view=puzzle-night" replace />} />
                 <Route path="/dpotd" element={<Navigate to="/dpotd/about" replace />} />
                 <Route path="/dpotd/about" element={<DPotDAbout />} />
-                <Route path="/dpotd/register" element={<DPotDRegister />} />
+                <Route path="/dpotd/register" element={<Navigate to="/profile?view=dpotd" replace />} />
                 <Route path="/profile" element={<ProfileHub />} />
                 <Route path="/dtmt" element={<DTMT />} />
-                <Route path="/dtmt/register" element={<DTMTRegister />} />
+                <Route path="/dtmt/register" element={<Navigate to="/profile?view=dtmt" replace />} />
                 <Route path="/about" element={<Navigate to="/about/our-team" replace />} />
                 <Route path="/about/our-team" element={<About />} />
                 <Route path="/about/donate" element={<AboutDonate />} />

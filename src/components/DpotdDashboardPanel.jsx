@@ -247,7 +247,7 @@ export default function DpotdDashboardPanel() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-              to="/dpotd/register"
+              to="/profile?view=dpotd"
             >
               Register for D.PotD
             </Link>

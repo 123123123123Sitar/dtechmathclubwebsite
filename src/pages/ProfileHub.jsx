@@ -117,12 +117,6 @@ export default function ProfileHub() {
         aside={
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
-            badge={authReady && user ? "Account Profile" : "Shared Account"}
-            caption={
-              authReady && user
-                ? "Use this page for your account details and every event registration tab."
-                : "Create one account first, then sign in here to unlock the event registration tabs."
-            }
             imageClassName="object-contain p-8 md:p-10"
             src="/dtechmathclublogolarger.jpg"
           />
@@ -132,8 +126,8 @@ export default function ProfileHub() {
       />
 
       {authReady && user ? (
-        <div className="px-8">
-          <div className="mt-6 flex flex-wrap gap-3">
+        <div className="px-40">
+          <div className="mt-6 mb-10 flex flex-wrap gap-3">
             {(isCoachAccount ? COACH_TABS : STUDENT_TABS).map((tab) => (
               <button
                 key={tab.id}

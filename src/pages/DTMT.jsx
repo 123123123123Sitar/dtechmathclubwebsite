@@ -39,17 +39,6 @@ export default function DTMT() {
   return (
     <>
       <PageHero
-        actions={[
-          {
-            label: hasSignedInAccount
-              ? isCoachAccount
-                ? "Open Profile for DTMT"
-                : "Open Profile to Sign Up"
-              : "Sign In to Register",
-            to: profilePath,
-          },
-          { label: "Open Profile", to: "/profile", variant: "ghost" },
-        ]}
         align="center"
         aside={
           <HeroMediaPanel

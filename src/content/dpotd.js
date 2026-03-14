@@ -24,16 +24,6 @@ export const dpotdFeatureCards = [
   },
 ];
 
-export const dpotdArchive = [
-  { day: "Day 1", topic: "General", status: "Archive card ready" },
-  { day: "Day 2", topic: "Algebra", status: "Archive card ready" },
-  { day: "Day 3", topic: "Geometry", status: "Archive card ready" },
-  { day: "Day 4", topic: "Number Theory", status: "Archive card ready" },
-  { day: "Day 5", topic: "Combinatorics", status: "Archive card ready" },
-];
-
-export const dpotdWinners = ["Hridhaan Mittal", "Leon Sun", "Muhammad Sheriff"];
-
 export const dpotdCollections = [
   { name: "users", copy: "Portal profiles, roles, school/grade details, and account metadata." },
   { name: "submissions", copy: "All saved answers, scores, timestamps, and proof feedback history." },

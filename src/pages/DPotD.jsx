@@ -2,38 +2,14 @@ import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
-import SplitPanel from "../components/SplitPanel";
-import { useDpotdAuth } from "../context/DpotdAuthContext";
 import {
-  dpotdArchive,
-  dpotdFeatureCards,
   dpotdHighlights,
-  dpotdWinners,
 } from "../content/dpotd";
 
 export default function DPotD() {
-  const { authReady, profile, user } = useDpotdAuth();
-  const hasSignedInAccount = authReady && Boolean(user);
-  const isCoachAccount = profile?.accountType === "coach";
-  const profilePath = isCoachAccount ? "/profile" : "/profile?view=dpotd";
-  const heroActions = isCoachAccount
-    ? [{ label: "Open Profile", to: "/profile", variant: "ghost" }]
-    : [
-        {
-          label: hasSignedInAccount ? "Open Profile to Sign Up" : "Sign In to Sign Up",
-          to: profilePath,
-        },
-        {
-          label: "Open Profile",
-          to: "/profile",
-          variant: "ghost",
-        },
-      ];
-
   return (
     <>
       <PageHero
-        actions={heroActions}
         aside={
           <HeroMediaPanel
             alt="D.PotD logo"

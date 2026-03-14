@@ -154,7 +154,7 @@ appAuth.onAuthStateChanged(async (user) => {
 
     if (!hasPortalAccess) {
         localStorage.removeItem('dpotdUser');
-        window.location.href = '/dpotd/register';
+        window.location.href = '/profile?view=dpotd';
         return;
     }
 
@@ -316,7 +316,7 @@ async function login() {
 
         if (!hasPortalAccess) {
             hideLoading();
-            window.location.href = '/dpotd/register';
+            window.location.href = '/profile?view=dpotd';
             return;
         }
 
