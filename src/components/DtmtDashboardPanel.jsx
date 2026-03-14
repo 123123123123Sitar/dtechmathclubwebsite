@@ -348,7 +348,7 @@ export default function DtmtDashboardPanel() {
 
   return isCoachAccount ? (
     <div className="grid gap-8">
-      <div className="grid gap-8 lg:grid-cols-[0.96fr_1.04fr]">
+      <div className="grid gap-8">
         <SurfaceCard className="p-8">
           <SectionHeader
             title="DTMT Coach Registration"
@@ -485,13 +485,14 @@ export default function DtmtDashboardPanel() {
       />
     </div>
   ) : (
-    <div className="grid gap-8 lg:grid-cols-[1fr_0.94fr]">
-        <SurfaceCard className="p-8">
-          <SectionHeader
-            title="DTMT Student Form"
-            description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
-          />
-        <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
+    <div className="grid gap-8">
+        {!dtmtStudentRegistration ? (
+          <SurfaceCard className="p-8">
+            <SectionHeader
+              title="DTMT Student Form"
+              description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
+            />
+          <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
           <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Student Name" name="name" onChange={handleStudentChange} required value={studentForm.name} />
@@ -690,46 +691,64 @@ export default function DtmtDashboardPanel() {
           </button>
         </form>
       </SurfaceCard>
+        ) : null}
 
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="Your DTMT Status"
-          description="Once you submit this form, the selected coach can see your registration. If you register as an individual, you receive a random independent team instead."
-        />
-        <div className="mt-4 grid gap-4">
-          <StatusLine label="Registration">
-            {dtmtStudentRegistration ? "Submitted" : "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="School">
-            {dtmtStudentRegistration?.registrationMode === "individual"
-              ? "Independent entry"
-              : dtmtStudentRegistration?.schoolName || selectedSchoolLabel || "Not selected yet"}
-          </StatusLine>
-          <StatusLine label="Payment Plan">
-            {dtmtStudentRegistration
-              ? getDtmtPaymentResponsibilityLabel(dtmtStudentRegistration.paymentResponsibility)
-              : studentForm.registrationMode === "school" && studentForm.schoolId
-                ? getDtmtPaymentResponsibilityLabel(selectedPaymentResponsibility)
+      {!dtmtStudentRegistration ? null : (
+        <SurfaceCard className="p-8">
+          <SectionHeader
+            title={
+              <span className="flex items-center gap-2">
+                <span>Registration Complete!</span>
+                <span className="inline-block text-emerald-600">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="12" fill="#34D399" />
+                    <path d="M7 13l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
+            }
+            description="Your DTMT registration is complete. View your submitted details below."
+          />
+          <div className="mt-6 grid gap-4">
+            <StatusLine label="Team Assignment">
+              {dtmtStudentRegistration?.teamLabel || "Pending"}
+            </StatusLine>
+            <StatusLine label="Subject Rounds">
+              {dtmtStudentRegistration?.subjectRounds?.length
+                ? dtmtStudentRegistration.subjectRounds.join(", ")
                 : "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Lunch Preference">
-            {dtmtStudentRegistration?.lunchPreference || "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Subject Rounds">
-            {dtmtStudentRegistration?.subjectRounds?.length
-              ? dtmtStudentRegistration.subjectRounds.join(", ")
-              : "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Payment">
-            {dtmtStudentRegistration
-              ? formatDtmtPaymentSummary(dtmtStudentRegistration)
-              : "Not submitted yet"}
-          </StatusLine>
-          <StatusLine label="Team Assignment">
-            {dtmtStudentRegistration?.teamLabel || "Pending"}
-          </StatusLine>
-        </div>
-      </SurfaceCard>
+            </StatusLine>
+          </div>
+          <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
+            <summary className="cursor-pointer text-lg font-bold text-brand">View Registration Details</summary>
+            <div className="mt-4 grid gap-4">
+              <StatusLine label="Registration">
+                {dtmtStudentRegistration ? "Submitted" : "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="School">
+                {dtmtStudentRegistration?.registrationMode === "individual"
+                  ? "Independent entry"
+                  : dtmtStudentRegistration?.schoolName || selectedSchoolLabel || "Not selected yet"}
+              </StatusLine>
+              <StatusLine label="Payment Plan">
+                {dtmtStudentRegistration
+                  ? getDtmtPaymentResponsibilityLabel(dtmtStudentRegistration.paymentResponsibility)
+                  : studentForm.registrationMode === "school" && studentForm.schoolId
+                    ? getDtmtPaymentResponsibilityLabel(selectedPaymentResponsibility)
+                    : "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="Lunch Preference">
+                {dtmtStudentRegistration?.lunchPreference || "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="Payment">
+                {dtmtStudentRegistration
+                  ? formatDtmtPaymentSummary(dtmtStudentRegistration)
+                  : "Not submitted yet"}
+              </StatusLine>
+            </div>
+          </details>
+        </SurfaceCard>
+      )}
     </div>
   );
 }

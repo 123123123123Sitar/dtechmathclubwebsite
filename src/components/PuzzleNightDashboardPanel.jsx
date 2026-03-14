@@ -14,12 +14,14 @@ const initialStudentForm = {
 };
 
 export default function PuzzleNightDashboardPanel() {
-  const { profile, puzzleNightRegistration, registerPuzzleNight } = useDpotdAuth();
+  const { profile, puzzleNightRegistration, registerPuzzleNight } =
+    useDpotdAuth();
   const [studentForm, setStudentForm] = useState(initialStudentForm);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const isCoachAccount = profile?.accountType === "coach";
-  const hasSubmittedRegistration = puzzleNightRegistration?.registrationType === "student";
+  const hasSubmittedRegistration =
+    puzzleNightRegistration?.registrationType === "student";
 
   useEffect(() => {
     setStudentForm({
@@ -31,7 +33,9 @@ export default function PuzzleNightDashboardPanel() {
       parentName: puzzleNightRegistration?.parentName || "",
       schoolName:
         puzzleNightRegistration?.registrationType === "student"
-          ? puzzleNightRegistration?.schoolName || puzzleNightRegistration?.school || ""
+          ? puzzleNightRegistration?.schoolName ||
+            puzzleNightRegistration?.school ||
+            ""
           : "",
     });
   }, [profile, puzzleNightRegistration]);
@@ -58,102 +62,135 @@ export default function PuzzleNightDashboardPanel() {
   }
 
   return (
-    <div className={`grid gap-8 ${hasSubmittedRegistration ? "lg:grid-cols-[1fr_0.92fr]" : ""}`}>
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title={hasSubmittedRegistration ? "Edit Puzzle Night Submission" : "Puzzle Night Student Form"}
-          description="Puzzle Night uses one saved submission per student account. School is optional, and after the first save you can return here to edit the same registration."
-        />
-        <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
-          <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
-            This student account keeps one Puzzle Night registration on file. Save it once, then
-            come back here any time to update the same submission.
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Student Name" name="name" onChange={handleStudentChange} required value={studentForm.name} />
-            <Field label="Grade" name="grade" onChange={handleStudentChange} required value={studentForm.grade} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Parent or Guardian Name"
-              name="parentName"
-              onChange={handleStudentChange}
-              required
-              value={studentForm.parentName}
-            />
-            <Field
-              label="Parent or Guardian Email"
-              name="parentEmail"
-              onChange={handleStudentChange}
-              required
-              type="email"
-              value={studentForm.parentEmail}
-            />
-          </div>
-          <Field
-            label="Math Teacher Email"
-            name="teacherEmail"
-            onChange={handleStudentChange}
-            placeholder="Optional math teacher email"
-            type="email"
-            value={studentForm.teacherEmail}
-          />
-          <Field
-            label="School (Optional)"
-            name="schoolName"
-            onChange={handleStudentChange}
-            placeholder="Optional school name"
-            value={studentForm.schoolName}
-          />
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Notes</span>
-            <textarea
-              className="min-h-[140px] rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="notes"
-              onChange={handleStudentChange}
-              placeholder="Accessibility notes, dietary concerns, or anything helpful for the event."
-              value={studentForm.notes}
-            />
-          </label>
-          <MessageCopy message={message} successCopy="Puzzle Night registration saved." />
-          <button
-            className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={busy}
-            type="submit"
-          >
-            {busy ? "Saving..." : hasSubmittedRegistration ? "Save Changes" : "Submit Registration"}
-          </button>
-        </form>
-      </SurfaceCard>
-
-      {hasSubmittedRegistration ? (
+    <div className="grid gap-8">
+      {!hasSubmittedRegistration ? (
         <SurfaceCard className="p-8">
           <SectionHeader
-            title="Current Submission"
-            description="This is the Puzzle Night registration currently saved for your account."
+            title="Puzzle Night Registration Form"
+            description="Puzzle Night uses one saved submission per student account. School is optional. After submitting, you cannot edit your registration."
           />
-          <div className="mt-4 grid gap-4">
-            <StatusLine label="Student Name">
-              {puzzleNightRegistration?.name || "Not submitted yet"}
-            </StatusLine>
-            <StatusLine label="Grade">
-              {puzzleNightRegistration?.grade || "Not submitted yet"}
-            </StatusLine>
-            <StatusLine label="School">
-              {puzzleNightRegistration?.schoolName || "Left blank"}
-            </StatusLine>
-            <StatusLine label="Parent Contact">
-              {puzzleNightRegistration?.parentEmail || "Not submitted yet"}
-            </StatusLine>
-            <StatusLine label="Math Teacher Email">
-              {puzzleNightRegistration?.teacherEmail || "Left blank"}
-            </StatusLine>
-            <StatusLine label="Notes">
-              {puzzleNightRegistration?.notes || "No notes added"}
-            </StatusLine>
-          </div>
+          <form
+            className="mt-8 grid gap-5"
+            onSubmit={handleStudentSubmit}
+            noValidate
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Student Name"
+                name="name"
+                onChange={handleStudentChange}
+                required
+                value={studentForm.name}
+              />
+              <Field
+                label="Grade"
+                name="grade"
+                onChange={handleStudentChange}
+                required
+                value={studentForm.grade}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Parent or Guardian Name"
+                name="parentName"
+                onChange={handleStudentChange}
+                required
+                value={studentForm.parentName}
+              />
+              <Field
+                label="Parent or Guardian Email"
+                name="parentEmail"
+                onChange={handleStudentChange}
+                required
+                type="email"
+                value={studentForm.parentEmail}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="School "
+                name="schoolName"
+                required
+                onChange={handleStudentChange}
+                placeholder="School name"
+                value={studentForm.schoolName}
+              />
+              <Field
+                label="Math Teacher/Coach Email"
+                name="teacherEmail"
+                onChange={handleStudentChange}
+                placeholder="Optional"
+                type="email"
+                value={studentForm.teacherEmail}
+              />
+            </div>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Notes
+              </span>
+              <textarea
+                className="min-h-[140px] rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                name="notes"
+                onChange={handleStudentChange}
+                placeholder="Accessibility notes, dietary concerns, or anything helpful for the event."
+                value={studentForm.notes}
+              />
+            </label>
+            <MessageCopy
+              message={message}
+              successCopy="Puzzle Night registration saved."
+            />
+            <button
+              className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={busy}
+              type="submit"
+            >
+              {busy ? "Saving..." : "Submit Registration"}
+            </button>
+          </form>
         </SurfaceCard>
-      ) : null}
+      ) : (
+        <SurfaceCard className="p-8">
+          <SectionHeader
+            title={
+              <span className="flex items-center gap-2">
+                <span>Registration Completed</span>
+                <span className="inline-block text-emerald-600">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="12" fill="#34D399" />
+                    <path d="M7 13l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
+            }
+            description="Your Puzzle Night registration is complete! Feel free to contact us if you have any questions or concerns."
+          />
+          <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
+            <summary className="cursor-pointer text-lg font-bold text-brand">View Registration Details</summary>
+            <div className="mt-4 grid gap-4">
+              <StatusLine label="Student Name">
+                {puzzleNightRegistration?.name || "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="Grade">
+                {puzzleNightRegistration?.grade || "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="School">
+                {puzzleNightRegistration?.schoolName || "Left blank"}
+              </StatusLine>
+              <StatusLine label="Parent Contact">
+                {puzzleNightRegistration?.parentEmail || "Not submitted yet"}
+              </StatusLine>
+              <StatusLine label="Math Teacher Email">
+                {puzzleNightRegistration?.teacherEmail || "Left blank"}
+              </StatusLine>
+              <StatusLine label="Notes">
+                {puzzleNightRegistration?.notes || "No notes added"}
+              </StatusLine>
+            </div>
+          </details>
+        </SurfaceCard>
+      )}
     </div>
   );
 }
@@ -161,7 +198,9 @@ export default function PuzzleNightDashboardPanel() {
 function Field({ label, ...props }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
+      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+        {label}
+      </span>
       <input
         className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
         {...props}
@@ -183,7 +222,9 @@ function MessageCopy({ message, successCopy }) {
   if (!message) return null;
 
   return (
-    <p className={`text-sm font-semibold ${message === successCopy ? "text-emerald-600" : "text-red-500"}`}>
+    <p
+      className={`text-sm font-semibold ${message === successCopy ? "text-emerald-600" : "text-red-500"}`}
+    >
       {message}
     </p>
   );
