@@ -14,20 +14,14 @@ function buildNavItems(isCoachAccount) {
             type: "dropdown",
             label: "d.PotD",
             match: "/dpotd",
-            items: [
-              { to: "/dpotd/about", label: "About" },
-              { to: "/dpotd/register", label: "Register Here" },
-            ],
+            items: [{ to: "/dpotd/about", label: "About" }],
           },
         ]),
     {
       type: "dropdown",
       label: "DTMT",
       match: "/dtmt",
-      items: [
-        { to: "/dtmt", label: "Overview", end: true },
-        { to: "/dtmt/register", label: "Register Here" },
-      ],
+      items: [{ to: "/dtmt", label: "Overview", end: true }],
     },
     {
       type: "dropdown",

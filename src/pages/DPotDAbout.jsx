@@ -4,7 +4,6 @@ import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
-import { buildProfileNextHref } from "../lib/siteAccountRouting";
 import {
   dpotdArchive,
   dpotdFeatureCards,
@@ -16,19 +15,17 @@ export default function DPotDAbout() {
   const { authReady, profile, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
   const isCoachAccount = profile?.accountType === "coach";
-  const registrationPath = hasSignedInAccount
-    ? "/dpotd/register"
-    : buildProfileNextHref("/dpotd/register");
+  const profilePath = isCoachAccount ? "/profile" : "/profile?view=dpotd";
   const heroActions = isCoachAccount
-    ? []
+    ? [{ label: "Open Profile", to: "/profile", variant: "ghost" }]
     : [
         {
-          label: hasSignedInAccount ? "Register Here" : "Sign In for D.PotD",
-          to: registrationPath,
+          label: hasSignedInAccount ? "Open Profile to Sign Up" : "Sign In to Sign Up",
+          to: profilePath,
         },
         {
-          label: hasSignedInAccount ? "Open Portal Status" : "Open Profile",
-          to: hasSignedInAccount ? "/dpotd/register" : "/profile",
+          label: "Open Profile",
+          to: "/profile",
           variant: "ghost",
         },
       ];

@@ -6,7 +6,6 @@ import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
-import { buildProfileNextHref } from "../lib/siteAccountRouting";
 
 const puzzleSponsors = [
   {
@@ -59,15 +58,13 @@ export default function PuzzleNight() {
   const { authReady, profile, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
   const isCoachAccount = profile?.accountType === "coach";
-  const registrationPath = hasSignedInAccount
-    ? "/puzzle-night/register"
-    : buildProfileNextHref("/puzzle-night/register");
+  const profilePath = isCoachAccount ? "/profile" : "/profile?view=puzzle-night";
   const heroActions = isCoachAccount
     ? [{ label: "Open Profile", to: "/profile", variant: "ghost" }]
     : [
         {
-          label: hasSignedInAccount ? "Register Here" : "Sign In for Puzzle Night",
-          to: registrationPath,
+          label: hasSignedInAccount ? "Open Profile to Sign Up" : "Sign In to Sign Up",
+          to: profilePath,
         },
         { label: "Open Profile", to: "/profile", variant: "ghost" },
       ];

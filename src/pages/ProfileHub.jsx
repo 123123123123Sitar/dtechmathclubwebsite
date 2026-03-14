@@ -1,24 +1,42 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import DtmtDashboardPanel from "../components/DtmtDashboardPanel";
+import DpotdRegistrationPanel from "../components/DpotdRegistrationPanel";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
 import ProfileAuthPanel from "../components/ProfileAuthPanel";
+import PuzzleNightDashboardPanel from "../components/PuzzleNightDashboardPanel";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
-import { buildProfileNextHref, normalizeNextPath } from "../lib/siteAccountRouting";
+import { normalizeNextPath } from "../lib/siteAccountRouting";
 
-const legacyViewRoutes = {
-  dtmt: "/dtmt/register",
-  "puzzle-night": "/puzzle-night/register",
-  dpotd: "/dpotd/register",
-  overview: "/profile",
-};
+const STUDENT_TABS = [
+  { id: "profile", label: "Profile" },
+  { id: "puzzle-night", label: "Puzzle Night" },
+  { id: "dpotd", label: "D.PotD" },
+  { id: "dtmt", label: "DTMT" },
+];
+
+const COACH_TABS = [
+  { id: "profile", label: "Profile" },
+  { id: "dtmt", label: "DTMT" },
+];
+
+function buildProfileViewHref(view = "profile") {
+  return view === "profile" ? "/profile" : `/profile?view=${view}`;
+}
+
+function normalizeProfileView(rawView, isCoachAccount) {
+  const allowedTabs = isCoachAccount ? COACH_TABS : STUDENT_TABS;
+  const nextView = String(rawView || "").trim().toLowerCase();
+  return allowedTabs.some((item) => item.id === nextView) ? nextView : "profile";
+}
 
 export default function ProfileHub() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     authReady,
     dtmtCoachProfile,
@@ -43,7 +61,10 @@ export default function ProfileHub() {
   const isCoachAccount = profile?.accountType === "coach";
   const nextParam = searchParams.get("next");
   const rawView = searchParams.get("view");
-  const postAuthDestination = normalizeNextPath(nextParam, "/profile");
+  const activeView = normalizeProfileView(rawView, isCoachAccount);
+  const postAuthDestination = nextParam
+    ? normalizeNextPath(nextParam, buildProfileViewHref(activeView))
+    : buildProfileViewHref(activeView);
 
   useEffect(() => {
     setForm({
@@ -52,20 +73,6 @@ export default function ProfileHub() {
       school: profile?.school || "",
     });
   }, [profile, user]);
-
-  const heroActions = useMemo(() => {
-    if (!authReady || !user) {
-      return [];
-    }
-
-    return isCoachAccount
-      ? []
-      : [
-          { label: "Puzzle Night", to: "/puzzle-night/register" },
-          { label: "DTMT", to: "/dtmt/register", variant: "ghost" },
-          { label: "D.PotD", to: "/dpotd/register", variant: "ghost" },
-        ];
-  }, [authReady, isCoachAccount, user]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -91,49 +98,93 @@ export default function ProfileHub() {
     setSignupIntentVersion((current) => current + 1);
   }
 
-  if (rawView && legacyViewRoutes[rawView]) {
-    return <Navigate replace to={legacyViewRoutes[rawView]} />;
+  function handleTabSelect(view) {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (view === "profile") {
+      nextParams.delete("view");
+    } else {
+      nextParams.set("view", view);
+    }
+
+    setSearchParams(nextParams);
   }
 
   return (
     <>
       <PageHero
-        actions={heroActions}
+        actions={[]}
         aside={
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
             badge={authReady && user ? "Account Profile" : "Shared Account"}
             caption={
               authReady && user
-                ? "Use this page for your account details, then open the separate event registration pages from here."
-                : "Create one account first, then open the separate DTMT, Puzzle Night, and D.PotD registration pages after sign-in."
+                ? "Use this page for your account details and every event registration tab."
+                : "Create one account first, then sign in here to unlock the event registration tabs."
             }
             imageClassName="object-contain p-8 md:p-10"
             src="/dtechmathclublogolarger.jpg"
           />
         }
-        description="This page is only for the shared account profile. Event registration forms live on their own DTMT, Puzzle Night, and D.PotD pages."
+        description="This page handles your shared account profile plus the registration tabs for Puzzle Night, D.PotD, and DTMT."
         title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Profile"}
       />
 
       {authReady && user ? (
         <FlowSection glow="muted">
           <section className="py-10">
-            <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
-              <ProfilePanel
-                dtmtCoachProfile={dtmtCoachProfile}
-                dtmtSchool={dtmtSchool}
-                dtmtStudentRegistration={dtmtStudentRegistration}
-                form={form}
-                handleChange={handleChange}
-                handleSignOut={handleSignOut}
-                handleSubmit={handleSubmit}
-                hasDpotdAccess={hasDpotdAccess}
-                isCoachAccount={isCoachAccount}
-                message={message}
-                puzzleNightRegistration={puzzleNightRegistration}
-                saving={saving}
-              />
+            <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-6">
+              <SurfaceCard className="p-6">
+                <SectionHeader
+                  title="Registration Tabs"
+                  description={
+                    isCoachAccount
+                      ? "Use these tabs to manage your account and DTMT coach registration from one page."
+                      : "Use these tabs to manage your account and all student event registrations from one page."
+                  }
+                />
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {(isCoachAccount ? COACH_TABS : STUDENT_TABS).map((tab) => (
+                    <button
+                      key={tab.id}
+                      className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
+                        activeView === tab.id
+                          ? "bg-brand text-white shadow-md shadow-brand-glow"
+                          : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
+                      }`}
+                      onClick={() => handleTabSelect(tab.id)}
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </SurfaceCard>
+
+              {activeView === "profile" ? (
+                <ProfilePanel
+                  dtmtCoachProfile={dtmtCoachProfile}
+                  dtmtSchool={dtmtSchool}
+                  dtmtStudentRegistration={dtmtStudentRegistration}
+                  form={form}
+                  handleChange={handleChange}
+                  handleSignOut={handleSignOut}
+                  handleSubmit={handleSubmit}
+                  handleTabSelect={handleTabSelect}
+                  hasDpotdAccess={hasDpotdAccess}
+                  isCoachAccount={isCoachAccount}
+                  message={message}
+                  puzzleNightRegistration={puzzleNightRegistration}
+                  saving={saving}
+                />
+              ) : activeView === "puzzle-night" ? (
+                <PuzzleNightDashboardPanel />
+              ) : activeView === "dpotd" ? (
+                <DpotdRegistrationPanel />
+              ) : (
+                <DtmtDashboardPanel />
+              )}
             </div>
           </section>
         </FlowSection>
@@ -146,8 +197,8 @@ export default function ProfileHub() {
                   <>
                     <h2 className="text-3xl font-black text-txt">Create your shared account</h2>
                     <p className="mt-4 leading-relaxed text-txt-muted">
-                      Choose coach or student when you create the account. The profile page stays
-                      separate from the event registration pages.
+                      Choose coach or student when you create the account. After sign-in, this same
+                      page opens the registration tabs for the events.
                     </p>
                     <div className="mt-6 flex flex-wrap gap-3">
                       <button
@@ -188,31 +239,31 @@ export default function ProfileHub() {
               <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
                 <SectionHeader
                   align="center"
-                  description="Create your account here first, then open the separate event registration pages."
+                  description="Create your account here first, then use the registration tabs on this same page."
                   title="After Sign-In"
                 />
                 <div className="mt-8 grid gap-5 md:grid-cols-3">
                   <ModuleCard
-                    actionLabel="Sign In for Puzzle Night"
-                    actionTo={buildProfileNextHref("/puzzle-night/register")}
+                    actionLabel="Open Puzzle Night Tab"
+                    actionTo={buildProfileViewHref("puzzle-night")}
                     title="Puzzle Night"
                   >
-                    Puzzle Night registration happens on its own page after sign-in.
+                    Puzzle Night registration appears inside the profile tabs after sign-in.
                   </ModuleCard>
                   <ModuleCard
-                    actionLabel="Sign In for DTMT"
-                    actionTo={buildProfileNextHref("/dtmt/register")}
+                    actionLabel="Open DTMT Tab"
+                    actionTo={buildProfileViewHref("dtmt")}
                     title="DTMT"
                   >
-                    DTMT registration, school management, and team building happen on the DTMT
-                    registration page.
+                    DTMT registration, school management, and team building all appear inside the
+                    DTMT tab here.
                   </ModuleCard>
                   <ModuleCard
-                    actionLabel="Sign In for D.PotD"
-                    actionTo={buildProfileNextHref("/dpotd/register")}
+                    actionLabel="Open D.PotD Tab"
+                    actionTo={buildProfileViewHref("dpotd")}
                     title="D.PotD"
                   >
-                    D.PotD registration and portal status live on the D.PotD page, not here.
+                    D.PotD registration and status both stay inside the D.PotD tab on this page.
                   </ModuleCard>
                 </div>
               </div>
@@ -232,6 +283,7 @@ function ProfilePanel({
   handleChange,
   handleSignOut,
   handleSubmit,
+  handleTabSelect,
   hasDpotdAccess,
   isCoachAccount,
   message,
@@ -244,7 +296,7 @@ function ProfilePanel({
         <SurfaceCard className="p-8">
           <SectionHeader
             title="Profile Details"
-            description="Keep the account name, school, and grade current here. The separate event pages reuse this information."
+            description="Keep the account name, school, and grade current here. The event registration tabs reuse this information."
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
@@ -274,7 +326,11 @@ function ProfilePanel({
               </button>
             </div>
             {message ? (
-              <p className={`text-sm font-semibold ${message === "Profile saved." ? "text-emerald-500" : "text-red-500"}`}>
+              <p
+                className={`text-sm font-semibold ${
+                  message === "Profile saved." ? "text-emerald-500" : "text-red-500"
+                }`}
+              >
                 {message}
               </p>
             ) : null}
@@ -284,7 +340,7 @@ function ProfilePanel({
         <SurfaceCard className="p-8">
           <SectionHeader
             title="Current Access"
-            description="This account type controls which separate registration pages and forms are available."
+            description="These statuses are attached to this one account and determine which profile tabs become available."
           />
           <div className="mt-4 grid gap-4">
             <StatusLine label="Account Type">
@@ -322,46 +378,63 @@ function ProfilePanel({
         </SurfaceCard>
       </div>
 
-      {!isCoachAccount && puzzleNightRegistration?.registrationType === "student" ? (
-        <PuzzleNightSubmissionCard registration={puzzleNightRegistration} />
-      ) : null}
+      <SurfaceCard className="p-8">
+        <SectionHeader
+          title="Registration Shortcuts"
+          description="Open the event tabs below from here instead of leaving the profile page."
+        />
+        <div className={`mt-6 grid gap-5 ${isCoachAccount ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
+          {!isCoachAccount ? (
+            <ShortcutCard
+              copy={
+                puzzleNightRegistration?.registrationType === "student"
+                  ? "Return to the Puzzle Night tab to review or edit your saved submission."
+                  : "Open the Puzzle Night tab to submit the student registration form."
+              }
+              label="Open Puzzle Night Tab"
+              onClick={() => handleTabSelect("puzzle-night")}
+              title="Puzzle Night"
+            />
+          ) : null}
+          {!isCoachAccount ? (
+            <ShortcutCard
+              copy={
+                hasDpotdAccess
+                  ? "Open the D.PotD tab to review your portal status."
+                  : "Open the D.PotD tab to submit the student registration form."
+              }
+              label="Open D.PotD Tab"
+              onClick={() => handleTabSelect("dpotd")}
+              title="D.PotD"
+            />
+          ) : null}
+          <ShortcutCard
+            copy={
+              isCoachAccount
+                ? "Open the DTMT tab to manage coach registration, your school, and team assignments."
+                : "Open the DTMT tab to submit the student competition form."
+            }
+            label="Open DTMT Tab"
+            onClick={() => handleTabSelect("dtmt")}
+            title="DTMT"
+          />
+        </div>
+      </SurfaceCard>
     </div>
   );
 }
 
-function PuzzleNightSubmissionCard({ registration }) {
+function ShortcutCard({ copy, label, onClick, title }) {
   return (
     <SurfaceCard className="p-8">
-      <SectionHeader
-        title="Puzzle Night Submission"
-        description="This is the Puzzle Night registration currently saved for your student account. Use the event page if you need to edit it."
-      />
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <StatusLine label="Student Name">
-          {registration.name || "Not submitted yet"}
-        </StatusLine>
-        <StatusLine label="Grade">
-          {registration.grade || "Not submitted yet"}
-        </StatusLine>
-        <StatusLine label="School">
-          {registration.schoolName || "Left blank"}
-        </StatusLine>
-        <StatusLine label="Parent Contact">
-          {registration.parentEmail || "Not submitted yet"}
-        </StatusLine>
-        <StatusLine label="Math Teacher Email">
-          {registration.teacherEmail || "Left blank"}
-        </StatusLine>
-        <StatusLine label="Notes">
-          {registration.notes || "No notes added"}
-        </StatusLine>
-      </div>
-      <Link
+      <SectionHeader description={copy} title={title} />
+      <button
         className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-        to="/puzzle-night/register"
+        onClick={onClick}
+        type="button"
       >
-        Edit Puzzle Night Submission
-      </Link>
+        {label}
+      </button>
     </SurfaceCard>
   );
 }

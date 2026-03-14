@@ -8,7 +8,6 @@ import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
 import StatBadge from "../components/StatBadge";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
-import { buildProfileNextHref } from "../lib/siteAccountRouting";
 import { sponsorTiers } from "../data";
 
 const schedule = [
@@ -32,19 +31,22 @@ const fadeUp = {
 };
 
 export default function DTMT() {
-  const { authReady, user } = useDpotdAuth();
+  const { authReady, profile, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
-  const registrationPath = hasSignedInAccount
-    ? "/dtmt/register"
-    : buildProfileNextHref("/dtmt/register");
+  const isCoachAccount = profile?.accountType === "coach";
+  const profilePath = "/profile?view=dtmt";
 
   return (
     <>
       <PageHero
         actions={[
           {
-            label: hasSignedInAccount ? "Register Here" : "Sign In to Register",
-            to: registrationPath,
+            label: hasSignedInAccount
+              ? isCoachAccount
+                ? "Open Profile for DTMT"
+                : "Open Profile to Sign Up"
+              : "Sign In to Register",
+            to: profilePath,
           },
           { label: "Open Profile", to: "/profile", variant: "ghost" },
         ]}
@@ -110,9 +112,13 @@ export default function DTMT() {
             </a>
             <Link
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
-              to={registrationPath}
+              to={profilePath}
             >
-              {hasSignedInAccount ? "Open Registration" : "Sign In to Register"}
+              {hasSignedInAccount
+                ? isCoachAccount
+                  ? "Open DTMT in Profile"
+                  : "Open Profile to Sign Up"
+                : "Sign In to Register"}
             </Link>
           </motion.div>
         </div>
