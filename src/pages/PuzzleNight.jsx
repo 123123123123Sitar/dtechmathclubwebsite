@@ -64,7 +64,7 @@ export default function PuzzleNight() {
     : buildProfileNextHref("/puzzle-night/register");
   const heroActions = isCoachAccount
     ? [
-        { label: "Register here as a Coach!", to: "/dtmt/register" },
+        { label: "DTMT Overview", to: "/dtmt" },
         { label: "Open Profile", to: "/profile", variant: "ghost" },
       ]
     : [
