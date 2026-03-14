@@ -16,6 +16,7 @@ const Home = lazy(() => import("./pages/Home"));
 const ProfileHub = lazy(() => import("./pages/ProfileHub"));
 const PuzzleNight = lazy(() => import("./pages/PuzzleNight"));
 const PuzzleNightRegister = lazy(() => import("./pages/PuzzleNightRegister"));
+const SiteAdminPortal = lazy(() => import("./pages/SiteAdminPortal"));
 
 const routeMeta = {
   "/": {
@@ -72,6 +73,11 @@ const routeMeta = {
     title: "Sponsor Us | Design Tech Math Club",
     description:
       "Explore sponsorship opportunities and contact the Design Tech Math Club through the sponsor page.",
+  },
+  "/internal/club-admin": {
+    title: "Site Admin | Design Tech Math Club",
+    description:
+      "Internal Design Tech Math Club admin page for reviewing website signups and incoming messages.",
   },
 };
 
@@ -153,6 +159,7 @@ function AppShell() {
                 <Route path="/about/our-team" element={<About />} />
                 <Route path="/about/donate" element={<AboutDonate />} />
                 <Route path="/about/sponsor-us" element={<AboutSponsor />} />
+                <Route path="/internal/club-admin" element={<SiteAdminPortal />} />
                 <Route path="/about-our-team" element={<Navigate to="/about/our-team" replace />} />
                 <Route path="/competitions" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

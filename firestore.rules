@@ -9,10 +9,20 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
+    function isConfiguredAdminEmail() {
       return isAuthenticated() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        request.auth.token.email != null &&
+        exists(/databases/$(database)/documents/settings/appSettings) &&
+        get(/databases/$(database)/documents/settings/appSettings).data.adminEmail == request.auth.token.email;
+    }
+
+    function isAdmin() {
+      return isConfiguredAdminEmail() ||
+        (
+          isAuthenticated() &&
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true
+        );
     }
 
     match /users/{userId} {
