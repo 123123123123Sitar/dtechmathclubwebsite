@@ -7,22 +7,8 @@ function buildNavItems(isCoachAccount) {
   return [
     { type: "link", to: "/", label: "Home" },
     { type: "link", to: "/puzzle-night", label: "Puzzle Night" },
-    ...(isCoachAccount
-      ? [{ type: "link", to: "/dpotd/about", label: "d.PotD" }]
-      : [
-          {
-            type: "dropdown",
-            label: "d.PotD",
-            match: "/dpotd",
-            items: [{ to: "/dpotd/about", label: "About" }],
-          },
-        ]),
-    {
-      type: "dropdown",
-      label: "DTMT",
-      match: "/dtmt",
-      items: [{ to: "/dtmt", label: "Overview", end: true }],
-    },
+    { type: "link", to: "/dpotd/about", label: "d.PotD" },
+    { type: "link", to: "/dtmt", label: "DTMT" },
     {
       type: "dropdown",
       label: "About",

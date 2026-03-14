@@ -132,62 +132,47 @@ export default function ProfileHub() {
       />
 
       {authReady && user ? (
-        <FlowSection glow="muted">
-          <section className="py-10">
-            <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-6">
-              <SurfaceCard className="p-6">
-                <SectionHeader
-                  title="Registration Tabs"
-                  description={
-                    isCoachAccount
-                      ? "Use these tabs to manage your account and DTMT coach registration from one page."
-                      : "Use these tabs to manage your account and all student event registrations from one page."
-                  }
-                />
-                <div className="mt-6 flex flex-wrap gap-3">
-                  {(isCoachAccount ? COACH_TABS : STUDENT_TABS).map((tab) => (
-                    <button
-                      key={tab.id}
-                      className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
-                        activeView === tab.id
-                          ? "bg-brand text-white shadow-md shadow-brand-glow"
-                          : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
-                      }`}
-                      onClick={() => handleTabSelect(tab.id)}
-                      type="button"
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </SurfaceCard>
-
-              {activeView === "profile" ? (
-                <ProfilePanel
-                  dtmtCoachProfile={dtmtCoachProfile}
-                  dtmtSchool={dtmtSchool}
-                  dtmtStudentRegistration={dtmtStudentRegistration}
-                  form={form}
-                  handleChange={handleChange}
-                  handleSignOut={handleSignOut}
-                  handleSubmit={handleSubmit}
-                  handleTabSelect={handleTabSelect}
-                  hasDpotdAccess={hasDpotdAccess}
-                  isCoachAccount={isCoachAccount}
-                  message={message}
-                  puzzleNightRegistration={puzzleNightRegistration}
-                  saving={saving}
-                />
-              ) : activeView === "puzzle-night" ? (
-                <PuzzleNightDashboardPanel />
-              ) : activeView === "dpotd" ? (
-                <DpotdRegistrationPanel />
-              ) : (
-                <DtmtDashboardPanel />
-              )}
-            </div>
-          </section>
-        </FlowSection>
+        <div className="px-8">
+          <div className="mt-6 flex flex-wrap gap-3">
+            {(isCoachAccount ? COACH_TABS : STUDENT_TABS).map((tab) => (
+              <button
+                key={tab.id}
+                className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
+                  activeView === tab.id
+                    ? "bg-brand text-white shadow-md shadow-brand-glow"
+                    : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
+                }`}
+                onClick={() => handleTabSelect(tab.id)}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {activeView === "profile" ? (
+            <ProfilePanel
+              dtmtCoachProfile={dtmtCoachProfile}
+              dtmtSchool={dtmtSchool}
+              dtmtStudentRegistration={dtmtStudentRegistration}
+              form={form}
+              handleChange={handleChange}
+              handleSignOut={handleSignOut}
+              handleSubmit={handleSubmit}
+              handleTabSelect={handleTabSelect}
+              hasDpotdAccess={hasDpotdAccess}
+              isCoachAccount={isCoachAccount}
+              message={message}
+              puzzleNightRegistration={puzzleNightRegistration}
+              saving={saving}
+            />
+          ) : activeView === "puzzle-night" ? (
+            <PuzzleNightDashboardPanel />
+          ) : activeView === "dpotd" ? (
+            <DpotdRegistrationPanel />
+          ) : (
+            <DtmtDashboardPanel />
+          )}
+        </div>
       ) : (
         <>
           <FlowSection>
@@ -378,48 +363,6 @@ function ProfilePanel({
         </SurfaceCard>
       </div>
 
-      <SurfaceCard className="p-8">
-        <SectionHeader
-          title="Registration Shortcuts"
-          description="Open the event tabs below from here instead of leaving the profile page."
-        />
-        <div className={`mt-6 grid gap-5 ${isCoachAccount ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
-          {!isCoachAccount ? (
-            <ShortcutCard
-              copy={
-                puzzleNightRegistration?.registrationType === "student"
-                  ? "Return to the Puzzle Night tab to review or edit your saved submission."
-                  : "Open the Puzzle Night tab to submit the student registration form."
-              }
-              label="Open Puzzle Night Tab"
-              onClick={() => handleTabSelect("puzzle-night")}
-              title="Puzzle Night"
-            />
-          ) : null}
-          {!isCoachAccount ? (
-            <ShortcutCard
-              copy={
-                hasDpotdAccess
-                  ? "Open the D.PotD tab to review your portal status."
-                  : "Open the D.PotD tab to submit the student registration form."
-              }
-              label="Open D.PotD Tab"
-              onClick={() => handleTabSelect("dpotd")}
-              title="D.PotD"
-            />
-          ) : null}
-          <ShortcutCard
-            copy={
-              isCoachAccount
-                ? "Open the DTMT tab to manage coach registration, your school, and team assignments."
-                : "Open the DTMT tab to submit the student competition form."
-            }
-            label="Open DTMT Tab"
-            onClick={() => handleTabSelect("dtmt")}
-            title="DTMT"
-          />
-        </div>
-      </SurfaceCard>
     </div>
   );
 }
@@ -467,7 +410,7 @@ function Field({ label, ...props }) {
     <label className="grid gap-2">
       <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
       <input
-        className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+        className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
         {...props}
       />
     </label>

@@ -7,7 +7,7 @@ import Navbar from "./components/Navbar";
 const About = lazy(() => import("./pages/About"));
 const AboutDonate = lazy(() => import("./pages/AboutDonate"));
 const AboutSponsor = lazy(() => import("./pages/AboutSponsor"));
-const DPotDAbout = lazy(() => import("./pages/DPotDAbout"));
+const DPotDAbout = lazy(() => import("./pages/DPotD"));
 const DPotDRegister = lazy(() => import("./pages/DPotDRegister"));
 const DTMT = lazy(() => import("./pages/DTMT"));
 const DTMTRegister = lazy(() => import("./pages/DTMTRegister"));
