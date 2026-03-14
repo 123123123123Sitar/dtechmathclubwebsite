@@ -113,7 +113,6 @@ export default function ProfileHub() {
           />
         }
         description="This page is only for the shared account profile. Event registration forms live on their own DTMT, Puzzle Night, and D.PotD pages."
-        highlights={["One Shared Sign-In", "Separate Registration Pages", "Coach and Student Accounts"]}
         title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Profile"}
       />
 
@@ -321,29 +320,6 @@ function ProfilePanel({
             </StatusLine>
           </div>
         </SurfaceCard>
-      </div>
-      <div className={`grid gap-5 ${isCoachAccount ? "md:grid-cols-1" : "md:grid-cols-3"}`}>
-        {!isCoachAccount ? (
-          <ModuleCard
-            actionLabel="Register Here"
-            actionTo="/puzzle-night/register"
-            title="Puzzle Night"
-          >
-            {puzzleNightRegistration?.registrationType === "student"
-              ? "Open the separate Puzzle Night registration page to review or edit your saved student form."
-              : "Open the separate Puzzle Night registration page to submit the student form."}
-          </ModuleCard>
-        ) : null}
-        {!isCoachAccount ? (
-          <ModuleCard actionLabel="Register Here" actionTo="/dpotd/register" title="D.PotD">
-            Open the separate D.PotD page to register and manage portal access.
-          </ModuleCard>
-        ) : null}
-        <ModuleCard actionLabel="Register Here" actionTo="/dtmt/register" title="DTMT">
-          {isCoachAccount
-            ? "Open the separate DTMT registration page to register your school and manage teams."
-            : "Open the separate DTMT registration page to submit the student competition form."}
-        </ModuleCard>
       </div>
 
       {!isCoachAccount && puzzleNightRegistration?.registrationType === "student" ? (
