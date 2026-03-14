@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import DpotdDashboardPanel from "../components/DpotdDashboardPanel";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
@@ -23,6 +23,10 @@ export default function DPotDRegister() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const isCoachAccount = profile?.accountType === "coach";
+
+  if (isCoachAccount) {
+    return <Navigate replace to="/dpotd/about" />;
+  }
 
   useEffect(() => {
     if (!user) {
@@ -92,18 +96,14 @@ export default function DPotDRegister() {
             }
             right={
               <>
-                <h2 className="text-3xl font-black text-txt">
-                  {profile?.name || (isCoachAccount ? "Coach" : "Student")}
-                </h2>
+                <h2 className="text-3xl font-black text-txt">{profile?.name || "Student"}</h2>
                 <p className="mt-3 text-sm leading-relaxed text-txt-muted">
                   {profile?.email || user?.email || ""}
                 </p>
                 <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
-                  {isCoachAccount
-                    ? "Coach accounts cannot register for D.PotD."
-                    : hasDpotdAccess
-                      ? "This account already has D.PotD access."
-                      : "Submit the student D.PotD form here to activate portal access."}
+                  {hasDpotdAccess
+                    ? "This account already has D.PotD access."
+                    : "Submit the student D.PotD form here to activate portal access."}
                 </div>
               </>
             }
@@ -114,28 +114,7 @@ export default function DPotDRegister() {
       <FlowSection glow="muted">
         <section className="py-16">
           <div className="mx-auto w-[min(calc(100%-2rem),1180px)]">
-            {isCoachAccount ? (
-              <SurfaceCard className="p-8">
-                <SectionHeader
-                  title="Student Accounts Only"
-                  description="D.PotD registration is only available for student accounts. Coach accounts should use the DTMT registration page instead."
-                />
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link
-                    className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                    to="/dtmt/register"
-                  >
-                    DTMT Register Here
-                  </Link>
-                  <Link
-                    className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                    to="/profile"
-                  >
-                    Open Profile
-                  </Link>
-                </div>
-              </SurfaceCard>
-            ) : hasDpotdAccess ? (
+            {hasDpotdAccess ? (
               <DpotdDashboardPanel />
             ) : (
               <div className="grid gap-8 lg:grid-cols-[1.06fr_0.94fr]">

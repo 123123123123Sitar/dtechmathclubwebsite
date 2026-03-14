@@ -13,26 +13,30 @@ import {
 } from "../content/dpotd";
 
 export default function DPotDAbout() {
-  const { authReady, user } = useDpotdAuth();
+  const { authReady, profile, user } = useDpotdAuth();
   const hasSignedInAccount = authReady && Boolean(user);
+  const isCoachAccount = profile?.accountType === "coach";
   const registrationPath = hasSignedInAccount
     ? "/dpotd/register"
     : buildProfileNextHref("/dpotd/register");
+  const heroActions = isCoachAccount
+    ? []
+    : [
+        {
+          label: hasSignedInAccount ? "Register Here" : "Sign In for D.PotD",
+          to: registrationPath,
+        },
+        {
+          label: hasSignedInAccount ? "Open Portal Status" : "Open Profile",
+          to: hasSignedInAccount ? "/dpotd/register" : "/profile",
+          variant: "ghost",
+        },
+      ];
 
   return (
     <>
       <PageHero
-        actions={[
-          {
-            label: hasSignedInAccount ? "Register Here" : "Sign In for D.PotD",
-            to: registrationPath,
-          },
-          {
-            label: hasSignedInAccount ? "Open Portal Status" : "Open Profile",
-            to: hasSignedInAccount ? "/dpotd/register" : "/profile",
-            variant: "ghost",
-          },
-        ]}
+        actions={heroActions}
         aside={
           <HeroMediaPanel
             alt="D.PotD logo"
@@ -42,7 +46,7 @@ export default function DPotDAbout() {
             src="/dpotd-portal/dpotd-logo.png"
           />
         }
-        description="The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them."
+        description="The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them. Students register individually through their own accounts."
         title="Design Tech Problem of the Day Challenge"
       />
 
