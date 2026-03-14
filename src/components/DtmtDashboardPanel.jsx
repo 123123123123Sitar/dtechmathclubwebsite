@@ -41,16 +41,11 @@ const coachPaymentOptions = [
 ];
 
 const initialCoachForm = {
-  city: "",
   coachAttending: "yes",
   coachEventNotes: "",
   coachName: "",
-  maxStudents: "",
   paymentResponsibility: DTMT_PAYMENT_RESPONSIBILITY.STUDENT,
-  phone: "",
   schoolName: "",
-  shortName: "",
-  state: "",
   title: "",
 };
 
@@ -100,19 +95,14 @@ export default function DtmtDashboardPanel() {
 
   useEffect(() => {
     setCoachForm({
-      city: dtmtSchool?.city || "",
       coachAttending:
         dtmtCoachProfile?.coachAttending === false || dtmtSchool?.coachAttending === false
           ? "no"
           : "yes",
       coachEventNotes: dtmtCoachProfile?.coachEventNotes || dtmtSchool?.coachEventNotes || "",
       coachName: dtmtCoachProfile?.coachName || profile?.name || "",
-      maxStudents: dtmtSchool?.maxStudents || "",
       paymentResponsibility: normalizeDtmtPaymentResponsibility(dtmtSchool?.paymentResponsibility),
-      phone: dtmtCoachProfile?.phone || "",
       schoolName: dtmtSchool?.schoolName || dtmtCoachProfile?.schoolAffiliation || profile?.school || "",
-      shortName: dtmtSchool?.shortName || "",
-      state: dtmtSchool?.state || "",
       title: dtmtCoachProfile?.title || "",
     });
   }, [dtmtCoachProfile, dtmtSchool, profile]);
@@ -349,6 +339,7 @@ export default function DtmtDashboardPanel() {
   return isCoachAccount ? (
     <div className="grid gap-8">
       <div className="grid gap-8">
+        {!dtmtSchool ? (
         <SurfaceCard className="p-8">
           <SectionHeader
             title="DTMT Coach Registration"
@@ -361,7 +352,7 @@ export default function DtmtDashboardPanel() {
               <Field label="Title" name="title" onChange={handleCoachChange} value={coachForm.title} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Phone" name="phone" onChange={handleCoachChange} required value={coachForm.phone} />
+              <Field label="School Name" name="schoolName" onChange={handleCoachChange} required value={coachForm.schoolName} />
               <label className="grid gap-2">
                 <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                   Coach RSVP
@@ -378,13 +369,6 @@ export default function DtmtDashboardPanel() {
               </label>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="School Name" name="schoolName" onChange={handleCoachChange} required value={coachForm.schoolName} />
-              <Field label="Short Name" name="shortName" onChange={handleCoachChange} required value={coachForm.shortName} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="City" name="city" onChange={handleCoachChange} required value={coachForm.city} />
-              <Field label="State" name="state" onChange={handleCoachChange} required value={coachForm.state} />
-              <Field label="Max Students" name="maxStudents" onChange={handleCoachChange} required value={coachForm.maxStudents} />
             </div>
             <div className="grid gap-3 border-t border-border-subtle pt-4">
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
@@ -414,16 +398,13 @@ export default function DtmtDashboardPanel() {
                   </button>
                 ))}
               </div>
-              <p className="text-sm leading-relaxed text-txt-muted">
-                This controls what students from your school see in the DTMT payment section.
-              </p>
             </div>
             <label className="grid gap-2">
               <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                 Coach Notes
               </span>
               <textarea
-                className="min-h-[140px] rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                className="min-h-35 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
                 name="coachEventNotes"
                 onChange={handleCoachChange}
                 placeholder="Share coach attendance notes, supervision details, or team-planning context."
@@ -440,34 +421,50 @@ export default function DtmtDashboardPanel() {
             </button>
           </form>
         </SurfaceCard>
+        ) : null}
 
+        {dtmtSchool ? (
         <SurfaceCard className="p-8">
           <SectionHeader
-            title="Coach Status"
-            description="Once your school is registered, students can select it from their DTMT form. You can then review lunch choices, waiver status, payment status, and team assignments here."
+            title={(
+              <span className="flex items-center gap-2">
+                <span>Registration Complete!</span>
+                <span className="inline-block text-emerald-600">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="12" fill="#34D399" />
+                    <path d="M7 13l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
+            )}
+            description="Your DTMT coach registration is complete. View your submitted details below."
           />
-          <div className="mt-4 grid gap-4">
-            <StatusLine label="School">
-              {dtmtSchool?.schoolName || "Not registered yet"}
-            </StatusLine>
-            <StatusLine label="Coach RSVP">
-              {dtmtCoachProfile?.coachAttending === false ? "Not attending" : "Attending"}
-            </StatusLine>
-            <StatusLine label="Registered Students">
-              {coachRoster.length ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}` : "No student registrations yet"}
-            </StatusLine>
-            <StatusLine label="Payment Plan">
-              {dtmtSchool
-                ? getDtmtPaymentResponsibilityLabel(dtmtSchool.paymentResponsibility)
-                : "Not configured yet"}
-            </StatusLine>
-            <StatusLine label="Teams">
-              {Array.isArray(dtmtSchool?.teamLabels) && dtmtSchool.teamLabels.length
-                ? dtmtSchool.teamLabels.join(", ")
-                : "No team names created yet"}
-            </StatusLine>
-          </div>
+          <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
+            <summary className="cursor-pointer text-lg font-bold text-brand">View Submission Details</summary>
+            <div className="mt-4 grid gap-4">
+              <StatusLine label="School">
+                {dtmtSchool?.schoolName || "Not registered yet"}
+              </StatusLine>
+              <StatusLine label="Coach RSVP">
+                {dtmtCoachProfile?.coachAttending === false ? "Not attending" : "Attending"}
+              </StatusLine>
+              <StatusLine label="Registered Students">
+                {coachRoster.length ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}` : "No student registrations yet"}
+              </StatusLine>
+              <StatusLine label="Payment Plan">
+                {dtmtSchool
+                  ? getDtmtPaymentResponsibilityLabel(dtmtSchool.paymentResponsibility)
+                  : "Not configured yet"}
+              </StatusLine>
+              <StatusLine label="Teams">
+                {Array.isArray(dtmtSchool?.teamLabels) && dtmtSchool.teamLabels.length
+                  ? dtmtSchool.teamLabels.join(", ")
+                  : "No team names created yet"}
+              </StatusLine>
+            </div>
+          </details>
         </SurfaceCard>
+        ) : null}
       </div>
 
       <DtmtCoachRosterPanel
@@ -585,8 +582,8 @@ export default function DtmtDashboardPanel() {
             <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
               Dietary Notes
             </span>
-            <textarea
-              className="min-h-[120px] rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+              <textarea
+                className="min-h-30 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
               name="dietaryNotes"
               onChange={handleStudentChange}
               placeholder="Allergy details or lunch notes."
@@ -652,7 +649,7 @@ export default function DtmtDashboardPanel() {
                     Payment Method
                   </span>
                   <select
-                    className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                    className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
                     name="paymentMethod"
                     onChange={handleStudentChange}
                     required

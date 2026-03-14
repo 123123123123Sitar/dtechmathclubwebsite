@@ -53,6 +53,8 @@ export default function ProfileHub() {
     grade: "",
     name: "",
     school: "",
+    email: user?.email || "",
+    password: "",
   });
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
@@ -71,6 +73,8 @@ export default function ProfileHub() {
       grade: profile?.grade || "",
       name: profile?.name || "",
       school: profile?.school || "",
+      email: user?.email || "",
+      password: "",
     });
   }, [profile, user]);
 
@@ -83,7 +87,14 @@ export default function ProfileHub() {
   async function handleSubmit(event) {
     event.preventDefault();
     setSaving(true);
-    const result = await updateSiteProfile(form);
+    let result = { ok: true };
+    if (form.email !== user?.email) {
+      // Email update logic (Firebase requires re-authentication for email change, so here we just show a message)
+      setMessage("Email change requires re-authentication. Please sign out and sign in with your new email.");
+      setSaving(false);
+      return;
+    }
+    result = await updateSiteProfile(form);
     setSaving(false);
     setMessage(result.ok ? "Profile saved." : result.error);
   }
@@ -271,11 +282,11 @@ function ProfilePanel({
 }) {
   return (
     <div className="grid gap-8">
-      <div className="grid gap-8 lg:grid-cols-[0.98fr_1.02fr]">
-        <SurfaceCard className="p-8">
+      <div className="grid gap-8">
+        <SurfaceCard className="p-8 w-full">
           <SectionHeader
             title="Profile Details"
-            description="Keep the account name, school, and grade current here. The event registration tabs reuse this information."
+            description="Keep the account name, school, grade, email, and password current here. The event registration tabs reuse this information."
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />
@@ -288,6 +299,7 @@ function ProfilePanel({
             {!isCoachAccount ? (
               <Field label="Grade" name="grade" onChange={handleChange} value={form.grade} />
             ) : null}
+            <Field label="Email" name="email" onChange={handleChange} value={form.email} type="email" />
             <div className="flex flex-wrap gap-3">
               <button
                 className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
@@ -304,56 +316,34 @@ function ProfilePanel({
                 Sign Out
               </button>
             </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
+                type="button"
+                onClick={async () => {
+                  if (!form.email) {
+                    setMessage("Enter your email to reset password.");
+                    return;
+                  }
+                  setSaving(true);
+                  const result = await requestAccountPasswordReset(form.email);
+                  setSaving(false);
+                  setMessage(result.ok ? "Password reset email sent. Check your inbox." : result.error);
+                }}
+              >
+                Change Password (Send Reset Email)
+              </button>
+            </div>
             {message ? (
               <p
                 className={`text-sm font-semibold ${
-                  message === "Profile saved." ? "text-emerald-500" : "text-red-500"
+                  message === "Profile saved." || message === "Password reset email sent. Check your inbox." ? "text-emerald-500" : "text-red-500"
                 }`}
               >
                 {message}
               </p>
             ) : null}
           </form>
-        </SurfaceCard>
-
-        <SurfaceCard className="p-8">
-          <SectionHeader
-            title="Current Access"
-            description="These statuses are attached to this one account and determine which profile tabs become available."
-          />
-          <div className="mt-4 grid gap-4">
-            <StatusLine label="Account Type">
-              {isCoachAccount ? "Coach account" : "Student account"}
-            </StatusLine>
-            {!isCoachAccount ? (
-              <StatusLine label="Puzzle Night">
-                {puzzleNightRegistration?.registrationType === "student"
-                  ? "Student registration saved"
-                  : "No Puzzle Night registration yet"}
-              </StatusLine>
-            ) : null}
-            <StatusLine label="DTMT">
-              {isCoachAccount
-                ? dtmtSchool
-                  ? `${dtmtSchool.schoolName} registered`
-                  : "Coach registration not submitted yet"
-                : dtmtStudentRegistration
-                  ? `${dtmtStudentRegistration.registrationMode === "individual" ? "Independent entry" : dtmtStudentRegistration.schoolName}${dtmtStudentRegistration.teamLabel ? `, ${dtmtStudentRegistration.teamLabel}` : ""}`
-                  : "No DTMT registration yet"}
-            </StatusLine>
-            {!isCoachAccount ? (
-              <StatusLine label="D.PotD">
-                {hasDpotdAccess ? "Registered and ready" : "Not registered yet"}
-              </StatusLine>
-            ) : null}
-            <StatusLine label="Coach Details">
-              {dtmtCoachProfile
-                ? `${dtmtCoachProfile.coachName}${dtmtCoachProfile.title ? `, ${dtmtCoachProfile.title}` : ""}`
-                : isCoachAccount
-                  ? "Not submitted yet"
-                  : "Not applicable to student accounts"}
-            </StatusLine>
-          </div>
         </SurfaceCard>
       </div>
 
