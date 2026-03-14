@@ -1,6 +1,5 @@
+import { motion } from "framer-motion";
 import FlowSection from "../components/FlowSection";
-import HeroMediaPanel from "../components/HeroMediaPanel";
-import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import {
   dpotdHighlights,
@@ -9,19 +8,47 @@ import {
 export default function DPotD() {
   return (
     <>
-      <PageHero
-        aside={
-          <HeroMediaPanel
-            alt="D.PotD logo"
-            badge="D.PotD 2026"
-            caption="Five days of timed daily sets, including proof writing, as the lead-up to DTMT."
-            imageClassName="object-contain p-8 md:p-10"
-            src="/dpotd-portal/dpotd-logo.png"
-          />
-        }
-        description="The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them. Students register individually through their own accounts."
-        title="Design Tech Problem of the Day Challenge"
-      />
+      <section className="relative overflow-hidden pt-28 pb-18">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,109,74,0.22),transparent_28%),radial-gradient(circle_at_top_left,rgba(45,121,183,0.12),transparent_24%),linear-gradient(145deg,#f7f0e8_0%,#f3ece6_42%,#faf6f2_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.22)_0%,transparent_32%,rgba(255,255,255,0.18)_52%,transparent_72%)] opacity-60" />
+        <div className="absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-white/55 blur-[120px]" />
+
+        <div className="relative z-10 mx-auto w-[min(calc(100%-2rem),1180px)]">
+          <div className="relative overflow-hidden rounded-[38px] border border-[rgba(234,109,74,0.16)] bg-[linear-gradient(155deg,rgba(255,255,255,0.86),rgba(255,248,242,0.72))] p-7 shadow-[0_34px_90px_-48px_rgba(49,30,17,0.42)] ring-1 ring-white/40 backdrop-blur-xl before:pointer-events-none before:absolute before:-right-14 before:top-[-72px] before:h-56 before:w-56 before:rounded-full before:bg-brand/12 before:blur-3xl after:pointer-events-none after:absolute after:-left-10 after:bottom-[-88px] after:h-48 after:w-48 after:rounded-full after:bg-[#2d79b7]/10 after:blur-3xl md:p-10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-brand/70 to-transparent" />
+            <motion.div
+              className="w-full text-center mb-8"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+            >
+              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-black text-txt">Design Tech Problem of the Day Challenge</h1>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 items-start">
+              <motion.p
+                className="text-txt-muted text-base md:text-lg leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                The Design Tech Problems of the Day Challenge is an online math competition for middle school students leading into DTMT. Over five days, students receive three problems each day, including one proof-based question, and have one hour to solve them. Students register individually through their own accounts.
+              </motion.p>
+              <motion.div
+                className="flex justify-center md:justify-end flex-shrink-0"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <img
+                  src="/assets/dpotd-logo.png"
+                  alt="D.PotD logo"
+                  style={{ maxWidth: 300, height: "auto", display: "block", borderRadius: 16 }}
+                />
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <FlowSection glow="muted">
         <section className="py-16">

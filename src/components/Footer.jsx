@@ -16,7 +16,7 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               <img
                 className="h-16 w-16 rounded-[22px] object-contain shadow-[0_18px_34px_-24px_rgba(0,0,0,0.5)]"
-                src="/dtechmathclublogo.avif"
+                src="/assets/dtechmathclublogo.avif"
                 alt="Design Tech Math Club logo"
               />
               <div>

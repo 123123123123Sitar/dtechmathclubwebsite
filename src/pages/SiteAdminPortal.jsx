@@ -290,7 +290,7 @@ export default function SiteAdminPortal() {
             badge="Site Admin"
             caption="A hidden admin route for reviewing site registrations and incoming messages."
             imageClassName="object-contain p-8 md:p-10"
-            src="/dtechmathclublogolarger.jpg"
+            src="/assets/dtechmathclublogolarger.jpg"
           />
         }
         description="This internal page is not linked from the public site. It uses a Firestore-stored access code first, then the configured admin email account to unlock the protected data."

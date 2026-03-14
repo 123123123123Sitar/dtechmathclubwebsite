@@ -129,7 +129,7 @@ export default function ProfileHub() {
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
             imageClassName="object-contain p-8 md:p-10"
-            src="/dtechmathclublogolarger.jpg"
+            src="/assets/dtechmathclublogolarger.jpg"
           />
         }
         description="This page handles your shared account profile plus the registration tabs for Puzzle Night, D.PotD, and DTMT."

@@ -55,32 +55,59 @@ const fadeUp = {
 };
 
 export default function PuzzleNight() {
-  const { authReady, profile, user } = useDpotdAuth();
-  const hasSignedInAccount = authReady && Boolean(user);
-  const isCoachAccount = profile?.accountType === "coach";
-  const profilePath = isCoachAccount ? "/profile" : "/profile?view=puzzle-night";
-
   return (
     <>
-      <PageHero
-        align="center"
-        aside={
-          <HeroMediaPanel
-            alt="Design Tech Math Club banner"
-            badge="Puzzle Night"
-            caption="Exploration stations, countdown energy, and a community math night built for middle school students."
-            imageClassName="object-contain p-8 md:p-10"
-            src="/dtechmathclublogolarger.jpg"
-          />
-        }
-        description="The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The event is designed as an individual student signup with interactive puzzle stations that show the fun side of mathematics."
-        title="Design Tech Puzzle Night"
-      />
+      <section className="relative overflow-hidden pt-28 pb-18">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,109,74,0.22),transparent_28%),radial-gradient(circle_at_top_left,rgba(45,121,183,0.12),transparent_24%),linear-gradient(145deg,#f7f0e8_0%,#f3ece6_42%,#faf6f2_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.22)_0%,transparent_32%,rgba(255,255,255,0.18)_52%,transparent_72%)] opacity-60" />
+        <div className="absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-white/55 blur-[120px]" />
+
+        <div className="relative z-10 mx-auto w-[min(calc(100%-2rem),1180px)]">
+          <div className="relative overflow-hidden rounded-[38px] border border-[rgba(234,109,74,0.16)] bg-[linear-gradient(155deg,rgba(255,255,255,0.86),rgba(255,248,242,0.72))] p-7 shadow-[0_34px_90px_-48px_rgba(49,30,17,0.42)] ring-1 ring-white/40 backdrop-blur-xl before:pointer-events-none before:absolute before:-right-14 before:top-[-72px] before:h-56 before:w-56 before:rounded-full before:bg-brand/12 before:blur-3xl after:pointer-events-none after:absolute after:-left-10 after:bottom-[-88px] after:h-48 after:w-48 after:rounded-full after:bg-[#2d79b7]/10 after:blur-3xl md:p-10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-brand/70 to-transparent" />
+            <motion.div
+              className="w-full text-center mb-8"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+            >
+              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-black text-txt">Design Tech Puzzle Night</h1>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 items-start">
+              <motion.p
+                className="text-txt-muted text-base md:text-lg leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area, featuring interactive puzzle stations that show the fun side of mathematics. This page will be updated with the 2026 Puzzle Night event details closer to the event date.
+              </motion.p>
+              <motion.div
+                className="flex justify-center md:justify-end flex-shrink-0"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <img
+                  src="/assets/puzzle_night_logo.png"
+                  alt="Design Tech Puzzle Night logo"
+                  style={{ maxWidth: 400, height: "auto", display: "block", borderRadius: 16 }}
+                />
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <FlowSection>
         <section className="py-8">
           <div className="mx-auto w-[min(calc(100%-2rem),1260px)] rounded-[34px] border border-border-subtle bg-white/90 p-10 shadow-lg">
-            <h2 className="text-3xl font-black text-txt mb-2">Interactive stations and prizes</h2>
+            <h2 className="text-3xl font-black text-txt mb-6">Interactive stations and prizes</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <img src="/assets/puzzle_night_station1.jpg" alt="Puzzle Night station 1" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+              <img src="/assets/puzzle_night_station2.jpg" alt="Puzzle Night station 2" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+              <img src="/assets/puzzle_night_station3.jpg" alt="Puzzle Night station 3" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+            </div>
             <p className="mb-8 leading-relaxed text-txt-muted">
               Puzzle Night is built as an exploration-focused event where students rotate through engaging mathematical challenges, try unfamiliar ideas, and collaborate in a lower-pressure setting than a formal contest.
             </p>
@@ -135,9 +162,14 @@ export default function PuzzleNight() {
               {...fadeUp}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
+              <img
+                src="/assets/puzzle_night_countdown_event.jpg"
+                alt="Students rotating through logic and modeling stations"
+                className="absolute inset-0 w-full h-full object-cover opacity-70"
+              />
               <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
               <span className="absolute bottom-4 left-5 right-5 text-white text-sm font-medium z-10">
-                Students rotating through logic and modeling stations
+                Countdown event
               </span>
             </motion.div>
             <motion.div
@@ -145,9 +177,14 @@ export default function PuzzleNight() {
               {...fadeUp}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
+              <img
+                src="/assets/puzzle_night_raffle.jpg"
+                alt="Raffle tickets, puzzles, and collaborative problem solving"
+                className="absolute inset-0 w-full h-full object-cover opacity-70"
+              />
               <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
               <span className="absolute bottom-4 left-5 right-5 text-white text-sm font-medium z-10">
-                Raffle tickets, puzzles, and collaborative problem solving
+                Raffle winners
               </span>
             </motion.div>
           </div>

@@ -8,19 +8,19 @@ import ScrollStatPanel from "../components/ScrollStatPanel";
 import SectionHeader from "../components/SectionHeader";
 
 const stats = [
-  { value: "5", label: "Competitions Attended", direction: "left" },
   { value: "45", label: "Members", direction: "right" },
+  { value: "6", label: "Competitions Attended", direction: "left" },
   { value: "3", label: "Competitions Hosted", direction: "left" },
 ];
 
 const events = [
   {
-    title: "Design Tech Math Tournament 2027",
-    date: "Early March",
+    title: "Design Tech Puzzle Night",
+    date: "Late November",
     location: "Design Tech High School",
-    imageLabel: "Students competing in timed rounds",
-    accent: "accent-dtmt",
-    to: "/dtmt",
+    imageLabel: "Puzzle pieces and collaborative tables",
+    accent: "accent-puzzle",
+    to: "/puzzle-night",
   },
   {
     title: "Design Tech Problem of the Day Challenge",
@@ -31,12 +31,12 @@ const events = [
     to: "/dpotd/about",
   },
   {
-    title: "Design Tech Puzzle Night",
-    date: "Late November",
+    title: "Design Tech Math Tournament 2027",
+    date: "Early March",
     location: "Design Tech High School",
-    imageLabel: "Puzzle pieces and collaborative tables",
-    accent: "accent-puzzle",
-    to: "/puzzle-night",
+    imageLabel: "Students competing in timed rounds",
+    accent: "accent-dtmt",
+    to: "/dtmt",
   },
 ];
 

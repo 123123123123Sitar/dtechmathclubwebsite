@@ -1,8 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
-import HeroMediaPanel from "../components/HeroMediaPanel";
-import PageHero from "../components/PageHero";
 import SectionHeader from "../components/SectionHeader";
 import SplitPanel from "../components/SplitPanel";
 import SponsorSection from "../components/SponsorSection";
@@ -38,48 +36,53 @@ export default function DTMT() {
 
   return (
     <>
-      <PageHero
-        align="center"
-        aside={
-          <HeroMediaPanel
-            alt="Design Tech Math Club banner"
-            badge="DTMT"
-            caption="A full competition day with subject rounds, team events, speakers, and awards at Design Tech High School."
-            imageClassName="object-contain p-8 md:p-10"
-            src="/dtechmathclublogolarger.jpg"
-          />
-        }
-        description="The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking."
-        highlights={["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"]}
-        title="Design Tech Math Tournament"
-        titleClassName="whitespace-nowrap text-[clamp(1.9rem,3.6vw,3.5rem)]"
-      />
+      <section className="relative overflow-hidden pt-28 pb-18">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(234,109,74,0.22),transparent_28%),radial-gradient(circle_at_top_left,rgba(45,121,183,0.12),transparent_24%),linear-gradient(145deg,#f7f0e8_0%,#f3ece6_42%,#faf6f2_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.22)_0%,transparent_32%,rgba(255,255,255,0.18)_52%,transparent_72%)] opacity-60" />
+        <div className="absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-white/55 blur-[120px]" />
 
-      <FlowSection>
-        <section className="py-8">
-          <SplitPanel
-            left={
-              <>
-                <h2 className="text-3xl font-black text-txt">Tournament overview</h2>
-                <p className="mt-4 leading-relaxed text-txt-muted">
-                  DTMT is the club&apos;s flagship middle school event, combining strong subject
-                  rounds with team-based collaboration, community-building, and recognition for
-                  outstanding mathematical performance.
-                </p>
-              </>
-            }
-            right={
-              <>
-                <h2 className="text-3xl font-black text-txt">Registration details</h2>
-                <p className="mt-4 leading-relaxed text-txt-muted">Registration status: Closed</p>
-                <div className="mt-5 border-t border-border-subtle pt-4 leading-relaxed text-txt-muted">
-                  Deadline: March 3. Entry fee: $10.
+        <div className="relative z-10 mx-auto w-[min(calc(100%-2rem),1180px)]">
+          <div className="relative overflow-hidden rounded-[38px] border border-[rgba(234,109,74,0.16)] bg-[linear-gradient(155deg,rgba(255,255,255,0.86),rgba(255,248,242,0.72))] p-7 shadow-[0_34px_90px_-48px_rgba(49,30,17,0.42)] ring-1 ring-white/40 backdrop-blur-xl before:pointer-events-none before:absolute before:-right-14 before:top-[-72px] before:h-56 before:w-56 before:rounded-full before:bg-brand/12 before:blur-3xl after:pointer-events-none after:absolute after:-left-10 after:bottom-[-88px] after:h-48 after:w-48 after:rounded-full after:bg-[#2d79b7]/10 after:blur-3xl md:p-10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-brand/70 to-transparent" />
+            <motion.div
+              className="w-full text-center mb-8"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+            >
+              <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-black text-txt">Design Tech Math Tournament</h1>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 items-start">
+              <motion.div
+                className="text-txt-muted text-base md:text-lg leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                <p className="mb-4">The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking.</p>
+                <div className="flex flex-wrap gap-3 text-sm font-semibold text-brand">
+                  {["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"].map((item, i) => (
+                    <span key={i} className="px-4 py-2 rounded-full bg-brand/10 border border-brand/30">{item}</span>
+                  ))}
                 </div>
-              </>
-            }
-          />
-        </section>
-      </FlowSection>
+              </motion.div>
+              <motion.div
+                className="flex justify-center md:justify-end flex-shrink-0"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <img
+                  src="/assets/dtmt_logo.png"
+                  alt="Design Tech Math Club banner"
+                  style={{ maxWidth: 350, height: "auto", display: "block", borderRadius: 16 }}
+                />
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* ── Stats ─────────────────────────────────────────── */}
       <FlowSection>
@@ -99,7 +102,7 @@ export default function DTMT() {
             >
               Competition Handbook
             </a>
-            <Link
+            {/* <Link
               className="inline-flex items-center px-6 py-3 rounded-full border border-brand text-brand font-bold hover:bg-brand hover:text-white transition-all duration-200"
               to={profilePath}
             >
@@ -108,7 +111,7 @@ export default function DTMT() {
                   ? "Open DTMT in Profile"
                   : "Open Profile to Sign Up"
                 : "Sign In to Register"}
-            </Link>
+            </Link> */}
           </motion.div>
         </div>
         </section>
@@ -128,10 +131,15 @@ export default function DTMT() {
               description="Students compete in subject rounds covering Algebra, Geometry, Discrete, and a 6th Grade Test, followed by a Team Round and Sequence Round. The activities session includes Professor Ciprian Manolescu's presentation on Knot Theory, random math problem sets, math jeopardy, and a relay round. Tiebreakers use a Mathcounts-style Countdown round."
             />
           </div>
-          <div className="border-t border-border-subtle pt-5 md:border-t-0 md:border-l md:pl-8">
-            <h3 className="text-2xl font-extrabold text-txt">Competition Day</h3>
-            <p className="text-txt-muted text-sm">Subject rounds, team rounds, speaker session, and awards</p>
-          </div>
+          <motion.img
+            src="/assets/dtmt_opening.jpg"
+            alt="DTMT Opening"
+            className="rounded-2xl border border-border-subtle shadow-lg w-full h-80 object-cover"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          />
         </motion.div>
         </section>
       </FlowSection>
@@ -154,6 +162,43 @@ export default function DTMT() {
                 <div className="text-txt-muted">{detail}</div>
               </motion.div>
             ))}
+          </div>
+        </div>
+        </section>
+      </FlowSection>
+
+      {/* ── Event Gallery ─────────────────────────────────── */}
+      <FlowSection>
+        <section className="py-20">
+        <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.img
+              src="/assets/dtmt_subject_round.jpg"
+              alt="DTMT Subject Round"
+              className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0 }}
+            />
+            <motion.img
+              src="/assets/dtmt_closing.jpg"
+              alt="DTMT Closing"
+              className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            />
+            <motion.img
+              src="/assets/dtmt_awards.jpg"
+              alt="DTMT Awards"
+              className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            />
           </div>
         </div>
         </section>

@@ -74,7 +74,7 @@ export default function Navbar() {
           <img
             alt="Design Tech Math Club logo"
             className="h-11 w-11 shrink-0 rounded-xl object-cover transition-all duration-200"
-            src="/dtechmathclublogo.avif"
+            src="/assets/dtechmathclublogo.avif"
           />
           <div className="hidden sm:block">
             <p className="m-0 text-xl font-extrabold leading-tight text-txt">Design Tech Math Club</p>
