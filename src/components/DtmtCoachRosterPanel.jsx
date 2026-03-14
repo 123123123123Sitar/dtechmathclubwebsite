@@ -213,7 +213,7 @@ export default function DtmtCoachRosterPanel({
                             <p>Rounds: {student.subjectRounds?.join(", ") || "None selected"}</p>
                             <p>Waiver: {student.waiverAccepted ? "Complete" : "Pending"}</p>
                             <p>
-                              Payment Plan:{" "}
+                              Payment Option:{" "}
                               {getDtmtPaymentResponsibilityLabel(student.paymentResponsibility)}
                             </p>
                             <p>Payment: {formatDtmtPaymentSummary(student)}</p>

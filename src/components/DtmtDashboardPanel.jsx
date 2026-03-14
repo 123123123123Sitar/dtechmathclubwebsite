@@ -30,13 +30,13 @@ const lunchOptions = [
 const coachPaymentOptions = [
   [
     DTMT_PAYMENT_RESPONSIBILITY.COACH,
-    "Coach pays for all students",
-    "Students from this school will not enter separate DTMT payment details.",
+    "Coach handles payments",
+    "As a coach, you will handle all student payments and reimbursements. Students will not be asked to pay for themselves.",
   ],
   [
     DTMT_PAYMENT_RESPONSIBILITY.STUDENT,
     "Students pay for themselves",
-    "Each student from this school must record their own payment in the DTMT form.",
+    "Students will pay their required amount. No work is needed on your part.",
   ],
 ];
 
@@ -372,7 +372,7 @@ export default function DtmtDashboardPanel() {
             </div>
             <div className="grid gap-3 border-t border-border-subtle pt-4">
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                Student Payment Plan
+                Payment Option
               </p>
               <div className="grid gap-3 md:grid-cols-2">
                 {coachPaymentOptions.map(([value, label, description]) => (
@@ -451,7 +451,7 @@ export default function DtmtDashboardPanel() {
               <StatusLine label="Registered Students">
                 {coachRoster.length ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}` : "No student registrations yet"}
               </StatusLine>
-              <StatusLine label="Payment Plan">
+              <StatusLine label="Payment Option">
                 {dtmtSchool
                   ? getDtmtPaymentResponsibilityLabel(dtmtSchool.paymentResponsibility)
                   : "Not configured yet"}
@@ -552,7 +552,7 @@ export default function DtmtDashboardPanel() {
             {studentForm.registrationMode === "individual"
               ? "Independent entries handle their own DTMT payment during registration."
               : !studentForm.schoolId
-                ? "Choose a registered school above to load that coach's DTMT payment plan."
+                ? "Choose a registered school above to load that coach's DTMT payment option."
                 : isCoachManagedDtmtPayment(selectedPaymentResponsibility)
                   ? `${selectedSchoolLabel || studentForm.schoolName} is marked as coach-paid. You do not need to enter a separate student payment method.`
                   : `${selectedSchoolLabel || studentForm.schoolName} requires each student to record their own payment below.`}
@@ -727,7 +727,7 @@ export default function DtmtDashboardPanel() {
                   ? "Independent entry"
                   : dtmtStudentRegistration?.schoolName || selectedSchoolLabel || "Not selected yet"}
               </StatusLine>
-              <StatusLine label="Payment Plan">
+              <StatusLine label="Payment Option">
                 {dtmtStudentRegistration
                   ? getDtmtPaymentResponsibilityLabel(dtmtStudentRegistration.paymentResponsibility)
                   : studentForm.registrationMode === "school" && studentForm.schoolId
