@@ -59,9 +59,7 @@ export default function ProfileHub() {
     }
 
     return isCoachAccount
-      ? [
-          { label: "DTMT", to: "/dtmt/register" },
-        ]
+      ? []
       : [
           { label: "Puzzle Night", to: "/puzzle-night/register" },
           { label: "DTMT", to: "/dtmt/register", variant: "ghost" },

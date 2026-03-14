@@ -7,23 +7,25 @@ function buildNavItems(isCoachAccount) {
   return [
     { type: "link", to: "/", label: "Home" },
     { type: "link", to: "/puzzle-night", label: "Puzzle Night" },
-    {
-      type: "dropdown",
-      label: "d.PotD",
-      match: "/dpotd",
-      items: isCoachAccount
-        ? [{ to: "/dpotd/about", label: "About" }]
-        : [
-            { to: "/dpotd/about", label: "About" },
-            { to: "/dpotd/register", label: "Register Here" },
-          ],
-    },
+    ...(isCoachAccount
+      ? [{ type: "link", to: "/dpotd/about", label: "d.PotD" }]
+      : [
+          {
+            type: "dropdown",
+            label: "d.PotD",
+            match: "/dpotd",
+            items: [
+              { to: "/dpotd/about", label: "About" },
+              { to: "/dpotd/register", label: "Register Here" },
+            ],
+          },
+        ]),
     {
       type: "dropdown",
       label: "DTMT",
       match: "/dtmt",
       items: [
-        { to: "/dtmt", label: "Overview" },
+        { to: "/dtmt", label: "Overview", end: true },
         { to: "/dtmt/register", label: "Register Here" },
       ],
     },
@@ -147,6 +149,7 @@ export default function Navbar() {
                       >
                         {item.items.map((child) => (
                           <NavLink
+                            end={child.end}
                             key={child.to}
                             className={({ isActive }) =>
                               `block rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-150 ${
@@ -269,6 +272,7 @@ export default function Navbar() {
                           <div className="grid gap-1">
                             {item.items.map((child) => (
                               <NavLink
+                                end={child.end}
                                 key={child.to}
                                 className={({ isActive }) =>
                                   `rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-150 ${
