@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import SurfaceCard from "./SurfaceCard";
 
-export default function EventCard({ title, date, location, accent, imageLabel, to }) {
+export default function EventCard({ title, date, location, accent, imageLabel, to, imageSrc }) {
   const gradients = {
     "accent-dtmt": "from-[#2d79b7] via-[#6aaae4] to-[#d8e8f6]",
     "accent-dpotd": "from-[#f08f34] via-[#f0b24d] to-[#fff0c4]",
@@ -20,8 +20,16 @@ export default function EventCard({ title, date, location, accent, imageLabel, t
     >
       <SurfaceCard className="overflow-hidden transition-all duration-300 group-hover:border-brand/35">
         <div
-          className={`relative min-h-[220px] bg-linear-to-br ${gradients[accent] || "from-brand to-brand-light"}`}
+          className={`relative min-h-55 bg-linear-to-br ${gradients[accent] || "from-brand to-brand-light"}`}
         >
+          {imageSrc && (
+            <img
+              src={imageSrc}
+              alt={title}
+              className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-80 z-0"
+              style={{ borderTopLeftRadius: '2rem', borderTopRightRadius: '2rem' }}
+            />
+          )}
           <div className="absolute inset-0 bg-linear-to-t from-[#23140d]/65 via-[#23140d]/15 to-transparent" />
           <div className="absolute left-5 top-5 rounded-full border border-white/35 bg-white/18 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white backdrop-blur-md">
             {date}

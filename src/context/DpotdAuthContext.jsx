@@ -1104,10 +1104,7 @@ export function DpotdAuthProvider({ children }) {
     }
 
     const schoolName = values.schoolName.trim();
-    const shortName = values.shortName.trim();
     const city = values.city.trim();
-    const state = values.state.trim();
-    const maxStudents = values.maxStudents.trim();
     const paymentResponsibility = normalizeDtmtPaymentResponsibility(
       values.paymentResponsibility || dtmtSchool?.paymentResponsibility,
     );
@@ -1119,7 +1116,7 @@ export function DpotdAuthProvider({ children }) {
     const coachPhone = dtmtCoachProfile?.phone || "";
     const schoolAffiliation = dtmtCoachProfile?.schoolAffiliation || profile?.school || schoolName;
 
-    if (!schoolName || !shortName || !city || !state || !maxStudents) {
+    if (!schoolName || !city) {
       return {
         ok: false,
         error: "Fill in every school registration detail before continuing.",
@@ -1174,12 +1171,9 @@ export function DpotdAuthProvider({ children }) {
             coachName,
             coachUid: uid,
             eventKey: DTMT_EVENT_KEY,
-            maxStudents,
             paymentResponsibility,
             schoolName,
             schoolKey: normalizeSchoolKey(schoolName),
-            shortName,
-            state,
             status: "registered",
             teamLabels: dtmtSchool?.teamLabels || [],
             updatedAt: serverTimestamp(),
@@ -1225,12 +1219,7 @@ export function DpotdAuthProvider({ children }) {
 
     const coachName = values.coachName.trim();
     const title = values.title.trim();
-    const phone = values.phone.trim();
     const schoolName = values.schoolName.trim();
-    const shortName = values.shortName.trim();
-    const city = values.city.trim();
-    const state = values.state.trim();
-    const maxStudents = values.maxStudents.trim();
     const paymentResponsibility = normalizeDtmtPaymentResponsibility(
       values.paymentResponsibility || dtmtSchool?.paymentResponsibility,
     );
@@ -1248,19 +1237,11 @@ export function DpotdAuthProvider({ children }) {
 
     const requiredChecks = [
       validateTextField(coachName, "Coach name", { requireLetter: true }),
-      validateTextField(phone, "Phone number", { minLength: 7 }),
       validateTextField(schoolName, "School name", { requireLetter: true }),
-      validateTextField(shortName, "Short name", { requireLetter: true }),
-      validateTextField(city, "City", { requireLetter: true }),
-      validateTextField(state, "State", { minLength: 2, requireLetter: true }),
     ].filter(Boolean);
 
     if (requiredChecks.length) {
       return { ok: false, error: requiredChecks[0] };
-    }
-
-    if (!/^\d+$/.test(maxStudents) || Number(maxStudents) <= 0) {
-      return { ok: false, error: "Max students must be a positive whole number." };
     }
 
     try {
@@ -1275,7 +1256,6 @@ export function DpotdAuthProvider({ children }) {
             coachName,
             email: coachEmail,
             eventKey: DTMT_EVENT_KEY,
-            phone,
             schoolAffiliation: schoolName,
             status: "active",
             title,
@@ -1301,19 +1281,15 @@ export function DpotdAuthProvider({ children }) {
         setDoc(
           doc(db, DTMT_SCHOOL_COLLECTION, uid),
           {
-            city,
             coachAttending,
             coachEmail,
             coachEventNotes,
             coachName,
             coachUid: uid,
             eventKey: DTMT_EVENT_KEY,
-            maxStudents,
             paymentResponsibility,
             schoolKey: normalizeSchoolKey(schoolName),
             schoolName,
-            shortName,
-            state,
             status: "registered",
             teamLabels: existingTeamLabels,
             updatedAt: serverTimestamp(),
@@ -1414,7 +1390,6 @@ export function DpotdAuthProvider({ children }) {
     const subjectRounds = values.subjectRounds.filter(Boolean);
     const lunchPreference = values.lunchPreference.trim();
     const dietaryNotes = values.dietaryNotes.trim();
-    let paymentMethod = values.paymentMethod.trim();
     const email = (auth.currentUser.email || profile?.email || "").trim().toLowerCase();
 
     if (!name || !grade) {
@@ -1487,9 +1462,6 @@ export function DpotdAuthProvider({ children }) {
       const requiresDirectPayment =
         registrationMode === "individual" || !isCoachManagedDtmtPayment(paymentResponsibility);
 
-      if (requiresDirectPayment && (!values.paymentAcknowledged || !paymentMethod)) {
-        return { ok: false, error: "Complete the payment section before registering for DTMT." };
-      }
 
       if (!requiresDirectPayment) {
         paymentMethod = "coach-covered";
@@ -1506,6 +1478,7 @@ export function DpotdAuthProvider({ children }) {
         setDoc(
           doc(db, SITE_PROFILE_COLLECTION, uid),
           {
+            accountUid: uid,
             accountType: "student",
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
             coachAccount: false,

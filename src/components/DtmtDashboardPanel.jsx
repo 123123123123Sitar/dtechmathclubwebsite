@@ -55,7 +55,6 @@ const initialStudentForm = {
   lunchPreference: "",
   name: "",
   paymentAcknowledged: false,
-  paymentMethod: "",
   registrationMode: "school",
   schoolId: "",
   schoolName: "",
@@ -96,13 +95,21 @@ export default function DtmtDashboardPanel() {
   useEffect(() => {
     setCoachForm({
       coachAttending:
-        dtmtCoachProfile?.coachAttending === false || dtmtSchool?.coachAttending === false
+        dtmtCoachProfile?.coachAttending === false ||
+        dtmtSchool?.coachAttending === false
           ? "no"
           : "yes",
-      coachEventNotes: dtmtCoachProfile?.coachEventNotes || dtmtSchool?.coachEventNotes || "",
+      coachEventNotes:
+        dtmtCoachProfile?.coachEventNotes || dtmtSchool?.coachEventNotes || "",
       coachName: dtmtCoachProfile?.coachName || profile?.name || "",
-      paymentResponsibility: normalizeDtmtPaymentResponsibility(dtmtSchool?.paymentResponsibility),
-      schoolName: dtmtSchool?.schoolName || dtmtCoachProfile?.schoolAffiliation || profile?.school || "",
+      paymentResponsibility: normalizeDtmtPaymentResponsibility(
+        dtmtSchool?.paymentResponsibility,
+      ),
+      schoolName:
+        dtmtSchool?.schoolName ||
+        dtmtCoachProfile?.schoolAffiliation ||
+        profile?.school ||
+        "",
       title: dtmtCoachProfile?.title || "",
     });
   }, [dtmtCoachProfile, dtmtSchool, profile]);
@@ -120,10 +127,11 @@ export default function DtmtDashboardPanel() {
       lunchPreference: dtmtStudentRegistration?.lunchPreference || "",
       name: dtmtStudentRegistration?.name || profile?.name || "",
       paymentAcknowledged: Boolean(dtmtStudentRegistration?.paymentStatus),
-      paymentMethod: dtmtStudentRegistration?.paymentMethod || "",
       registrationMode: mode,
-      schoolId: mode === "school" ? dtmtStudentRegistration?.schoolId || "" : "",
-      schoolName: mode === "school" ? dtmtStudentRegistration?.schoolName || "" : "",
+      schoolId:
+        mode === "school" ? dtmtStudentRegistration?.schoolId || "" : "",
+      schoolName:
+        mode === "school" ? dtmtStudentRegistration?.schoolName || "" : "",
       subjectRounds: dtmtStudentRegistration?.subjectRounds || [],
       waiverAccepted: Boolean(dtmtStudentRegistration?.waiverAccepted),
       waiverSignerName: dtmtStudentRegistration?.waiverSignerName || "",
@@ -174,11 +182,16 @@ export default function DtmtDashboardPanel() {
 
   const selectedSchoolLabel = useMemo(() => {
     if (!studentForm.schoolId) return "";
-    return schoolOptions.find((option) => option.id === studentForm.schoolId)?.schoolName || "";
+    return (
+      schoolOptions.find((option) => option.id === studentForm.schoolId)
+        ?.schoolName || ""
+    );
   }, [schoolOptions, studentForm.schoolId]);
 
   const selectedSchool = useMemo(
-    () => schoolOptions.find((option) => option.id === studentForm.schoolId) || null,
+    () =>
+      schoolOptions.find((option) => option.id === studentForm.schoolId) ||
+      null,
     [schoolOptions, studentForm.schoolId],
   );
 
@@ -188,11 +201,15 @@ export default function DtmtDashboardPanel() {
     }
 
     if (selectedSchool) {
-      return normalizeDtmtPaymentResponsibility(selectedSchool.paymentResponsibility);
+      return normalizeDtmtPaymentResponsibility(
+        selectedSchool.paymentResponsibility,
+      );
     }
 
     if (dtmtStudentRegistration?.schoolId === studentForm.schoolId) {
-      return normalizeDtmtPaymentResponsibility(dtmtStudentRegistration?.paymentResponsibility);
+      return normalizeDtmtPaymentResponsibility(
+        dtmtStudentRegistration?.paymentResponsibility,
+      );
     }
 
     return DTMT_PAYMENT_RESPONSIBILITY.STUDENT;
@@ -220,27 +237,20 @@ export default function DtmtDashboardPanel() {
     const { checked, name, type, value } = event.target;
     setStudentForm((current) => {
       if (name === "schoolId") {
-        const schoolRecord = schoolOptions.find((option) => option.id === value) || null;
+        const schoolRecord =
+          schoolOptions.find((option) => option.id === value) || null;
         const schoolName = schoolRecord?.schoolName || "";
         const coachManagedPayment =
-          Boolean(value) && isCoachManagedDtmtPayment(schoolRecord?.paymentResponsibility);
+          Boolean(value) &&
+          isCoachManagedDtmtPayment(schoolRecord?.paymentResponsibility);
 
         return {
           ...current,
           schoolId: value,
           schoolName,
-          paymentAcknowledged:
-            coachManagedPayment
-              ? true
-              : current.paymentMethod === "coach-covered"
-                ? false
-                : current.paymentAcknowledged,
-          paymentMethod:
-            coachManagedPayment
-              ? "coach-covered"
-              : current.paymentMethod === "coach-covered"
-                ? ""
-                : current.paymentMethod,
+          paymentAcknowledged: coachManagedPayment
+            ? true
+            : current.paymentAcknowledged,
         };
       }
 
@@ -256,13 +266,9 @@ export default function DtmtDashboardPanel() {
       schoolId: mode === "school" ? current.schoolId : "",
       schoolName: mode === "school" ? current.schoolName : "",
       paymentAcknowledged:
-        mode === "individual" && current.paymentMethod === "coach-covered"
+        mode === "individual" && false
           ? false
           : current.paymentAcknowledged,
-      paymentMethod:
-        mode === "individual" && current.paymentMethod === "coach-covered"
-          ? ""
-          : current.paymentMethod,
     }));
     setStudentMessage("");
   }
@@ -282,7 +288,9 @@ export default function DtmtDashboardPanel() {
     setCoachBusy(true);
     const result = await saveDtmtCoachRegistration(coachForm);
     setCoachBusy(false);
-    setCoachMessage(result.ok ? "DTMT coach registration saved." : result.error);
+    setCoachMessage(
+      result.ok ? "DTMT coach registration saved." : result.error,
+    );
   }
 
   async function handleStudentSubmit(event) {
@@ -304,7 +312,12 @@ export default function DtmtDashboardPanel() {
     setTeamCreateMessage("");
 
     const nextTeamLabels = Array.from(
-      new Set([...(dtmtSchool?.teamLabels || []), String(teamName || "").trim()].filter(Boolean)),
+      new Set(
+        [
+          ...(dtmtSchool?.teamLabels || []),
+          String(teamName || "").trim(),
+        ].filter(Boolean),
+      ),
     );
     const result = await saveDtmtTeamLabels(nextTeamLabels);
 
@@ -340,130 +353,173 @@ export default function DtmtDashboardPanel() {
     <div className="grid gap-8">
       <div className="grid gap-8">
         {!dtmtSchool ? (
-        <SurfaceCard className="p-8">
-          <SectionHeader
-            title="DTMT Coach Registration"
-            description="Coach accounts only see the coach DTMT form here. Register your school, RSVP for coach attendance, and then manage teams from the roster board."
-          />
-          <form className="mt-8 grid gap-5" onSubmit={handleCoachSubmit} noValidate>
-            <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Coach Name" name="coachName" onChange={handleCoachChange} required value={coachForm.coachName} />
-              <Field label="Title" name="title" onChange={handleCoachChange} value={coachForm.title} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="School Name" name="schoolName" onChange={handleCoachChange} required value={coachForm.schoolName} />
+          <SurfaceCard className="p-8">
+            <SectionHeader
+              title="DTMT Coach Registration"
+              description="Step 1: Complete the form below to register your school. This will allow your students to register under your school."
+            />
+            <form
+              className="mt-8 grid gap-5"
+              onSubmit={handleCoachSubmit}
+              noValidate
+            >
+              <ReadonlyField
+                label="Email"
+                value={profile?.email || user?.email || ""}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Coach Name"
+                  name="coachName"
+                  onChange={handleCoachChange}
+                  required
+                  value={coachForm.coachName}
+                />
+                <Field
+                  label="Title"
+                  name="title"
+                  onChange={handleCoachChange}
+                  value={coachForm.title}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="School Name"
+                  name="schoolName"
+                  onChange={handleCoachChange}
+                  required
+                  value={coachForm.schoolName}
+                />
+                <label className="grid gap-2">
+                  <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                    Coach RSVP
+                  </span>
+                  <select
+                    className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                    name="coachAttending"
+                    onChange={handleCoachChange}
+                    value={coachForm.coachAttending}
+                  >
+                    <option value="yes">Yes, I am attending</option>
+                    <option value="no">No, I am not attending</option>
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2"></div>
+              <div className="grid gap-3 border-t border-border-subtle pt-4">
+                <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                  Payment Option
+                </p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {coachPaymentOptions.map(([value, label, description]) => (
+                    <button
+                      key={value}
+                      className={`rounded-[24px] border px-5 py-4 text-left transition-all duration-200 ${
+                        coachForm.paymentResponsibility === value
+                          ? "border-brand bg-brand text-white shadow-md shadow-brand-glow"
+                          : "border-border-subtle bg-white/70 text-txt hover:border-brand/40"
+                      }`}
+                      onClick={() =>
+                        setCoachForm((current) => ({
+                          ...current,
+                          paymentResponsibility: value,
+                        }))
+                      }
+                      type="button"
+                    >
+                      <p className="text-sm font-black uppercase tracking-[0.14em]">
+                        {label}
+                      </p>
+                      <p className="mt-2 text-sm leading-relaxed opacity-90">
+                        {description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="grid gap-2">
                 <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                  Coach RSVP
+                  Coach Notes
                 </span>
-                <select
-                  className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                  name="coachAttending"
+                <textarea
+                  className="min-h-35 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                  name="coachEventNotes"
                   onChange={handleCoachChange}
-                  value={coachForm.coachAttending}
-                >
-                  <option value="yes">Yes, I am attending</option>
-                  <option value="no">No, I am not attending</option>
-                </select>
+                  placeholder="Share coach attendance notes, supervision details, or team-planning context."
+                  value={coachForm.coachEventNotes}
+                />
               </label>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-            </div>
-            <div className="grid gap-3 border-t border-border-subtle pt-4">
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                Payment Option
-              </p>
-              <div className="grid gap-3 md:grid-cols-2">
-                {coachPaymentOptions.map(([value, label, description]) => (
-                  <button
-                    key={value}
-                    className={`rounded-[24px] border px-5 py-4 text-left transition-all duration-200 ${
-                      coachForm.paymentResponsibility === value
-                        ? "border-brand bg-brand text-white shadow-md shadow-brand-glow"
-                        : "border-border-subtle bg-white/70 text-txt hover:border-brand/40"
-                    }`}
-                    onClick={() =>
-                      setCoachForm((current) => ({
-                        ...current,
-                        paymentResponsibility: value,
-                      }))
-                    }
-                    type="button"
-                  >
-                    <p className="text-sm font-black uppercase tracking-[0.14em]">
-                      {label}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed opacity-90">{description}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <label className="grid gap-2">
-              <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                Coach Notes
-              </span>
-              <textarea
-                className="min-h-35 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                name="coachEventNotes"
-                onChange={handleCoachChange}
-                placeholder="Share coach attendance notes, supervision details, or team-planning context."
-                value={coachForm.coachEventNotes}
+              <MessageCopy
+                message={coachMessage}
+                successCopy="DTMT coach registration saved."
               />
-            </label>
-            <MessageCopy message={coachMessage} successCopy="DTMT coach registration saved." />
-            <button
-              className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={coachBusy}
-              type="submit"
-            >
-              {coachBusy ? "Saving..." : dtmtSchool ? "Update DTMT Coach Registration" : "Save DTMT Coach Registration"}
-            </button>
-          </form>
-        </SurfaceCard>
+              <button
+                className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={coachBusy}
+                type="submit"
+              >
+                {coachBusy ? "Submitting..." : "Submit Coach Registration"}
+              </button>
+            </form>
+          </SurfaceCard>
         ) : null}
 
         {dtmtSchool ? (
-        <SurfaceCard className="p-8">
-          <SectionHeader
-            title={(
-              <span className="flex items-center gap-2">
-                <span>Registration Complete!</span>
-                <span className="inline-block text-emerald-600">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="12" fill="#34D399" />
-                    <path d="M7 13l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+          <SurfaceCard className="p-8">
+            <SectionHeader
+              title={
+                <span className="flex items-center gap-2">
+                  <span>Registration Complete!</span>
+                  <span className="inline-block text-emerald-600">
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="12" fill="#34D399" />
+                      <path
+                        d="M7 13l3 3 7-7"
+                        stroke="#fff"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
                 </span>
-              </span>
-            )}
-            description="Your DTMT coach registration is complete. View your submitted details below."
-          />
-          <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
-            <summary className="cursor-pointer text-lg font-bold text-brand">View Submission Details</summary>
-            <div className="mt-4 grid gap-4">
-              <StatusLine label="School">
-                {dtmtSchool?.schoolName || "Not registered yet"}
-              </StatusLine>
-              <StatusLine label="Coach RSVP">
-                {dtmtCoachProfile?.coachAttending === false ? "Not attending" : "Attending"}
-              </StatusLine>
-              <StatusLine label="Registered Students">
-                {coachRoster.length ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}` : "No student registrations yet"}
-              </StatusLine>
-              <StatusLine label="Payment Option">
-                {dtmtSchool
-                  ? getDtmtPaymentResponsibilityLabel(dtmtSchool.paymentResponsibility)
-                  : "Not configured yet"}
-              </StatusLine>
-              <StatusLine label="Teams">
-                {Array.isArray(dtmtSchool?.teamLabels) && dtmtSchool.teamLabels.length
-                  ? dtmtSchool.teamLabels.join(", ")
-                  : "No team names created yet"}
-              </StatusLine>
-            </div>
-          </details>
-        </SurfaceCard>
+              }
+              description="Your DTMT coach registration is complete. View your submitted details below."
+            />
+            <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
+              <summary className="cursor-pointer text-lg font-bold text-brand">
+                View Submission Details
+              </summary>
+              <div className="mt-4 grid gap-4">
+                <StatusLine label="School">
+                  {dtmtSchool?.schoolName || "Not registered yet"}
+                </StatusLine>
+                <StatusLine label="Coach RSVP">
+                  {dtmtCoachProfile?.coachAttending === false
+                    ? "Not attending"
+                    : "Attending"}
+                </StatusLine>
+                <StatusLine label="Registered Students">
+                  {coachRoster.length
+                    ? `${coachRoster.length} student${coachRoster.length === 1 ? "" : "s"}`
+                    : "No student registrations yet"}
+                </StatusLine>
+                <StatusLine label="Payment Option">
+                  {dtmtSchool
+                    ? getDtmtPaymentResponsibilityLabel(
+                        dtmtSchool.paymentResponsibility,
+                      )
+                    : "Not configured yet"}
+                </StatusLine>
+                <StatusLine label="Teams">
+                  {Array.isArray(dtmtSchool?.teamLabels) &&
+                  dtmtSchool.teamLabels.length
+                    ? dtmtSchool.teamLabels.join(", ")
+                    : "No team names created yet"}
+                </StatusLine>
+              </div>
+            </details>
+          </SurfaceCard>
         ) : null}
       </div>
 
@@ -483,212 +539,198 @@ export default function DtmtDashboardPanel() {
     </div>
   ) : (
     <div className="grid gap-8">
-        {!dtmtStudentRegistration ? (
-          <SurfaceCard className="p-8">
-            <SectionHeader
-              title="DTMT Student Form"
-              description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
+      {!dtmtStudentRegistration ? (
+        <SurfaceCard className="p-8">
+          <SectionHeader
+            title="DTMT Student Form"
+            description="Student accounts register here after signing in. Choose a coach-registered school from the dropdown or continue as an individual and receive a random independent team."
+          />
+          <form
+            className="mt-8 grid gap-5"
+            onSubmit={handleStudentSubmit}
+            noValidate
+          >
+            <ReadonlyField
+              label="Email"
+              value={profile?.email || user?.email || ""}
             />
-          <form className="mt-8 grid gap-5" onSubmit={handleStudentSubmit} noValidate>
-          <ReadonlyField label="Signed-In Email" value={profile?.email || user?.email || ""} />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Student Name" name="name" onChange={handleStudentChange} required value={studentForm.name} />
-            <Field label="Grade" name="grade" onChange={handleStudentChange} required value={studentForm.grade} />
-          </div>
-
-          <div className="grid gap-3">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              Registration Type
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {[
-                ["school", "Join a registered school"],
-                ["individual", "Register as an individual"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
-                    studentForm.registrationMode === value
-                      ? "bg-brand text-white shadow-md shadow-brand-glow"
-                      : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
-                  }`}
-                  onClick={() => setRegistrationMode(value)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Student Name"
+                name="name"
+                onChange={handleStudentChange}
+                required
+                value={studentForm.name}
+              />
+              <Field
+                label="Grade"
+                name="grade"
+                onChange={handleStudentChange}
+                required
+                value={studentForm.grade}
+              />
             </div>
-          </div>
 
-          {studentForm.registrationMode === "school" ? (
+            <div className="grid gap-3">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Registration Type
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  ["school", "Join a registered school"],
+                  ["individual", "Register as an individual"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    className={`inline-flex rounded-full px-5 py-3 text-sm font-bold transition-all duration-200 ${
+                      studentForm.registrationMode === value
+                        ? "bg-brand text-white shadow-md shadow-brand-glow"
+                        : "border border-brand bg-white/70 text-brand hover:bg-brand hover:text-white"
+                    }`}
+                    onClick={() => setRegistrationMode(value)}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {studentForm.registrationMode === "school" ? (
+              <label className="grid gap-2">
+                <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                  School
+                </span>
+                <select
+                  className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
+                  name="schoolId"
+                  onChange={handleStudentChange}
+                  required
+                  value={studentForm.schoolId}
+                >
+                  <option value="">Select a coach-registered school</option>
+                  {schoolOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.schoolName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : (
+              <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
+                You can still compete even if your school is not listed.
+                Individual entries are placed into an independent team
+                automatically after submission.
+              </div>
+            )}
+
             <label className="grid gap-2">
               <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                School
+                Lunch Preference
               </span>
               <select
                 className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                name="schoolId"
+                name="lunchPreference"
                 onChange={handleStudentChange}
                 required
-                value={studentForm.schoolId}
+                value={studentForm.lunchPreference}
               >
-                <option value="">Select a coach-registered school</option>
-                {schoolOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.schoolName}
+                <option value="">Select a lunch preference</option>
+                {lunchOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
                 ))}
               </select>
             </label>
-          ) : (
-            <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
-              You can still compete even if your school is not listed. Individual entries are placed
-              into an independent team automatically after submission.
-            </div>
-          )}
 
-          <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
-            {studentForm.registrationMode === "individual"
-              ? "Independent entries handle their own DTMT payment during registration."
-              : !studentForm.schoolId
-                ? "Choose a registered school above to load that coach's DTMT payment option."
-                : isCoachManagedDtmtPayment(selectedPaymentResponsibility)
-                  ? `${selectedSchoolLabel || studentForm.schoolName} is marked as coach-paid. You do not need to enter a separate student payment method.`
-                  : `${selectedSchoolLabel || studentForm.schoolName} requires each student to record their own payment below.`}
-          </div>
-
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              Lunch Preference
-            </span>
-            <select
-              className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="lunchPreference"
-              onChange={handleStudentChange}
-              required
-              value={studentForm.lunchPreference}
-            >
-              <option value="">Select a lunch preference</option>
-              {lunchOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-2">
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-              Dietary Notes
-            </span>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Dietary Notes
+              </span>
               <textarea
                 className="min-h-30 rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-              name="dietaryNotes"
-              onChange={handleStudentChange}
-              placeholder="Allergy details or lunch notes."
-              value={studentForm.dietaryNotes}
-            />
-          </label>
+                name="dietaryNotes"
+                onChange={handleStudentChange}
+                placeholder="Allergy details or lunch notes."
+                value={studentForm.dietaryNotes}
+              />
+            </label>
 
-          <div className="grid gap-3">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Subject Rounds</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {studentRoundOptions.map((round) => (
-                <label
-                  key={round}
-                  className="flex items-start gap-3 rounded-[20px] border border-border-subtle bg-white/70 px-4 py-4 text-sm leading-relaxed text-txt-muted"
-                >
-                  <input
-                    checked={studentForm.subjectRounds.includes(round)}
-                    className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
-                    onChange={() => toggleSubjectRound(round)}
-                    type="checkbox"
-                  />
-                  <span>{round}</span>
-                </label>
-              ))}
+            <div className="grid gap-3">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Subject Rounds
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {studentRoundOptions.map((round) => (
+                  <label
+                    key={round}
+                    className="flex items-start gap-3 rounded-[20px] border border-border-subtle bg-white/70 px-4 py-4 text-sm leading-relaxed text-txt-muted"
+                  >
+                    <input
+                      checked={studentForm.subjectRounds.includes(round)}
+                      className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
+                      onChange={() => toggleSubjectRound(round)}
+                      type="checkbox"
+                    />
+                    <span>{round}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="grid gap-4 border-t border-border-subtle pt-4">
-            <Field
-              label="Waiver Signer Name"
-              name="waiverSignerName"
-              onChange={handleStudentChange}
-              required
-              value={studentForm.waiverSignerName}
-            />
-            <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
-              <input
-                checked={studentForm.waiverAccepted}
-                className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
-                name="waiverAccepted"
+            <div className="grid gap-4 border-t border-border-subtle pt-4">
+              <Field
+                label="Waiver Signer Name"
+                name="waiverSignerName"
                 onChange={handleStudentChange}
                 required
-                type="checkbox"
+                value={studentForm.waiverSignerName}
               />
-              <span>I confirm that the DTMT waiver has been reviewed and accepted.</span>
-            </label>
-          </div>
+              <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
+                <input
+                  checked={studentForm.waiverAccepted}
+                  className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
+                  name="waiverAccepted"
+                  onChange={handleStudentChange}
+                  required
+                  type="checkbox"
+                />
+                <span>
+                  I confirm that the DTMT waiver has been reviewed and accepted.
+                </span>
+              </label>
+            </div>
 
-          <div className="grid gap-4 border-t border-border-subtle pt-4">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Payment</p>
-            {!requiresStudentPayment ? (
+            <div className="grid gap-4 border-t border-border-subtle pt-4">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+                Payment
+              </p>
               <div className="rounded-[22px] border border-border-subtle bg-white/70 px-5 py-4 text-sm leading-relaxed text-txt-muted">
-                {studentForm.registrationMode === "school" && !studentForm.schoolId
-                  ? "Choose a registered school above to see whether your coach is paying for everyone or each student pays separately."
-                  : studentForm.registrationMode === "school" && studentForm.schoolId
-                  ? "This school's coach is covering DTMT payment for all students from that roster."
-                  : "Choose how you are registering to continue to the payment step."}
+                {studentForm.registrationMode === "individual"
+                  ? "Independent entries handle their own DTMT payment during registration."
+                  : !studentForm.schoolId
+                    ? "Choose a registered school above to load that coach's DTMT payment option."
+                    : isCoachManagedDtmtPayment(selectedPaymentResponsibility)
+                      ? `${selectedSchoolLabel || studentForm.schoolName} is marked as coach-paid. You do not need to enter a separate student payment method.`
+                      : `${selectedSchoolLabel || studentForm.schoolName} requires each student to record their own payment below.`}
               </div>
-            ) : (
-              <>
-                <label className="grid gap-2">
-                  <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                    Payment Method
-                  </span>
-                  <select
-                    className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-surface-3 px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                    name="paymentMethod"
-                    onChange={handleStudentChange}
-                    required
-                    value={studentForm.paymentMethod}
-                  >
-                    <option value="">Select a payment method</option>
-                    {DTMT_PAYMENT_METHOD_OPTIONS.map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex items-start gap-3 text-sm leading-relaxed text-txt-muted">
-                  <input
-                    checked={studentForm.paymentAcknowledged}
-                    className="mt-1 h-4 w-4 rounded border-border-accent accent-brand"
-                    name="paymentAcknowledged"
-                    onChange={handleStudentChange}
-                    required
-                    type="checkbox"
-                  />
-                  <span>I understand that payment status is recorded as part of registration.</span>
-                </label>
-              </>
-            )}
-          </div>
+            </div>
 
-          <MessageCopy message={studentMessage} successCopy="DTMT registration saved." />
-          <button
-            className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={studentBusy}
-            type="submit"
-          >
-            {studentBusy ? "Saving..." : dtmtStudentRegistration ? "Update DTMT Registration" : "Save DTMT Registration"}
-          </button>
-        </form>
-      </SurfaceCard>
-        ) : null}
+            <MessageCopy
+              message={studentMessage}
+              successCopy="DTMT registration saved."
+            />
+            <button
+              className="inline-flex w-fit rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={studentBusy}
+              type="submit"
+            >
+              {studentBusy ? "Submitting..." : "Submit Student Registration"}
+            </button>
+          </form>
+        </SurfaceCard>
+      ) : null}
 
       {!dtmtStudentRegistration ? null : (
         <SurfaceCard className="p-8">
@@ -699,7 +741,13 @@ export default function DtmtDashboardPanel() {
                 <span className="inline-block text-emerald-600">
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="12" fill="#34D399" />
-                    <path d="M7 13l3 3 7-7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M7 13l3 3 7-7"
+                      stroke="#fff"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </span>
               </span>
@@ -717,7 +765,9 @@ export default function DtmtDashboardPanel() {
             </StatusLine>
           </div>
           <details className="mt-6 rounded-xl border border-brand/20 bg-white/80 p-4">
-            <summary className="cursor-pointer text-lg font-bold text-brand">View Registration Details</summary>
+            <summary className="cursor-pointer text-lg font-bold text-brand">
+              View Registration Details
+            </summary>
             <div className="mt-4 grid gap-4">
               <StatusLine label="Registration">
                 {dtmtStudentRegistration ? "Submitted" : "Not submitted yet"}
@@ -725,17 +775,25 @@ export default function DtmtDashboardPanel() {
               <StatusLine label="School">
                 {dtmtStudentRegistration?.registrationMode === "individual"
                   ? "Independent entry"
-                  : dtmtStudentRegistration?.schoolName || selectedSchoolLabel || "Not selected yet"}
+                  : dtmtStudentRegistration?.schoolName ||
+                    selectedSchoolLabel ||
+                    "Not selected yet"}
               </StatusLine>
               <StatusLine label="Payment Option">
                 {dtmtStudentRegistration
-                  ? getDtmtPaymentResponsibilityLabel(dtmtStudentRegistration.paymentResponsibility)
-                  : studentForm.registrationMode === "school" && studentForm.schoolId
-                    ? getDtmtPaymentResponsibilityLabel(selectedPaymentResponsibility)
+                  ? getDtmtPaymentResponsibilityLabel(
+                      dtmtStudentRegistration.paymentResponsibility,
+                    )
+                  : studentForm.registrationMode === "school" &&
+                      studentForm.schoolId
+                    ? getDtmtPaymentResponsibilityLabel(
+                        selectedPaymentResponsibility,
+                      )
                     : "Not submitted yet"}
               </StatusLine>
               <StatusLine label="Lunch Preference">
-                {dtmtStudentRegistration?.lunchPreference || "Not submitted yet"}
+                {dtmtStudentRegistration?.lunchPreference ||
+                  "Not submitted yet"}
               </StatusLine>
               <StatusLine label="Payment">
                 {dtmtStudentRegistration
@@ -753,7 +811,9 @@ export default function DtmtDashboardPanel() {
 function Field({ label, ...props }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
+      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+        {label}
+      </span>
       <input
         className="w-full rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
         {...props}
@@ -765,7 +825,9 @@ function Field({ label, ...props }) {
 function ReadonlyField({ label, value }) {
   return (
     <label className="grid gap-2">
-      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">{label}</span>
+      <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
+        {label}
+      </span>
       <div className="rounded-2xl border border-border-subtle bg-white/70 px-4 py-3 text-sm text-txt-muted">
         {value || "Not available"}
       </div>
@@ -786,7 +848,9 @@ function MessageCopy({ message, successCopy }) {
   if (!message) return null;
 
   return (
-    <p className={`text-sm font-semibold ${message === successCopy ? "text-emerald-600" : "text-red-500"}`}>
+    <p
+      className={`text-sm font-semibold ${message === successCopy ? "text-emerald-600" : "text-red-500"}`}
+    >
       {message}
     </p>
   );

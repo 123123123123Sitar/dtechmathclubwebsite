@@ -132,7 +132,7 @@ export default function ProfileHub() {
             src="/assets/dtechmathclublogolarger.jpg"
           />
         }
-        description="This page handles your shared account profile plus the registration tabs for Puzzle Night, D.PotD, and DTMT."
+        description="Registration for all Design Tech Math Club events are handled through this portal. Select a tab below to view details."
         title={authReady && user ? `Welcome back, ${profile?.name || "Member"}` : "Account Profile"}
       />
 
@@ -185,29 +185,10 @@ export default function ProfileHub() {
               <SplitPanel
                 left={
                   <>
-                    <h2 className="text-3xl font-black text-txt">Create your shared account</h2>
+                    <h2 className="text-3xl font-black text-txt">Create your account</h2>
                     <p className="mt-4 leading-relaxed text-txt-muted">
                       Choose coach or student when you create the account. After sign-in, this same
                       page opens the registration tabs for the events.
-                    </p>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <button
-                        className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                        onClick={() => openSignup("coach")}
-                        type="button"
-                      >
-                        Create Coach Account
-                      </button>
-                      <button
-                        className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                        onClick={() => openSignup("student")}
-                        type="button"
-                      >
-                        Create Student Account
-                      </button>
-                    </div>
-                    <p className="mt-4 text-sm leading-relaxed text-txt-muted">
-                      These buttons jump directly into the matching signup form on the right.
                     </p>
                   </>
                 }
@@ -222,41 +203,6 @@ export default function ProfileHub() {
                   />
                 }
               />
-            </section>
-          </FlowSection>
-          <FlowSection glow="muted">
-            <section className="py-18">
-              <div className="mx-auto w-[min(calc(100%-2rem),1080px)]">
-                <SectionHeader
-                  align="center"
-                  description="Create your account here first, then use the registration tabs on this same page."
-                  title="After Sign-In"
-                />
-                <div className="mt-8 grid gap-5 md:grid-cols-3">
-                  <ModuleCard
-                    actionLabel="Open Puzzle Night Tab"
-                    actionTo={buildProfileViewHref("puzzle-night")}
-                    title="Puzzle Night"
-                  >
-                    Puzzle Night registration appears inside the profile tabs after sign-in.
-                  </ModuleCard>
-                  <ModuleCard
-                    actionLabel="Open DTMT Tab"
-                    actionTo={buildProfileViewHref("dtmt")}
-                    title="DTMT"
-                  >
-                    DTMT registration, school management, and team building all appear inside the
-                    DTMT tab here.
-                  </ModuleCard>
-                  <ModuleCard
-                    actionLabel="Open D.PotD Tab"
-                    actionTo={buildProfileViewHref("dpotd")}
-                    title="D.PotD"
-                  >
-                    D.PotD registration and status both stay inside the D.PotD tab on this page.
-                  </ModuleCard>
-                </div>
-              </div>
             </section>
           </FlowSection>
         </>
@@ -286,7 +232,7 @@ function ProfilePanel({
         <SurfaceCard className="p-8 w-full">
           <SectionHeader
             title="Profile Details"
-            description="Keep the account name, school, grade, email, and password current here. The event registration tabs reuse this information."
+            description="Edit account details here:"
           />
           <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
             <Field label="Full Name" name="name" onChange={handleChange} value={form.name} />

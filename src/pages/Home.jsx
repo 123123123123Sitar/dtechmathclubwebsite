@@ -21,6 +21,7 @@ const events = [
     imageLabel: "Puzzle pieces and collaborative tables",
     accent: "accent-puzzle",
     to: "/puzzle-night",
+    imageSrc: "/assets/dtmt_opening.jpg",
   },
   {
     title: "Design Tech Problem of the Day Challenge",
@@ -29,6 +30,7 @@ const events = [
     imageLabel: "Math problems and scratch work",
     accent: "accent-dpotd",
     to: "/dpotd/about",
+    imageSrc: "/assets/dtmt_subject_round.jpg",
   },
   {
     title: "Design Tech Math Tournament 2027",
@@ -37,6 +39,7 @@ const events = [
     imageLabel: "Students competing in timed rounds",
     accent: "accent-dtmt",
     to: "/dtmt",
+    imageSrc: "/assets/dtmt_awards.jpg",
   },
 ];
 
@@ -54,12 +57,12 @@ export default function Home() {
       <section className="relative min-h-[85vh] flex items-center overflow-hidden">
         {/* Animated background */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(234,109,74,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(45,121,183,0.10),transparent_22%),linear-gradient(145deg,#f7f0e8_0%,#f3ece6_42%,#faf6f2_100%)]" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/50 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-brand/8 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-white/50 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-125 h-125 bg-brand/8 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto flex justify-center py-16">
           <motion.div
-            className="w-full max-w-[780px] text-center rounded-[36px] border border-[rgba(234,109,74,0.14)] bg-white/72 p-10 shadow-[0_34px_90px_-48px_rgba(49,30,17,0.42)] backdrop-blur-xl md:p-14"
+            className="w-full max-w-195 text-center rounded-[36px] border border-[rgba(234,109,74,0.14)] bg-white/72 p-10 shadow-[0_34px_90px_-48px_rgba(49,30,17,0.42)] backdrop-blur-xl md:p-14"
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -101,7 +104,7 @@ export default function Home() {
       </section>
 
       {/* ── About Section ─────────────────────────────────── */}
-      <FlowSection className="mt-[-1px]">
+      <FlowSection className="-mt-px">
         <section className="py-20">
         <div className="w-[min(calc(100%-2rem),800px)] mx-auto text-center">
           <SectionHeader
@@ -155,7 +158,7 @@ export default function Home() {
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader title="Contact Us" align="center" />
           <motion.div
-            className="max-w-[1000px] mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm py-3 px-6 md:py-5 md:px-8 text-[0.8rem]"
+            className="max-w-250 mx-auto rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm py-3 px-6 md:py-5 md:px-8 text-[0.8rem]"
             {...fadeUp}
           >
             <ContactForm />

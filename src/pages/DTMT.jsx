@@ -159,6 +159,7 @@ export default function DTMT() {
                 <tr>
                   <th className="px-6 py-4 font-bold text-txt text-lg">Round</th>
                   <th className="px-6 py-4 font-bold text-txt text-lg">Time</th>
+                  <th className="px-6 py-4 font-bold text-txt text-lg">Questions</th>
                   <th className="px-6 py-4 font-bold text-txt text-lg">Description</th>
                 </tr>
               </thead>
@@ -166,22 +167,26 @@ export default function DTMT() {
                 <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
                   <td className="px-6 py-4 font-semibold text-txt text-base">Subject Rounds 1 & 2</td>
                   <td className="px-6 py-4 text-txt-muted text-base">45 min each</td>
-                  <td className="px-6 py-4 text-txt-muted text-base">Each round has 10 questions. Students select 2 subjects from Algebra, Geometry, Discrete Math, or 6th Grade Math.</td>
-                </tr>
-                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-txt text-base">Sequence Round</td>
-                  <td className="px-6 py-4 text-txt-muted text-base">45 min</td>
-                  <td className="px-6 py-4 text-txt-muted text-base">Teams solve 7 sets of 3 problems each, receiving the next set after submitting the previous one.</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">10 each</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Students select 2 tests from Algebra, Geometry, Discrete, or the specially designed6th Grade Test.</td>
                 </tr>
                 <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
                   <td className="px-6 py-4 font-semibold text-txt text-base">Team Round</td>
                   <td className="px-6 py-4 text-txt-muted text-base">20 min</td>
-                  <td className="px-6 py-4 text-txt-muted text-base">10 collaborative problems. Teams submit a single answer sheet.</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">10 problems</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Students work in teams to solve collaborative problems.</td>
+                </tr>
+                <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-txt text-base">Sequence Round</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">45 min</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">7 sets of three problems</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">In a fast-paced format, students recieve sets after submitting the previous one, featuring a live leaderboard.</td>
                 </tr>
                 <tr className="border-t border-border-subtle even:bg-brand/5 hover:bg-brand/10 transition-colors">
                   <td className="px-6 py-4 font-semibold text-txt text-base">Tiebreakers</td>
                   <td className="px-6 py-4 text-txt-muted text-base">Varies</td>
-                  <td className="px-6 py-4 text-txt-muted text-base">By invitation only for competitors tied in points.</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">5 problems</td>
+                  <td className="px-6 py-4 text-txt-muted text-base">Top competitiors tied will compete in a Mathcounts Countdown-style round to rank participants.</td>
                 </tr>
               </tbody>
             </table>
