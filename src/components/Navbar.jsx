@@ -8,7 +8,15 @@ function buildNavItems(isCoachAccount) {
     { type: "link", to: "/", label: "Home" },
     { type: "link", to: "/puzzle-night", label: "Puzzle Night" },
     { type: "link", to: "/dpotd/about", label: "d.PotD" },
-    { type: "link", to: "/dtmt", label: "DTMT" },
+    {
+      type: "dropdown",
+      label: "DTMT",
+      match: "/dtmt",
+      items: [
+        { to: "/dtmt", label: "About", end: true },
+        { to: "/dtmt/archive", label: "Archives" },
+      ],
+    },
     {
       type: "dropdown",
       label: "About",
@@ -74,7 +82,7 @@ export default function Navbar() {
           <img
             alt="Design Tech Math Club logo"
             className="h-11 w-11 shrink-0 rounded-xl object-cover transition-all duration-200"
-            src="/assets/logos/dtechmathclublogo.avif"
+            src="/assets/logos/squarelogo.jpg"
           />
           <div className="hidden sm:block">
             <p className="m-0 text-xl font-extrabold leading-tight text-txt">Design Tech Math Club</p>

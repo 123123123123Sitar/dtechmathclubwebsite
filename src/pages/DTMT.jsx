@@ -255,18 +255,7 @@ export default function DTMT() {
         </section>
       </FlowSection>
 
-      {/* ── Archives ──────────────────────────────────────── */}
-      <FlowSection>
-        <section className="py-20">
-        <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader title="Problems and Solutions" />
-          <div className="grid md:grid-cols-2 gap-5">
-            <ArchiveCard title="DTMT 2026 Problems and Solutions" entries={archives2026} />
-            <ArchiveCard title="DTMT 2025 Problems and Solutions" entries={archives2025} />
-          </div>
-        </div>
-        </section>
-      </FlowSection>
+
 
       {/* ── Sponsors ──────────────────────────────────────── */}
       <SponsorSection

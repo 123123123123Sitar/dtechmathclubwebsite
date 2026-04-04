@@ -9,6 +9,7 @@ const AboutDonate = lazy(() => import("./pages/AboutDonate"));
 const AboutSponsor = lazy(() => import("./pages/AboutSponsor"));
 const DPotDAbout = lazy(() => import("./pages/DPotD"));
 const DTMT = lazy(() => import("./pages/DTMT"));
+const DTMTArchive = lazy(() => import("./pages/DTMTArchive"));
 const Home = lazy(() => import("./pages/Home"));
 const ProfileHub = lazy(() => import("./pages/ProfileHub"));
 const PuzzleNight = lazy(() => import("./pages/PuzzleNight"));
@@ -122,6 +123,7 @@ function AppShell() {
                 <Route path="/dpotd/register" element={<Navigate to="/profile?view=dpotd" replace />} />
                 <Route path="/profile" element={<ProfileHub />} />
                 <Route path="/dtmt" element={<DTMT />} />
+                <Route path="/dtmt/archive" element={<DTMTArchive />} />
                 <Route path="/dtmt/register" element={<Navigate to="/profile?view=dtmt" replace />} />
                 <Route path="/about" element={<Navigate to="/about/our-team" replace />} />
                 <Route path="/about/our-team" element={<About />} />
