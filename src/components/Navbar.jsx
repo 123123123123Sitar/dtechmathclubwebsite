@@ -151,7 +151,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          <NavLink
+          {/* <NavLink
             className={({ isActive }) =>
               `inline-flex rounded-full px-5 py-2 text-sm font-bold shadow-[0_16px_34px_-26px_rgba(49,30,17,0.4)] transition-all duration-200 ${
                 isActive || location.pathname.startsWith("/profile")
@@ -162,7 +162,7 @@ export default function Navbar() {
             to="/profile"
           >
             {profileLabel}
-          </NavLink>
+          </NavLink> */}
         </div>
 
         <button

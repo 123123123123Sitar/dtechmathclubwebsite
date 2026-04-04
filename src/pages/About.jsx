@@ -50,7 +50,7 @@ const leaders = [
     description:
       "Sitar leads competition planning, tournament logistics, and outreach so club events feel polished, challenging, and accessible to younger students.",
     gradient: "from-[#6aaae4] to-[#2d79b7]",
-    photo: "/assets/sitar_vice_president.png",
+    photo: "/assets/sitar_eswar_vice_president.png",
   },
   {
     name: "Siddhi Prassad",
@@ -58,7 +58,7 @@ const leaders = [
     description:
       "Siddhi supports club operations and helps create a consistent experience for meetings, practices, and hosted contests.",
     gradient: "from-[#78c79e] to-[#3d9a70]",
-    photo: "/assets/siddhi_vice_president.jpg",
+    photo: "/assets/vice_president_siddhi_prasad.png",
   },
 ];
 
@@ -103,7 +103,13 @@ export default function About() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <div className="relative min-h-[250px] w-full bg-linear-to-br from-[#1d4875]/45 to-[#8ec6a3]/35">
-                  <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
+                  <img
+                    src="/assets/dtech.avif"
+                    alt="Design Tech Math Club hero image"
+                    className="absolute inset-0 w-full h-full object-cover rounded-[30px]"
+                    style={{ zIndex: 1 }}
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" style={{ zIndex: 2 }} />
                 </div>
               </motion.div>
             </div>
@@ -209,13 +215,14 @@ export default function About() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
               style={{
-                boxShadow: `inset 0 0 0 2px ${
-                  leader.gradient === "from-[#f6a56d] to-[#f05a28]"
-                    ? "#f05a28"
+                boxShadow:
+                  leader.name === "Sitar Eswar" || leader.name === "Siddhi Prassad"
+                    ? "inset 0 0 0 2.5px #f05a28"
+                    : leader.gradient === "from-[#f6a56d] to-[#f05a28]"
+                    ? "inset 0 0 0 2px #f05a28"
                     : leader.gradient === "from-[#6aaae4] to-[#2d79b7]"
-                    ? "#2d79b7"
-                    : "#3d9a70"
-                }`,
+                    ? "inset 0 0 0 2px #2d79b7"
+                    : "inset 0 0 0 2px #3d9a70",
               }}
             >
               <div className="w-full p-6 flex flex-col items-center text-center gap-4">

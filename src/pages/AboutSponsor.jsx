@@ -72,12 +72,18 @@ export default function AboutSponsor() {
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
                 <p className="mb-6">The Design Tech High School Math Club is a student-run Mu Alpha Theta chapter on the Oracle campus in Redwood City, California. We organize math programs for middle school students in the Bay Area and beyond, with a focus on reasoning, problem solving, and analytical thinking.</p>
-                <Link
-                  to="#sponsor-form"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById("sponsor-form");
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth" });
+                    }
+                  }}
                   className="inline-flex items-center px-7 py-3 rounded-full bg-brand text-white font-bold hover:bg-brand-light hover:shadow-lg hover:shadow-brand-glow transition-all duration-200"
                 >
                   Inquire Now →
-                </Link>
+                </button>
               </motion.div>
               <motion.div
                 className="flex justify-center md:justify-end flex-shrink-0"

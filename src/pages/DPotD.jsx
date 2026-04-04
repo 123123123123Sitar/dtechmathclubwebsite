@@ -122,11 +122,11 @@ export default function DPotD() {
               <p className="mb-6 flex-1 text-sm leading-relaxed text-txt-muted">Download all D.PotD problems for all days as a single PDF.</p>
               <a
                 className="inline-block rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                href="/dpotd-archive/problems-all-days.pdf"
+                href="/assets/problems/dpotd-2026-problems-and-solutions.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Download PDF
+                View PDF
               </a>
             </article>
           </div>

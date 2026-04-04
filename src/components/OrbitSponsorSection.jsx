@@ -48,27 +48,42 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
                   {tier.name}
                 </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
-                  {tier.sponsors.map((sponsor, j) => (
-                    <motion.a
-                      key={sponsor.name}
-                      href={sponsor.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group block border-t border-border-subtle pt-5 text-center transition-all duration-200 first:border-t-0 first:pt-0 hover:text-brand"
-                      initial={{ opacity: 0, scale: 0.85, rotateY: -15 }}
-                      whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                      viewport={{ once: true, amount: 0.2 }}
-                      transition={{ duration: 0.5, delay: i * 0.1 + j * 0.08 }}
-                      whileHover={{ y: -2 }}
-                    >
-                      <span className="mb-1 block font-extrabold text-brand group-hover:text-brand-light">
-                        {sponsor.name}
-                      </span>
-                      <span className="text-sm leading-snug text-txt-muted group-hover:text-txt">
-                        {sponsor.copy}
-                      </span>
-                    </motion.a>
-                  ))}
+                  {tier.sponsors.map((sponsor, j) => {
+                    // Map sponsor names to logo filenames
+                    const logoMap = {
+                      "AoPS": "aops.avif",
+                      "Random Math": "randommath.avif",
+                      "Texas Instruments": "texas-instruments.avif",
+                      "Math Kangaroo": "math-kangaroo.avif",
+                      "Atomic Grader": "ag.avif",
+                    };
+                    const logoFile = logoMap[sponsor.name];
+                    return (
+                      <motion.a
+                        key={sponsor.name}
+                        href={sponsor.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group block border-t border-border-subtle pt-5 text-center transition-all duration-200 first:border-t-0 first:pt-0 hover:text-brand flex flex-col items-center"
+                        initial={{ opacity: 0, scale: 0.85, rotateY: -15 }}
+                        whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        viewport={{ once: true, amount: 0.2 }}
+                        transition={{ duration: 0.5, delay: i * 0.1 + j * 0.08 }}
+                        whileHover={{ y: -2 }}
+                      >
+                        {logoFile && (
+                          <img
+                            src={`/assets/sponsors/${logoFile}`}
+                            alt={`${sponsor.name} logo`}
+                            className="w-24 h-20 object-contain rounded-xl bg-white border border-border-subtle shadow-sm mb-3 px-6"
+                          />
+                        )}
+                        <span className="mb-1 block font-extrabold text-brand group-hover:text-brand-light text-lg">
+                          {sponsor.name}
+                        </span>
+                      </motion.a>
+                    );
+                  })}
                 </div>
               </SurfaceCard>
             </motion.div>
