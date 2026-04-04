@@ -62,11 +62,11 @@ export default function DTMT() {
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
                 <p className="mb-4">The Design Tech Math Club hosts the Design Tech Math Tournament each March as our flagship middle school competition. It is competitive, welcoming, and designed to reward strong mathematical thinking.</p>
-                <div className="flex flex-wrap gap-3 text-sm font-semibold text-brand">
+                {/* <div className="flex flex-wrap gap-3 text-sm font-semibold text-brand">
                   {["Sunday, March 8", "8:00 AM to 2:00 PM", "Design Tech High School"].map((item, i) => (
                     <span key={i} className="px-4 py-2 rounded-full bg-brand/10 border border-brand/30">{item}</span>
                   ))}
-                </div>
+                </div> */}
               </motion.div>
               <motion.div
                 className="flex justify-center md:justify-end flex-shrink-0"
