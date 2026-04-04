@@ -150,49 +150,34 @@ export default function About() {
             </motion.div>
           ))}
         </div>
+        
+        <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto mt-10">
+            <motion.div
+              className="rounded-3xl border border-border-subtle bg-surface-card backdrop-blur-sm p-7 hover:border-brand/30 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-xl font-black text-txt mb-3">Competitions We Participate In</h3>
+              <p className="text-txt-muted leading-relaxed mb-4">
+                Our club regularly participates in a variety of math competitions throughout the year. These events help members challenge themselves, grow as problem solvers, and connect with the broader math community.
+              </p>
+              <ul className="list-disc pl-6 text-txt-muted text-base space-y-3">
+                <li>
+                  <span className="font-semibold">College run competitions:</span> Berkeley Math Tournament, Caltech Math Meet, and the Stanford Math Tournament.
+                </li>
+                <li>
+                  <span className="font-semibold">AMC (American Mathematics Competition):</span> A national contest pathway that introduces students to olympiad-style problem solving. This includes the AMC10/12 and AIME.
+                </li>
+                <li>
+                  <span className="font-semibold">BAMO (Bay Area Math Olympiad):</span> A rigorous proof-based olympiad focused on clear mathematical writing.
+                </li>
+              </ul>
+            </motion.div>
+          </div>
         </section>
       </FlowSection>
 
-      {/* ── Competitions ──────────────────────────────────── */}
-      <FlowSection glow="muted">
-        <section className="py-20 relative">
-        <div className="absolute inset-0 bg-surface-2/50" />
-        <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto grid md:grid-cols-2 gap-10">
-          <div>
-              <SectionHeader title="Competitions We Participate In" />
-            <div className="grid gap-3">
-              {competitions.map((c, i) => (
-                <motion.div
-                  key={c.name}
-                  className="rounded-2xl border border-border-subtle bg-surface-card backdrop-blur-sm p-5 hover:border-brand/30 hover:bg-brand/5 transition-all duration-300"
-                  {...cardVariants}
-                  transition={{ duration: 0.4, delay: i * 0.07 }}
-                >
-                  <h3 className="text-base font-bold text-txt mb-1">{c.name}</h3>
-                  <p className="text-sm text-txt-muted leading-relaxed">{c.copy}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          <div>
-              <SectionHeader title="Competitions We Host" />
-            <div className="grid gap-3">
-              {hosted.map((e, i) => (
-                <motion.div
-                  key={e.name}
-                  className="rounded-2xl border border-border-subtle bg-surface-card backdrop-blur-sm p-5 hover:border-brand/30 hover:bg-brand/5 transition-all duration-300"
-                  {...cardVariants}
-                  transition={{ duration: 0.4, delay: i * 0.07 }}
-                >
-                  <h3 className="text-base font-bold text-txt mb-1">{e.name}</h3>
-                  <p className="text-sm text-txt-muted leading-relaxed">{e.copy}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-        </section>
-      </FlowSection>
 
       {/* ── Leadership ────────────────────────────────────── */}
       <FlowSection>
