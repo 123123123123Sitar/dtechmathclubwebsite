@@ -89,7 +89,7 @@ export default function PuzzleNight() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <img
-                  src="/assets/puzzle_night_logo.png"
+                  src="/assets/puzzle-night/logo.png"
                   alt="Design Tech Puzzle Night logo"
                   style={{ maxWidth: 400, height: "auto", display: "block", borderRadius: 16 }}
                 />
@@ -104,9 +104,9 @@ export default function PuzzleNight() {
           <div className="mx-auto w-[min(calc(100%-2rem),1260px)] rounded-[34px] border border-border-subtle bg-white/90 p-10 shadow-lg">
             <h2 className="text-3xl font-black text-txt mb-6">Interactive stations and prizes</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <img src="/assets/puzzle_night_station1.jpg" alt="Puzzle Night station 1" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
-              <img src="/assets/puzzle_night_station2.jpg" alt="Puzzle Night station 2" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
-              <img src="/assets/puzzle_night_station3.jpg" alt="Puzzle Night station 3" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+              <img src="/assets/puzzle-night/station1.jpg" alt="Puzzle Night station 1" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+              <img src="/assets/puzzle-night/station2.jpg" alt="Puzzle Night station 2" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
+              <img src="/assets/puzzle-night/station3.jpg" alt="Puzzle Night station 3" className="w-full h-[200px] object-cover rounded-2xl border border-white/40 shadow-md" />
             </div>
             <p className="mb-8 leading-relaxed text-txt-muted">
               Puzzle Night is built as an exploration-focused event where students rotate through engaging mathematical challenges, try unfamiliar ideas, and collaborate in a lower-pressure setting than a formal contest.
@@ -163,7 +163,7 @@ export default function PuzzleNight() {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <img
-                src="/assets/puzzle_night_countdown_event.jpg"
+                src="/assets/puzzle-night/countdown_event.jpg"
                 alt="Students rotating through logic and modeling stations"
                 className="absolute inset-0 w-full h-full object-cover opacity-70"
               />
@@ -178,7 +178,7 @@ export default function PuzzleNight() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <img
-                src="/assets/puzzle_night_raffle.jpg"
+                src="/assets/puzzle-night/raffle.jpg"
                 alt="Raffle tickets, puzzles, and collaborative problem solving"
                 className="absolute inset-0 w-full h-full object-cover opacity-70"
               />
@@ -218,7 +218,7 @@ export default function PuzzleNight() {
       {/* ── Sponsors ──────────────────────────────────────── */}
       <SponsorSection
         title="Sponsors"
-        description="The Design Tech Math Club and Design Tech Puzzle Night last year were sponsored by the Art of Problem Solving (AoPS) and Math Kangaroo."
+        description="The Design Tech Puzzle Night is sponsored by the Art of Problem Solving (AoPS) and Math Kangaroo."
         tiers={puzzleSponsors}
         centered
       />

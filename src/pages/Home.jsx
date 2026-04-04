@@ -18,28 +18,25 @@ const events = [
     title: "Design Tech Puzzle Night",
     date: "Late November",
     location: "Design Tech High School",
-    imageLabel: "Puzzle pieces and collaborative tables",
     accent: "accent-puzzle",
     to: "/puzzle-night",
-    imageSrc: "/assets/dtmt_opening.jpg",
+    imageSrc: "/assets/puzzle-night/countdown_event.jpg",
   },
   {
     title: "Design Tech Problem of the Day Challenge",
     date: "February",
     location: "Online in our website's D.PotD portal",
-    imageLabel: "Math problems and scratch work",
     accent: "accent-dpotd",
     to: "/dpotd/about",
-    imageSrc: "/assets/dtmt_subject_round.jpg",
+    imageSrc: "/assets/dpotd/logo.png",
   },
   {
     title: "Design Tech Math Tournament 2027",
     date: "Early March",
     location: "Design Tech High School",
-    imageLabel: "Students competing in timed rounds",
     accent: "accent-dtmt",
     to: "/dtmt",
-    imageSrc: "/assets/dtmt_awards.jpg",
+    imageSrc: "/assets/dtmt/opening.jpg",
   },
 ];
 
@@ -139,8 +136,8 @@ export default function Home() {
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader
             eyebrow="Calendar"
-            title="Upcoming Events"
-            description="Explore the club's upcoming public events and competition offerings."
+            title="Our Events"
+            description="Every year, our club hosts three competitions and events."
             align="center"
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">

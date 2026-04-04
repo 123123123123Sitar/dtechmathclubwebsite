@@ -16,7 +16,7 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               <img
                 className="h-16 w-16 rounded-2xl"
-                src="/assets/squarelogo.jpg"
+                src="/assets/logos/squarelogo.jpg"
                 alt="Design Tech Math Club logo"
               />
               <div>

@@ -3,11 +3,6 @@ import { Link } from "react-router-dom";
 import SurfaceCard from "./SurfaceCard";
 
 export default function EventCard({ title, date, location, accent, imageLabel, to, imageSrc }) {
-  const gradients = {
-    "accent-dtmt": "from-[#2d79b7] via-[#6aaae4] to-[#d8e8f6]",
-    "accent-dpotd": "from-[#f08f34] via-[#f0b24d] to-[#fff0c4]",
-    "accent-puzzle": "from-[#f05a28] via-[#ff8c62] to-[#ffd5be]",
-  };
 
   return (
     <motion.article
@@ -19,17 +14,40 @@ export default function EventCard({ title, date, location, accent, imageLabel, t
       whileHover={{ y: -4 }}
     >
       <SurfaceCard className="overflow-hidden transition-all duration-300 group-hover:border-brand/35">
-        <div
-          className={`relative min-h-55 bg-linear-to-br ${gradients[accent] || "from-brand to-brand-light"}`}
-        >
+        <div className={
+          title.includes("Problem of the Day")
+            ? "relative min-h-55 flex items-center justify-center" // remove bg-white
+            : "relative min-h-55 bg-surface-2"
+        }>
+          {title.includes("Problem of the Day") && (
+            <div className="absolute inset-0 bg-[#fff5ea] rounded-t-[2rem] z-0" />
+          )}
           {imageSrc && (
             <img
               src={imageSrc}
               alt={title}
-              className="absolute top-0 left-0 w-full h-full object-cover object-center opacity-80 z-0"
-              style={{ borderTopLeftRadius: '2rem', borderTopRightRadius: '2rem' }}
+              className={
+                title.includes("Problem of the Day")
+                  ? "max-h-[80%] max-w-[90%] object-contain object-center opacity-90 z-10 p-4"
+                  : "absolute top-0 left-0 w-full h-full object-cover object-center opacity-80 z-0"
+              }
+              style={
+                title.includes("Problem of the Day")
+                  ? { borderTopLeftRadius: '2rem', borderTopRightRadius: '2rem', position: 'relative' }
+                  : { borderTopLeftRadius: '2rem', borderTopRightRadius: '2rem' }
+              }
             />
           )}
+          <div
+            className={
+              "absolute left-5 top-5 rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] backdrop-blur-md " +
+              (title.includes("Problem of the Day")
+                ? "border-[#f08f34] bg-[#f08f34] text-black"
+                : "border-white/35 bg-white/18 text-black")
+            }
+          >
+            {date}
+          </div>
           <div className="absolute inset-0 bg-linear-to-t from-[#23140d]/65 via-[#23140d]/15 to-transparent" />
           <div className="absolute left-5 top-5 rounded-full border border-white/35 bg-white/18 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white backdrop-blur-md">
             {date}

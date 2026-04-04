@@ -42,7 +42,7 @@ const leaders = [
     description:
       "Kai helps set the direction for the club, coordinates meetings, and keeps the team focused on building a thoughtful, welcoming math community.",
     gradient: "from-[#f6a56d] to-[#f05a28]",
-    photo: "/assets/president_kai_lidzborski.jpg",
+    photo: "/assets/leadership/president_kai_lidzborski.jpg",
   },
   {
     name: "Sitar Eswar",
@@ -50,7 +50,7 @@ const leaders = [
     description:
       "Sitar leads competition planning, tournament logistics, and outreach so club events feel polished, challenging, and accessible to younger students.",
     gradient: "from-[#6aaae4] to-[#2d79b7]",
-    photo: "/assets/sitar_eswar_vice_president.png",
+    photo: "/assets/leadership/sitar_eswar_vice_president.png",
   },
   {
     name: "Siddhi Prassad",
@@ -58,7 +58,7 @@ const leaders = [
     description:
       "Siddhi supports club operations and helps create a consistent experience for meetings, practices, and hosted contests.",
     gradient: "from-[#78c79e] to-[#3d9a70]",
-    photo: "/assets/vice_president_siddhi_prasad.png",
+    photo: "/assets/leadership/vice_president_siddhi_prasad.png",
   },
 ];
 
@@ -104,7 +104,7 @@ export default function About() {
               >
                 <div className="relative min-h-[250px] w-full bg-linear-to-br from-[#1d4875]/45 to-[#8ec6a3]/35">
                   <img
-                    src="/assets/dtech.avif"
+                    src="/assets/logos/dtech.avif"
                     alt="Design Tech Math Club hero image"
                     className="absolute inset-0 w-full h-full object-cover rounded-[30px]"
                     style={{ zIndex: 1 }}
@@ -125,12 +125,12 @@ export default function About() {
             {
               title: "What We Do",
               text: "Our mission is to foster a love for mathematics and help members develop their problem-solving abilities. We are dedicated to empowering young mathematicians, encouraging critical thinking, and creating opportunities for students to grow in their mathematical journey. By hosting and participating in math competitions, we aim to inspire confidence in students while building a supportive math community around us.",
-              image: "/assets/bmt_team_photo.jpg",
+              image: "/assets/club/bmt_team_photo.jpg",
             },
             {
               title: "Our Club Meetings",
               text: "The Design Tech Math Club meets weekly during Flex period on Mondays. During these meetings, members come together to share ideas, collaborate, and learn from one another. Guided by our club mentors, Ms Dy and Mx Atkinson, advanced math teachers at D.Tech, we sharpen our mathematical thinking through team problem-solving. We also plan and prepare for our club events and competitions to deliver the best experience for all participants.",
-              image: "/assets/bmt_testing.png",
+              image: "/assets/club/bmt_testing.png",
             },
           ].map((card, i) => (
             <motion.div

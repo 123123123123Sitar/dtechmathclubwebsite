@@ -129,7 +129,7 @@ export default function ProfileHub() {
           <HeroMediaPanel
             alt="Design Tech Math Club banner"
             imageClassName="object-contain p-8 md:p-10"
-            src="/assets/dtechmathclublogolarger.jpg"
+            src="/assets/logos/dtechmathclublogolarger.jpg"
           />
         }
         description="Registration for all Design Tech Math Club events are handled through this portal. Select a tab below to view details."

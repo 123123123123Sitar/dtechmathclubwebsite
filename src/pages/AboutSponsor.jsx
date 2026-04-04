@@ -92,7 +92,7 @@ export default function AboutSponsor() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <img
-                  src="/assets/dtechmathclublogo.jpg"
+                  src="/assets/logos/dtechmathclublogo.jpg"
                   alt="Design Tech Math Club banner"
                   style={{ maxWidth: 300, height: "auto", display: "block", borderRadius: 16 }}
                 />

@@ -75,7 +75,7 @@ export default function DTMT() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <img
-                  src="/assets/dtmt_logo.png"
+                  src="/assets/dtmt/logo.png"
                   alt="Design Tech Math Club banner"
                   style={{ maxWidth: 350, height: "auto", display: "block", borderRadius: 16 }}
                 />
@@ -135,7 +135,7 @@ export default function DTMT() {
             />
           </div>
           <motion.img
-            src="/assets/dtmt_opening.jpg"
+            src="/assets/dtmt/opening.jpg"
             alt="DTMT Opening"
             className="rounded-2xl border border-border-subtle shadow-lg w-full h-80 object-cover"
             initial={{ opacity: 0, x: 30 }}
@@ -224,7 +224,7 @@ export default function DTMT() {
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <motion.img
-              src="/assets/dtmt_subject_round.jpg"
+              src="/assets/dtmt/subject_round.jpg"
               alt="DTMT Subject Round"
               className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
               initial={{ opacity: 0, y: 30 }}
@@ -233,7 +233,7 @@ export default function DTMT() {
               transition={{ duration: 0.5, delay: 0 }}
             />
             <motion.img
-              src="/assets/dtmt_closing.jpg"
+              src="/assets/dtmt/closing.jpg"
               alt="DTMT Closing"
               className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
               initial={{ opacity: 0, y: 30 }}
@@ -242,7 +242,7 @@ export default function DTMT() {
               transition={{ duration: 0.5, delay: 0.1 }}
             />
             <motion.img
-              src="/assets/dtmt_awards.jpg"
+              src="/assets/dtmt/awards.jpg"
               alt="DTMT Awards"
               className="rounded-2xl border border-border-subtle shadow-lg w-full h-64 object-cover"
               initial={{ opacity: 0, y: 30 }}

@@ -40,7 +40,7 @@ export default function DPotD() {
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
                 <img
-                  src="/assets/dpotd_logo.png"
+                  src="/assets/dpotd/logo.png"
                   alt="D.PotD logo"
                   style={{ maxWidth: 350, height: "auto", display: "block", borderRadius: 16 }}
                 />
@@ -134,7 +134,7 @@ export default function DPotD() {
               <p className="mb-6 flex-1 text-sm leading-relaxed text-txt-muted">Download all D.PotD problems for all days as a single PDF.</p>
               <a
                 className="inline-block rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                href="/assets/problems/dpotd-2026-problems-and-solutions.pdf"
+                href="/assets/dpotd/problems/2026-problems-and-solutions.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
               >
