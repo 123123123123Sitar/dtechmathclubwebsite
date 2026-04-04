@@ -8,8 +8,8 @@ import ScrollStatPanel from "../components/ScrollStatPanel";
 import SectionHeader from "../components/SectionHeader";
 
 const stats = [
-  { value: "45", label: "Members", direction: "right" },
-  { value: "6", label: "Competitions Attended", direction: "left" },
+  { value: "45", label: "Members", direction: "left" },
+  { value: "6", label: "Competitions Attended", direction: "right" },
   { value: "3", label: "Competitions Hosted", direction: "left" },
 ];
 

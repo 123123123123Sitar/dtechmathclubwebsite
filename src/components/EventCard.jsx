@@ -40,10 +40,7 @@ export default function EventCard({ title, date, location, accent, imageLabel, t
           )}
           <div
             className={
-              "absolute left-5 top-5 rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] backdrop-blur-md " +
-              (title.includes("Problem of the Day")
-                ? "border-[#f08f34] bg-[#f08f34] text-black"
-                : "border-white/35 bg-white/18 text-black")
+              "absolute left-5 top-5 rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] backdrop-blur-md border-[#f08f34] bg-[#f08f34] text-black"
             }
           >
             {date}
