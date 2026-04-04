@@ -102,18 +102,30 @@ export default function DPotD() {
                 The top three performing students receive AoPS gift cards, and top performers who also participate in DTMT receive additional prizes.
               </p>
               <div className="border-t border-border-subtle pt-6">
+                
                 <h4 className="text-lg font-black text-txt mb-2">Art of Problem Solving</h4>
-                <p className="text-sm leading-relaxed text-txt-muted mb-5">
-                  This year's prizes are supported by Art of Problem Solving. Their sponsorship helps recognize student achievement and sustain the club's math programs.
-                </p>
-                <a
-                  className="inline-flex rounded-full border border-brand px-5 py-2 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                  href="https://artofproblemsolving.com"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Visit AoPS
-                </a>
+                <div className="flex items-center gap-6">
+                  <div className="shrink-0">
+                    <a
+                      href="https://artofproblemsolving.com"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <img
+                        src="/assets/sponsors/aops.avif"
+                        alt="Art of Problem Solving logo"
+                        className="h-20 w-auto object-contain opacity-75 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                      />
+                    </a>
+                  </div>
+
+                  <div>
+                    <p className="text-sm leading-relaxed text-txt-muted">
+                      This year's prizes are supported by Art of Problem Solving. Their sponsorship helps recognize student achievement and sustain the club's math programs.
+                    </p>
+                  </div>
+                </div>
+                
               </div>
             </article>
 

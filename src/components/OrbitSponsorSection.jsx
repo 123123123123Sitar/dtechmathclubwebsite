@@ -34,22 +34,24 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
         </motion.div>
 
         {/* Tier cards */}
-        <div className="grid gap-6">
-          {tiers.map((tier, i) => (
+        <div className="space-y-8">
+          {/* Platinum Sponsors - Full Width */}
+          {tiers.filter(t => t.name.includes("Platinum")).map((tier, i) => (
             <motion.div
               key={tier.name}
-              initial={{ opacity: 0, y: 30, x: i % 2 === 0 ? -20 : 20 }}
-              whileInView={{ opacity: 1, y: 0, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.6, delay: i * 0.15 }}
             >
-              <SurfaceCard className="p-6 transition-all duration-300 hover:border-brand/30">
-                <h3 className="mb-5 text-center text-lg font-bold text-brand">
-                  {tier.name}
-                </h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+              <SurfaceCard className="p-8 transition-all duration-300 hover:border-brand/30">
+                {!tier.name.includes("Featured") && (
+                  <h3 className="mb-8 text-center text-lg font-bold text-brand">
+                    {tier.name}
+                  </h3>
+                )}
+                <div className={`grid gap-8 justify-center ${tier.sponsors.length === 1 ? "grid-cols-1 place-items-center" : "grid-cols-1 sm:grid-cols-2"}`}>
                   {tier.sponsors.map((sponsor, j) => {
-                    // Map sponsor names to logo filenames
                     const logoMap = {
                       "AoPS": "aops.avif",
                       "Random Math": "randommath.avif",
@@ -64,21 +66,20 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
                         href={sponsor.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="group block border-t border-border-subtle pt-5 text-center transition-all duration-200 first:border-t-0 first:pt-0 hover:text-brand flex flex-col items-center"
-                        initial={{ opacity: 0, scale: 0.85, rotateY: -15 }}
-                        whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                        className="group flex flex-col items-center text-center transition-all duration-200 hover:opacity-80"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true, amount: 0.2 }}
-                        transition={{ duration: 0.5, delay: i * 0.1 + j * 0.08 }}
-                        whileHover={{ y: -2 }}
+                        transition={{ duration: 0.5, delay: i * 0.1 + j * 0.05 }}
                       >
                         {logoFile && (
                           <img
                             src={`/assets/sponsors/${logoFile}`}
                             alt={`${sponsor.name} logo`}
-                            className="w-24 h-20 object-contain rounded-xl bg-white border border-border-subtle shadow-sm mb-3 px-6"
+                            className="h-24 w-auto object-contain mb-2 opacity-75 group-hover:opacity-100 transition-opacity duration-200"
                           />
                         )}
-                        <span className="mb-1 block font-extrabold text-brand group-hover:text-brand-light text-lg">
+                        <span className="block font-semibold text-txt text-sm group-hover:text-brand transition-colors duration-200">
                           {sponsor.name}
                         </span>
                       </motion.a>
@@ -88,6 +89,63 @@ export default function OrbitSponsorSection({ title, description, tiers }) {
               </SurfaceCard>
             </motion.div>
           ))}
+
+          {/* Diamond and Gold Sponsors - Side by Side */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {tiers.filter(t => !t.name.includes("Platinum")).map((tier, i) => (
+              <motion.div
+                key={tier.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: (i + 1) * 0.15 }}
+              >
+                <SurfaceCard className="p-8 transition-all duration-300 hover:border-brand/30 h-full flex flex-col">
+                  {!tier.name.includes("Featured") && (
+                    <h3 className="mb-6 text-center text-lg font-bold text-brand">
+                      {tier.name}
+                    </h3>
+                  )}
+                  <div className={`grid gap-6 flex-1 ${tier.sponsors.length === 1 ? "grid-cols-1 place-items-center" : "grid-cols-2 place-items-center"} mx-auto`}>
+                    {tier.sponsors.map((sponsor, j) => {
+                      const logoMap = {
+                        "AoPS": "aops.avif",
+                        "Random Math": "randommath.avif",
+                        "Texas Instruments": "texas-instruments.avif",
+                        "Math Kangaroo": "math-kangaroo.avif",
+                        "Atomic Grader": "ag.avif",
+                      };
+                      const logoFile = logoMap[sponsor.name];
+                      return (
+                        <motion.a
+                          key={sponsor.name}
+                          href={sponsor.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group flex flex-col items-center text-center transition-all duration-200 hover:opacity-80"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true, amount: 0.2 }}
+                          transition={{ duration: 0.5, delay: i * 0.1 + j * 0.05 }}
+                        >
+                          {logoFile && (
+                            <img
+                              src={`/assets/sponsors/${logoFile}`}
+                              alt={`${sponsor.name} logo`}
+                              className="h-16 w-auto object-contain mb-2 opacity-75 group-hover:opacity-100 transition-opacity duration-200"
+                            />
+                          )}
+                          <span className="block font-semibold text-txt text-sm group-hover:text-brand transition-colors duration-200">
+                            {sponsor.name}
+                          </span>
+                        </motion.a>
+                      );
+                    })}
+                  </div>
+                </SurfaceCard>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* Floating sponsor pills removed as requested */}
