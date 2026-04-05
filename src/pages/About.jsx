@@ -53,7 +53,7 @@ const leaders = [
     photo: "/assets/leadership/sitar_eswar_vice_president.png",
   },
   {
-    name: "Siddhi Prassad",
+    name: "Siddhi Prasad",
     role: "Vice President",
     description:
       "Siddhi supports club operations and helps create a consistent experience for meetings, practices, and hosted contests.",
