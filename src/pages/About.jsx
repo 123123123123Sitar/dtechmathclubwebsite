@@ -49,7 +49,7 @@ const leaders = [
     role: "Vice President, Director of Competitions",
     description:
       "Sitar leads competition planning, tournament logistics, and outreach so club events feel polished, challenging, and accessible to younger students.",
-    gradient: "from-[#6aaae4] to-[#2d79b7]",
+    gradient: "from-[#f6a56d] to-[#f05a28]",
     photo: "/assets/leadership/sitar_eswar_vice_president.png",
   },
   {
@@ -57,7 +57,7 @@ const leaders = [
     role: "Vice President",
     description:
       "Siddhi supports club operations and helps create a consistent experience for meetings, practices, and hosted contests.",
-    gradient: "from-[#78c79e] to-[#3d9a70]",
+    gradient: "from-[#f6a56d] to-[#f05a28]",
     photo: "/assets/leadership/vice_president_siddhi_prasad.png",
   },
 ];
