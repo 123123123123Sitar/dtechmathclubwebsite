@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 
 function buildNavItems(isCoachAccount) {
@@ -122,7 +123,11 @@ export default function Navbar() {
                   >
                       <span className="flex items-center gap-2">
                         {item.label}
-                        <span className="text-[11px] uppercase">{desktopDropdown === item.label ? "^" : "v"}</span>
+                          {desktopDropdown === item.label ? (
+                            <ChevronUp className="w-4 h-4" aria-label="Collapse" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" aria-label="Expand" />
+                          )}
                     </span>
                   </button>
 
@@ -246,7 +251,11 @@ export default function Navbar() {
                       type="button"
                     >
                       <span>{item.label}</span>
-                      <span className="text-[11px] uppercase">{expanded ? "^" : "v"}</span>
+                        {expanded ? (
+                          <ChevronUp className="w-4 h-4" aria-label="Collapse" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" aria-label="Expand" />
+                        )}
                     </button>
                     <AnimatePresence initial={false}>
                       {expanded ? (
