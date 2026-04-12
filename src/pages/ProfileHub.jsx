@@ -47,6 +47,7 @@ export default function ProfileHub() {
     puzzleNightRegistration,
     signOutAccount,
     updateSiteProfile,
+    requestAccountPasswordReset,
     user,
   } = useDpotdAuth();
   const [form, setForm] = useState({
@@ -137,7 +138,7 @@ export default function ProfileHub() {
       />
 
       {authReady && user ? (
-        <div className="px-40">
+        <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
           <div className="mt-6 mb-10 flex flex-wrap gap-3">
             {(isCoachAccount ? COACH_TABS : STUDENT_TABS).map((tab) => (
               <button
@@ -169,6 +170,9 @@ export default function ProfileHub() {
               message={message}
               puzzleNightRegistration={puzzleNightRegistration}
               saving={saving}
+              setMessage={setMessage}
+              setSaving={setSaving}
+              requestAccountPasswordReset={requestAccountPasswordReset}
             />
           ) : activeView === "puzzle-night" ? (
             <PuzzleNightDashboardPanel />
@@ -225,6 +229,9 @@ function ProfilePanel({
   message,
   puzzleNightRegistration,
   saving,
+  setMessage,
+  setSaving,
+  requestAccountPasswordReset,
 }) {
   return (
     <div className="grid gap-8">

@@ -90,7 +90,7 @@ export default function DTMT() {
       <FlowSection>
         <section className="py-20">
         <div className="w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <div className="grid grid-cols-3 gap-4 justify-items-center max-w-[600px] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-items-center max-w-[600px] mx-auto">
             <StatBadge value="4" label="Rounds" />
             <StatBadge value="2" label="Speaker Session" />
             <StatBadge value="$3k" label="In Prizes" />

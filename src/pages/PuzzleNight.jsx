@@ -142,7 +142,7 @@ export default function PuzzleNight() {
               title="Activities and Stations"
               description="We are offering the following activities and stations."
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {stations.map((station, i) => (
                 <motion.span
                   key={station}
