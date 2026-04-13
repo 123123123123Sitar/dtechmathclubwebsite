@@ -106,7 +106,7 @@ export default function Navbar() {
               }
 
               const active = dropdownActive(item, location);
-
+ 
               return (
                 <div
                   key={item.label}
