@@ -198,7 +198,7 @@ export default function PuzzleNight() {
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
           <SectionHeader title="Schedule" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {schedule.map(([time, detail], i) => (
               <motion.div
                 key={`${time}-${detail}`}
