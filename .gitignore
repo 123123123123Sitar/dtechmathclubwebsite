@@ -5,3 +5,4 @@ dist/
 .env.*
 .vercel/
 firebase-debug.log
+firestore.live.rules
