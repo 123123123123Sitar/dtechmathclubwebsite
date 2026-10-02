@@ -12,6 +12,7 @@ Set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` i
    The script looks up an existing account; it does not create one.
 3. Review and restore any existing grader roles with a trusted server credential. Student accounts cannot assign roles through Firestore rules.
 4. Verify Vercel project `dtechmathclubwebsite` in team `sitar-eswars-projects` has those same three Firebase Admin environment variables. The new `/api/dpotd-summary` endpoint uses them to return scores without exposing raw submissions.
+   Link this checkout with `vercel link --yes --team sitar-eswars-projects --project dtechmathclubwebsite`, then inspect variable names with `vercel env ls`. Run each command separately because an interactive login can consume following terminal input.
 5. Deploy the site code to that Vercel project, then deploy `firestore.rules` with `firebase deploy --only firestore:rules --project dpotd-app`.
 6. Remove `siteAdminAccessCode` and `siteAdminAccessCodeHash` from `settings/appSettings`. The admin page no longer uses an access code.
 7. Smoke check with separate accounts: student signup and one-time Puzzle Night submission; student D.PotD history and leaderboard; grader assigned queue; admin dashboard. A student must not be able to read another student's `/users` or `/submissions` document or set their own `isAdmin` flag.
