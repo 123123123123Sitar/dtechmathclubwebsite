@@ -1,47 +1,115 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ─── Helpers ──────────────────────────────────────────────────────────
+
     function isAuthenticated() {
       return request.auth != null;
-    }
+      }
 
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
+    // Superadmin = the configured email at settings/appSettings.adminEmail.
+    // The hard-coded default is accepted too so rules work before that doc
+    // exists (chicken-and-egg on first deploy).
+    function isConfiguredAdminEmail() {
+      return isAuthenticated() &&
+        request.auth.token.email != null &&
+        (
+          request.auth.token.email.lower() == "dtechmathclub@gmail.com" ||
+          (
+            exists(/databases/$(database)/documents/settings/appSettings) &&
+            get(/databases/$(database)/documents/settings/appSettings).data.adminEmail == request.auth.token.email.lower()
+          )
+        );
+    }
+
+    // Legacy D.PotD portal admin flag (`users/{uid}.isAdmin`).
+    function isPortalAdmin() {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    function isGrader() {
+    // New role system: siteProfiles.{uid}.role == "admin".
+    function isSiteProfileAdmin() {
       return isAuthenticated() &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isGrader == true;
+        exists(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)).data.get('role', '') == 'admin';
     }
 
+    // New role system: siteProfiles.{uid}.role == "club-member".
+    function isClubMemberRole() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)).data.get('role', '') == 'club-member';
+    }
+
+    // Any admin-equivalent. Now spans: configured email (superadmin),
+    // legacy portal flag, AND new role-system "admin".
+    function isAdmin() {
+      return isConfiguredAdminEmail() || isPortalAdmin() || isSiteProfileAdmin();
+    }
+
+    // Admin OR club-member - the population that can do grading.
+    function isGrader() {
+      return isAdmin() || isClubMemberRole();
+    }
+
+    // ─── Account / profile collections ────────────────────────────────────
+
     match /users/{userId} {
+      // Legacy D.PotD clients list admin records for leaderboard filtering.
+      // Owners may also find an email-keyed legacy profile.
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin() || (isAuthenticated() &&
-        resource.data.email == request.auth.token.email);
+        (resource.data.get('email', '') == request.auth.token.email ||
+         resource.data.get('isAdmin', false) == true));
       allow create: if isAdmin() || (isOwner(userId) &&
-        request.resource.data.isAdmin == false &&
-        request.resource.data.isGrader == false);
+        request.resource.data.get('isAdmin', false) == false &&
+        request.resource.data.get('isGrader', false) == false);
       allow update: if isAdmin() || (isOwner(userId) &&
-        request.resource.data.isAdmin == resource.data.isAdmin &&
-        request.resource.data.isGrader == resource.data.isGrader);
+        request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false) &&
+        request.resource.data.get('isGrader', false) == resource.data.get('isGrader', false));
       allow delete: if isAdmin();
     }
 
     match /siteProfiles/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin() || (isAuthenticated() &&
-        resource.data.email == request.auth.token.email);
-      allow create: if isAdmin() || (isOwner(userId) &&
-        request.resource.data.accountType in ['student', 'coach']);
-      allow update: if isAdmin() || (isOwner(userId) &&
-        request.resource.data.accountType == resource.data.accountType);
+        resource.data.get('email', '') == request.auth.token.email);
+
+      // On create, a non-admin can create their own profile but cannot
+      // self-grant a role. The role field must be absent or null.
+      allow create: if isAdmin() ||
+        (isOwner(userId) &&
+          (
+            !('role' in request.resource.data) ||
+            request.resource.data.role == null
+          )
+          && (
+            request.resource.data.get('accountType', null) == null ||
+            request.resource.data.accountType in ['student', 'coach']
+          )
+        );
+
+      // On update, the role field is admin-only. Owners can edit anything
+      // else about their own profile.
+      allow update: if isAdmin() ||
+        (
+          isOwner(userId) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) &&
+          (
+            (resource.data.get('accountType', null) == null &&
+              (request.resource.data.get('accountType', null) == null ||
+               request.resource.data.accountType in ['student', 'coach'])) ||
+            request.resource.data.accountType == resource.data.accountType
+          )
+        );
+
       allow delete: if isAdmin();
     }
 
@@ -49,9 +117,137 @@ service cloud.firestore {
       allow read, write: if isOwner(coachId) || isAdmin();
     }
 
+    // ─── D.PotD ───────────────────────────────────────────────────────────
+
     match /dpotdRegistrations/{userId} {
       allow read, create, update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
+    }
+
+    match /dpotdStudentReports/{userId} {
+      allow read:  if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow read:  if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /submissions/{submissionId} {
+      // Reads: the submission owner (student) plus graders / admins. The
+      // leaderboard is built from the dedicated `leaderboard` collection
+      // and from the test player's own submissions, so we don't need to
+      // expose other students' submissions to every signed-in user.
+      allow read: if isGrader() ||
+        (
+          isAuthenticated() &&
+          (
+            resource.data.get('userId', '') == request.auth.uid ||
+            resource.data.get('studentEmail', '') == request.auth.token.email
+          )
+        );
+
+      // Create: the test player writes the initial submission. The student
+      // MUST own the submission (userId == their uid) and cannot pre-set
+      // any grading/assignment/release fields - those are populated later
+      // by graders / admins / the API. q1Correct / q2Correct / q3Score
+      // remain writable here because the test player computes them
+      // client-side; graders re-verify them before release.
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        (
+          !('released' in request.resource.data) ||
+          request.resource.data.released == false
+        ) &&
+        !request.resource.data.keys().hasAny([
+          'releasedAt',
+          'assignedTo', 'assignedToName', 'assignedToEmail',
+          'assignedAt', 'assignedBy',
+          'gradedBy', 'gradedByName', 'gradedAt',
+          'q3Feedback',
+          'currentGrader', 'currentGraderClearedBy'
+        ]);
+
+      // Update: tightly field-scoped by caller role.
+      //
+      //   - Admin (superadmin / role:"admin" / portal isAdmin): unrestricted.
+      //
+      //   - Club-member (role:"club-member"): may only update grade fields
+      //     and the soft-lock, and only while the submission is not yet
+      //     released. May NOT touch Q1/Q2 autograde, assignment fields,
+      //     or the released flag.
+      //
+      //   - Submission owner (the student): may update ONLY their own
+      //     answer fields. May not write grades, assignment, release, or
+      //     soft-lock.
+      allow update: if isAdmin() ||
+        (
+          isClubMemberRole() &&
+          resource.data.get('released', false) != true &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'q1Correct', 'q2Correct',
+            'released', 'releasedAt',
+            'assignedTo', 'assignedToName', 'assignedToEmail',
+            'assignedAt', 'assignedBy'
+          ])
+        ) ||
+        (
+          isAuthenticated() &&
+          (
+            resource.data.get('userId', '') == request.auth.uid ||
+            resource.data.get('studentEmail', '') == request.auth.token.email
+          ) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'q1Correct', 'q2Correct',
+            'q3Score', 'q3Feedback',
+            'released', 'releasedAt',
+            'assignedTo', 'assignedToName', 'assignedToEmail',
+            'assignedAt', 'assignedBy',
+            'gradedBy', 'gradedByName', 'gradedAt',
+            'currentGrader', 'currentGraderClearedBy'
+          ])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /activeTests/{testId} {
+      allow read: if isGrader() || (isAuthenticated() &&
+        resource.data.userId == request.auth.uid);
+      // On create, the caller must own the userId on the doc - prevents
+      // a signed-in user from registering a test session for someone else.
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    match /schedule/{day} {
+      allow read:  if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /leaderboard/{entry} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── Puzzle Night ─────────────────────────────────────────────────────
+
+    match /puzzleNightRegistrations/{registrationId} {
+      allow read: if isAdmin() || isOwner(registrationId) ||
+        (isAuthenticated() && resource.data.accountUid == request.auth.uid);
+      allow create: if isAdmin() || (isOwner(registrationId) &&
+        request.resource.data.accountUid == request.auth.uid &&
+        request.resource.data.registrationType == 'student' &&
+        request.resource.data.eventKey == 'puzzle-night-2026' &&
+        request.resource.data.status == 'registered' &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+        request.resource.data.grade is string && request.resource.data.grade.size() > 0 &&
+        request.resource.data.parentName is string && request.resource.data.parentName.size() > 0 &&
+        request.resource.data.parentEmail is string && request.resource.data.parentEmail.size() > 0 &&
+        getAfter(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)).data.accountType == 'student');
+      allow update, delete: if isAdmin();
     }
 
     match /contactSubmissions/{submissionId} {
@@ -64,29 +260,15 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    match /puzzleNightRegistrations/{registrationId} {
-      allow read: if isAdmin() || isOwner(registrationId) ||
-        (isAuthenticated() && resource.data.accountUid == request.auth.uid);
-      allow create: if isOwner(registrationId) &&
-        request.resource.data.accountUid == request.auth.uid &&
-        request.resource.data.registrationType == 'student' &&
-        request.resource.data.eventKey == 'puzzle-night-2026' &&
-        request.resource.data.status == 'registered' &&
-        request.resource.data.name is string && request.resource.data.name.size() > 0 &&
-        request.resource.data.grade is string && request.resource.data.grade.size() > 0 &&
-        request.resource.data.parentName is string && request.resource.data.parentName.size() > 0 &&
-        request.resource.data.parentEmail is string && request.resource.data.parentEmail.size() > 0 &&
-        getAfter(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)).data.accountType == 'student';
-      allow update, delete: if isAdmin();
-    }
+    // ─── DTMT ─────────────────────────────────────────────────────────────
 
     match /dtmtCoachProfiles/{coachId} {
-      allow read: if isAuthenticated();
+      allow read:  if isAuthenticated();
       allow create, update, delete: if isOwner(coachId) || isAdmin();
     }
 
     match /dtmtSchools/{schoolId} {
-      allow read: if isAuthenticated();
+      allow read:  if isAuthenticated();
       allow create, update, delete: if isOwner(schoolId) || isAdmin();
     }
 
@@ -96,64 +278,200 @@ service cloud.firestore {
           (
             resource.data.accountUid == request.auth.uid ||
             resource.data.schoolId == request.auth.uid
-          ));
+          )
+        );
 
-      allow create: if isAuthenticated() && request.resource.data.accountUid == request.auth.uid;
+      allow create: if isAdmin() ||
+        (isAuthenticated() && request.resource.data.accountUid == request.auth.uid);
 
       allow update: if isAdmin() ||
         (isAuthenticated() &&
           (
             resource.data.accountUid == request.auth.uid ||
             resource.data.schoolId == request.auth.uid
-          ));
+          )
+        );
 
       allow delete: if isOwner(studentId) || isAdmin();
     }
 
-    match /questions/{questionId} {
+    match /dtmtTeams/{teamKey} {
+      // Reads are open to any signed-in user because the ID-assignment
+      // transaction (src/lib/dtmtIdAssignment.js) must read the team doc
+      // before writing.
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
 
-    match /submissions/{submissionId} {
-      allow read: if isAdmin() ||
-        (isGrader() && resource.data.assignedGrader == request.auth.uid) ||
-        (isAuthenticated() && resource.data.userId == request.auth.uid);
+      // Coaches (any authenticated user) write to this collection through
+      // the assignDtmtIdForStudent transaction. The rule shape just enforces
+      // that the document carries the expected core fields - it intentionally
+      // does NOT use hasOnly() over server-timestamp fields because that has
+      // bitten us with subtle CEL evaluation differences when serverTimestamp
+      // transforms are present. The teamKey is derived from schoolId + team
+      // label on the client, so a coach can only practically affect their
+      // own school's docs.
       allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.studentEmail == request.auth.token.email;
+        request.resource.data.schoolId is string &&
+        request.resource.data.teamLabel is string &&
+        request.resource.data.teamNumber is int &&
+        request.resource.data.letters is map;
       allow update: if isAdmin() ||
-        (isGrader() && resource.data.assignedGrader == request.auth.uid &&
+        (isAuthenticated() &&
           request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-            'q3Score', 'q3Feedback', 'gradingStatus', 'gradedBy',
-            'gradedByName', 'humanGradedAt'
-          ]));
+            'letters', 'updatedAt', 'schoolId', 'teamLabel', 'teamNumber'
+          ])
+        );
+      // School owner (coach) can delete their own school's team docs - used
+      // when a coach cancels their own in-progress school registration. The
+      // student delete cascade still goes through the admin API.
+      allow delete: if isAdmin() ||
+        (isAuthenticated() && resource.data.schoolId == request.auth.uid);
     }
 
-    match /activeTests/{testId} {
-      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
-    }
-
-    match /schedule/{day} {
-      allow read: if isAuthenticated();
+    match /dtmtRooms/{roomId} {
+      allow read:  if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    match /settings/{setting} {
-      allow read: if isAdmin();
+    match /dtmtRoomAssignments/{docId} {
+      allow read:  if isAuthenticated();
       allow write: if isAdmin();
     }
 
-    match /leaderboard/{entry} {
-      allow read: if true;
-      allow write: if false;
+    match /dtmtStudentReports/{userId} {
+      allow read:  if isOwner(userId) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /dtmtGradingData/{docId} {
+      // Grading data is admin-only - only the DTMT grader page touches it.
+      allow read, write: if isAdmin();
     }
 
     match /DTMTClarifications/{clarificationId} {
-      allow read, create: if isAuthenticated();
-      allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      // Auth-only read. Timer room devices sign in as a proctor account
+      // before opening the page, so this still lets every legitimate
+      // viewer in without exposing live competition info to the public.
+      allow read: if isAuthenticated();
+      // Admin-only writes - clarifications are now authored exclusively
+      // from /internal/timer/admin.
+      allow create, update, delete: if isAdmin();
     }
+
+    // ─── DTMT timer ───────────────────────────────────────────────────────
+
+    // Per-room timer state mirrored from each room's device. Public read so
+    // the Home overview can be displayed on a lobby screen without auth.
+    // Writes are restricted to graders (admin / superadmin / club-member) so
+    // a signed-in contestant can't vandalize another room's countdown.
+    match /dtmtTimerRooms/{roomId} {
+      allow read:  if true;
+      allow write: if isGrader();
+    }
+
+    // Announcements broadcast to every room timer. Admin-only writes,
+    // public read (same as clarifications).
+    match /dtmtTimerAnnouncements/{announcementId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Roster change log - append-only audit trail for every team mutation.
+    // Coaches, admins, and self-registering students all write to this log
+    // from the client, so we allow any authenticated caller to create -
+    // but with strict validation:
+    //   - `actor.uid` MUST equal the caller's uid (no impersonation)
+    //   - `type` MUST be one of the five known event types
+    //   - `at` MUST be the server timestamp
+    // Updates / deletes are forbidden so the audit trail is immutable.
+    match /dtmtRosterLog/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() &&
+        request.resource.data.actor != null &&
+        request.resource.data.actor.uid == request.auth.uid &&
+        request.resource.data.type in [
+          "team_created",
+          "team_deleted",
+          "student_assigned",
+          "student_unassigned",
+          "student_moved"
+        ] &&
+        request.resource.data.at == request.time;
+      allow update, delete: if false;
+    }
+
+    // ─── Event archives (read-only past years) ────────────────────────────
+    //
+    // DTMT / D.PotD archives expose `studentReports/{uid}` to the student
+    // with that UID so the "past years" panel on the profile works. Other
+    // archived subcollections are admin-only.
+    //
+    // Puzzle Night archives are admin-only top-to-bottom (per spec).
+
+    match /dtmtArchive/{year} {
+      allow read:  if isAdmin();
+      allow write: if isAdmin();
+
+      match /studentReports/{userId} {
+        allow read:  if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /{collection}/{docId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    match /dpotdArchive/{year} {
+      allow read:  if isAdmin();
+      allow write: if isAdmin();
+
+      match /studentReports/{userId} {
+        allow read:  if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /{collection}/{docId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    match /puzzleNightArchive/{year}/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // ─── Site settings ────────────────────────────────────────────────────
+
+    // The DTMT team-id counter is incremented inside the team-id assignment
+    // transaction (src/lib/dtmtIdAssignment.js) whenever a coach (or admin)
+    // assigns a student to a team that doesn't yet have a registry entry.
+    // The transaction runs from the client, so any signed-in user must be
+    // able to bump the counter. Correctness of the +1 sequencing is enforced
+    // by the transaction itself (read-then-write with optimistic locking);
+    // the rule only enforces that the field stays a positive integer.
+    match /settings/dtmtIdCounter {
+      allow read: if true;
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.nextTeamNumber is int &&
+        request.resource.data.nextTeamNumber >= 1;
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{setting} {
+      // Public reads - needed so public forms can check event open/close
+      // state before the user signs in. Only admin can mutate.
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ─── Admin-only utility collections ───────────────────────────────────
+
+    match /emailTemplates/{templateId} {
+      allow read, write: if isAdmin();
+      match /recipients/{recipientId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    // Anything not explicitly matched is denied by default.
   }
 }
