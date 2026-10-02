@@ -5,7 +5,7 @@ The code and Firestore rules must be deployed together. The new rules no longer 
 Set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` in Vercel Production before deployment. The Vercel project currently has no environment variables. For local migration and role scripts, set `GOOGLE_APPLICATION_CREDENTIALS` to the path of a service-account JSON file from Firebase project `dpotd-app`. Keep that file outside the repo and do not share its contents. The scripts explicitly target `dpotd-app`.
 
 1. Audit legacy D.PotD ownership with `node scripts/migrate-dpotd-owners.mjs`. Review the reported ownership changes, existing admin/grader records, and submissions without a matching Authentication user. Revoke any unintended privileged roles with trusted server access before changing the rules. Then run the migration with `--apply` after reviewing the count. It copies email-keyed portal users to their Authentication UID without copying privileged roles and assigns missing submission owners.
-2. Confirm the existing admin has a Firebase Authentication account and set its role with server credentials:
+2. The existing `dtechmathclub@gmail.com` Authentication account has UID `lsxhqeGiqzVAwyTasBRvpGSDDnI2`, matching its `/users` document with `isAdmin: true` as inspected in the Firebase console on 2026-10-02. Reconfirm the role audit before deploying. If a different admin is intended, set its role with server credentials:
 
    `GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json node scripts/grant-admin.mjs admin@example.org`
 
