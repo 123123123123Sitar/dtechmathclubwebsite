@@ -27,30 +27,15 @@ Common symbols:
 \\end{document}`;
 
 
-// Cache admin emails to filter out admin accounts from student views
-async function getAdminEmails() {
-    if (window._dpotd_adminEmails) return window._dpotd_adminEmails;
-    const set = new Set();
-    try {
-        const snap = await firestore.collection('users').where('isAdmin', '==', true).get();
-        snap.forEach(doc => {
-            const e = doc.data().email;
-            if (e) set.add(e.toLowerCase());
-        });
-        window._dpotd_adminEmails = set;
-    } catch (e) {
-        // ...existing code...
-    }
-    try {
-        const settingsDoc = await firestore.collection('settings').doc('appSettings').get();
-        if (settingsDoc.exists) {
-            const adminEmail = settingsDoc.data().adminEmail;
-            if (adminEmail) set.add(adminEmail.toLowerCase());
-        }
-    } catch (e) {
-        // ignore
-    }
-    return set;
+async function loadPrivateSummary() {
+    const user = appAuth.currentUser;
+    if (!user) throw new Error('Sign in required');
+    const token = await user.getIdToken();
+    const response = await fetch('/api/dpotd-summary', {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Unable to load D.PotD summary');
+    return response.json();
 }
 
 // State
@@ -404,14 +389,12 @@ async function changePassword() {
 // ------------------ Settings & schedule ------------------
 async function loadSettings() {
     try {
-        const doc = await firestore.collection('settings').doc('appSettings').get();
-        const data = doc.exists ? doc.data() : {};
-        const duration = data.testDuration || 120;
+        const data = await loadPrivateSummary();
+        const duration = data.durationMinutes || 120;
         TEST_DURATION = duration * 60 * 1000;
         const el = document.getElementById('testDurationDisplay');
         if (el) el.textContent = `${duration} minutes`;
     } catch (e) {
-        // Fall back to default if rules prevent read
         TEST_DURATION = 120 * 60 * 1000;
     }
 }
@@ -439,46 +422,21 @@ async function getCurrentDay() {
 async function loadUserRank() {
     if (!currentUser) return;
     try {
-        const adminEmails = await getAdminEmails();
-        const snap = await firestore.collection('submissions').get();
-        const scores = {};
-        snap.forEach(doc => {
-            const d = doc.data();
-            const email = (d.studentEmail || '').toLowerCase();
-            if (adminEmails && adminEmails.has(email)) return; // skip admin submissions
-            const q1 = d.q1Correct ? 4 : 0;
-            const q2 = d.q2Correct ? 6 : 0;
-            const q3 = parseInt(d.q3Score || 0);
-            if (!scores[email]) scores[email] = { email, totalScore: 0, totalTime: 0 };
-            scores[email].totalScore += q1 + q2 + q3;
-            scores[email].totalTime += d.totalTime || 0;
-        });
-
-        const leaderboardArray = Object.values(scores);
-        leaderboardArray.sort((a, b) => {
-            if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-            return a.totalTime - b.totalTime;
-        });
-
-        const idx = leaderboardArray.findIndex(s => s.email === currentUser.email);
-        if (idx === -1) {
-            const profileRank = document.getElementById('profileRank');
+        const summary = await loadPrivateSummary();
+        const profileRank = document.getElementById('profileRank');
+        if (!summary.rank) {
             if (profileRank) profileRank.classList.add('hidden');
             return;
         }
-
-        const rank = idx + 1;
-        const total = leaderboardArray.length;
         const userRank = document.getElementById('userRank');
-        const profileRank = document.getElementById('profileRank');
-        if (userRank) userRank.textContent = `Rank: ${rank}/${total}`;
+        if (userRank) userRank.textContent = `Rank: ${summary.rank}/${summary.totalStudents}`;
         if (profileRank) profileRank.classList.remove('hidden');
         const rankDisplay = document.getElementById('rankDisplay');
         const rankDetails = document.getElementById('rankDetails');
-        if (rankDisplay) rankDisplay.textContent = `#${rank}`;
-        if (rankDetails) rankDetails.textContent = `out of ${total} students`;
+        if (rankDisplay) rankDisplay.textContent = `#${summary.rank}`;
+        if (rankDetails) rankDetails.textContent = `out of ${summary.totalStudents} students`;
     } catch (error) {
-        // ...existing code...
+        // Keep rank hidden while the summary is unavailable.
     }
 }
 
@@ -486,66 +444,31 @@ async function loadLeaderboard() {
     const container = document.getElementById('leaderboardContainer');
     if (container) container.innerHTML = '<p style="color: #666; text-align: center;">Loading leaderboard...</p>';
     try {
-        const adminEmails = await getAdminEmails();
-        const snap = await firestore.collection('submissions').get();
-        const scores = {};
-        snap.forEach(doc => {
-            const d = doc.data();
-            const email = (d.studentEmail || '').toLowerCase();
-            if (adminEmails && adminEmails.has(email)) return; // skip admin submissions
-            const name = d.studentName;
-            const q1 = d.q1Correct ? 4 : 0;
-            const q2 = d.q2Correct ? 6 : 0;
-            const q3 = parseInt(d.q3Score || 0);
-            if (!scores[email]) scores[email] = { name, email, totalScore: 0, completedDays: 0 };
-            scores[email].totalScore += q1 + q2 + q3;
-            scores[email].completedDays += 1;
-        });
-        const leaderboardArray = Object.values(scores).sort((a, b) => {
-            if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
-            return 0;
-        }).slice(0, 5);
-
+        const { leaderboard } = await loadPrivateSummary();
         if (!container) return;
-        if (leaderboardArray.length === 0) {
+        if (!leaderboard.length) {
             container.innerHTML = '<p style="text-align: center; color: #666;">No submissions yet.</p>';
             return;
         }
-
-        let tableHTML = `
-            <table class="leaderboard-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Name</th>
-                        <th>Total Score</th>
-                        <th>Tests Completed</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        leaderboardArray.forEach((entry, index) => {
-            const rank = index + 1;
-            let rankClass = 'rank-other';
-            if (rank === 1) rankClass = 'rank-1';
-            else if (rank === 2) rankClass = 'rank-2';
-            else if (rank === 3) rankClass = 'rank-3';
-            tableHTML += `
-                <tr>
-                    <td><span class="rank-badge ${rankClass}">${rank}</span></td>
-                    <td>${entry.name || entry.email}</td>
-                    <td>${entry.totalScore}</td>
-                    <td>${entry.completedDays}</td>
-                </tr>
-            `;
+        const table = document.createElement('table');
+        table.className = 'leaderboard-table';
+        const header = document.createElement('thead');
+        header.innerHTML = '<tr><th>Rank</th><th>Name</th><th>Total Score</th><th>Tests Completed</th></tr>';
+        table.appendChild(header);
+        const body = document.createElement('tbody');
+        leaderboard.forEach((entry, index) => {
+            const row = document.createElement('tr');
+            [index + 1, entry.name, entry.totalScore, entry.completedDays].forEach(value => {
+                const cell = document.createElement('td');
+                cell.textContent = String(value);
+                row.appendChild(cell);
+            });
+            body.appendChild(row);
         });
-
-        tableHTML += '</tbody></table>';
-        container.innerHTML = tableHTML;
+        table.appendChild(body);
+        container.replaceChildren(table);
     } catch (error) {
         if (container) container.innerHTML = '<p style="color:#dc3545; text-align:center;">Leaderboard unavailable. Please try again later.</p>';
-        // ...existing code...
     }
 }
 
@@ -573,13 +496,11 @@ async function checkTodayTest() {
 
         setStatusHTML('<p style="color: #666;">Checking your test status...</p>');
 
-        // Check if already submitted (needs composite index: submissions on studentEmail+day)
+        // Check this account's submissions for the current day.
         const submittedSnap = await firestore.collection('submissions')
-            .where('studentEmail', '==', currentUser.email)
-            .where('day', '==', day)
-            .limit(1)
+            .where('userId', '==', currentUser.uid)
             .get();
-        if (!submittedSnap.empty) {
+        if (submittedSnap.docs.some(doc => Number(doc.data().day) === Number(day))) {
             setStatusHTML(`
                 <div style="text-align: center; padding: 40px;">
                     <h3 style="color: #28a745; margin-bottom: 15px;">Test Already Submitted</h3>
@@ -882,46 +803,6 @@ function insertLatex(text) {
     updateLatexPreview();
 }
 
-// ------------------ LaTeX helper / AI ------------------
-function updateLatexPreview() {
-    if (latexUpdateTimer) clearTimeout(latexUpdateTimer);
-    latexUpdateTimer = setTimeout(() => {
-        const inputEl = document.getElementById('latexInput');
-        const preview = document.getElementById('latexPreview');
-        const input = inputEl ? inputEl.value : '';
-        if (!preview) return;
-
-        if (!input.trim()) {
-            preview.innerHTML = '<p style="color: #999;">Your formatted proof will appear here...</p>';
-            return;
-        }
-
-        let content = input;
-
-        // Remove document structure wrappers that cause MathJax errors
-        content = content.replace(/\\documentclass\{[^}]+\}/g, '');
-        content = content.replace(/\\usepackage\{[^}]+\}/g, '');
-        content = content.replace(/\\begin\{document\}/g, '');
-        content = content.replace(/\\end\{document\}/g, '');
-
-        // Basic environment handling (strip wrapper, keep content)
-        // Note: For enumerate/itemize, we might just letting them render as text or rely on formatRichText 
-        // if we were pre-processing, but for live preview we just want to avoid "Unknown environment" error.
-        // We can just strip the begin/end tags for these specific environments if MathJax complains,
-        // but let's just strip the preamble first as requested.
-
-        // Also ensure we trim whitespace
-        content = content.trim();
-
-        preview.innerHTML = formatRichText(content) || '<p style="color: #999;">Write your proof...</p>';
-
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            MathJax.typesetClear([preview]);
-            MathJax.typesetPromise([preview]).catch((err) => { /* ...existing code... */ });
-        }
-    }, 500);
-}
-
 // ------------------ Submission Logic ------------------
 
 async function submitTest() {
@@ -947,52 +828,6 @@ async function submitTest() {
 
     if (modal) {
         modal.classList.add('show');
-    }
-}
-
-function closeSubmissionSummary() {
-    const modal = document.getElementById('submissionSummaryModal');
-    if (modal) modal.classList.remove('show');
-}
-
-async function confirmSubmission(isForced = false) {
-    const modal = document.getElementById('submissionSummaryModal');
-    if (modal) modal.classList.remove('show');
-
-    // Proceed with submission
-    const q1 = cleanAnswer(document.getElementById('q1Answer').value);
-    const q2 = cleanAnswer(document.getElementById('q2Answer').value);
-    const q3 = document.getElementById('latexInput').value;
-
-    showLoading('Submitting your test...');
-    try {
-        await firestore.collection('submissions').add({
-            userId: currentUser.uid,
-            studentEmail: currentUser.email,
-            studentName: currentUser.name,
-            day: currentDay,
-            q1Answer: q1,
-            q2Answer: q2,
-            q3Answer: q3,
-            exitCount: exitCount,
-            exitLogs: exitLogs,
-            submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            graded: false,
-            totalTime: Date.now() - startTime
-        });
-
-        // Delete active test record
-        await firestore.collection('activeTests').doc(`${currentUser.uid}_day${currentDay}`).delete();
-
-        hideLoading();
-        testActive = false;
-        clearInterval(timerInterval);
-
-        // Return to main portal
-        window.location.reload();
-    } catch (e) {
-        hideLoading();
-        alert('Unable to submit your test. Please try again later.');
     }
 }
 
@@ -1166,8 +1001,7 @@ async function loadHistory() {
 
     try {
         const snap = await firestore.collection('submissions')
-            .where('studentEmail', '==', currentUser.email)
-            .orderBy('timestamp', 'desc')
+            .where('userId', '==', currentUser.uid)
             .get();
         const subs = snap.docs.map(doc => {
             const d = doc.data();
@@ -1190,7 +1024,7 @@ async function loadHistory() {
                 q3_score: d.q3Score,
                 q3_feedback: d.q3Feedback
             };
-        });
+        }).sort((left, right) => right.timestamp - left.timestamp);
 
         if (!container) return;
         if (subs.length === 0) {

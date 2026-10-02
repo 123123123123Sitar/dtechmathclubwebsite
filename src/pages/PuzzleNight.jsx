@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
@@ -80,7 +81,7 @@ export default function PuzzleNight() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               >
-                The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area, featuring interactive puzzle stations that show the fun side of mathematics. This page will be updated with the 2026 Puzzle Night event details closer to the event date.
+                The Design Tech Math Club hosts an exploration-focused Puzzle Night for middle school students in the Bay Area. The 2026 date and final schedule will be announced here. Student registration is available through your Math Club account.
               </motion.p>
               <motion.div
                 className="flex justify-center md:justify-end flex-shrink-0"
@@ -94,6 +95,11 @@ export default function PuzzleNight() {
                   style={{ maxWidth: 400, height: "auto", display: "block", borderRadius: 16 }}
                 />
               </motion.div>
+            </div>
+            <div className="mt-6 text-center">
+              <Link className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white hover:bg-brand-light" to="/profile?view=puzzle-night">
+                Register for Puzzle Night
+              </Link>
             </div>
           </div>
         </div>
@@ -127,7 +133,7 @@ export default function PuzzleNight() {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-brand text-[clamp(1.3rem,2.3vw,2rem)] font-extrabold">
-            We hope you had a good time at Puzzle Night!
+            Join us for Puzzle Night!
           </h2>
         </motion.div>
         </section>
@@ -197,7 +203,7 @@ export default function PuzzleNight() {
         <section className="py-20 relative">
         <div className="absolute inset-0 bg-surface-2/50" />
         <div className="relative z-10 w-[min(calc(100%-2rem),1180px)] mx-auto">
-          <SectionHeader title="Schedule" />
+          <SectionHeader title="Typical Evening Schedule" description="Final 2026 timing will be posted when the event date is announced." />
           <div className="grid grid-cols-1 gap-3">
             {schedule.map(([time, detail], i) => (
               <motion.div

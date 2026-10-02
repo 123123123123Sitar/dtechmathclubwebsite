@@ -16,7 +16,7 @@ const stats = [
 const events = [
   {
     title: "Design Tech Puzzle Night",
-    date: "Late November",
+    date: "Date to be announced",
     location: "Design Tech High School",
     accent: "accent-puzzle",
     to: "/puzzle-night",

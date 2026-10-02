@@ -39,13 +39,6 @@ appAuth.onAuthStateChanged(async (user) => {
     let userDoc = await firestore.collection('users').doc(user.uid).get();
     if (userDoc.exists) data = userDoc.data();
     if (!data || data.isAdmin !== true) {
-        try {
-            const settingsDoc = await firestore.collection('settings').doc('appSettings').get();
-            const settingsEmail = settingsDoc.exists ? settingsDoc.data().adminEmail : '';
-            if (settingsEmail && settingsEmail.toLowerCase() === (user.email || '').toLowerCase()) data = { isAdmin: true };
-        } catch (e) { }
-    }
-    if (!data || data.isAdmin !== true) {
         document.getElementById('loginError').textContent = 'Not authorized';
         document.getElementById('loginError').style.display = 'block';
         await appAuth.signOut();

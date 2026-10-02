@@ -10,7 +10,7 @@ const initialDashboard = {
   activeTest: null,
   bestScore: 0,
   currentDay: null,
-  durationMinutes: 60,
+  durationMinutes: 120,
   history: [],
   leaderboard: [],
   rank: null,
@@ -24,10 +24,6 @@ function readDate(value) {
   if (typeof value.toDate === "function") return value.toDate();
   const next = new Date(value);
   return Number.isNaN(next.getTime()) ? null : next;
-}
-
-function toLower(value) {
-  return String(value || "").trim().toLowerCase();
 }
 
 function formatMinutes(seconds) {
@@ -57,75 +53,18 @@ function formatTimeRemaining(activeTest) {
   return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
 }
 
-function buildLeaderboard(submissions) {
-  const map = {};
-
-  submissions.forEach((submission) => {
-    const email = toLower(submission.studentEmail);
-    if (!email) return;
-
-    const q1 = submission.q1Correct ? 4 : 0;
-    const q2 = submission.q2Correct ? 6 : 0;
-    const q3 = Number(submission.q3Score || 0);
-
-    if (!map[email]) {
-      map[email] = {
-        completedDays: 0,
-        email,
-        name: submission.studentName || submission.studentEmail || "Student",
-        totalScore: 0,
-        totalTime: 0,
-      };
-    }
-
-    map[email].completedDays += 1;
-    map[email].totalScore += q1 + q2 + q3;
-    map[email].totalTime += Number(submission.totalTime || 0);
-  });
-
-  return Object.values(map).sort((left, right) => {
-    if (right.totalScore !== left.totalScore) {
-      return right.totalScore - left.totalScore;
-    }
-
-    return left.totalTime - right.totalTime;
-  });
-}
-
-async function loadPortalDashboard(user, email) {
-  const [settingsResult, scheduleResult, submissionsResult, adminResult] = await Promise.allSettled([
-    getDoc(doc(db, "settings", "appSettings")),
+async function loadPortalDashboard(user) {
+  const token = await user.getIdToken();
+  const [summaryResponse, scheduleResult, submissionsResult] = await Promise.all([
+    fetch("/api/dpotd-summary", { headers: { Authorization: `Bearer ${token}` } }),
     getDocs(collection(db, "schedule")),
-    getDocs(collection(db, "submissions")),
-    getDocs(query(collection(db, "users"), where("isAdmin", "==", true))),
+    getDocs(query(collection(db, "submissions"), where("userId", "==", user.uid))),
   ]);
-
-  const durationMinutes =
-    settingsResult.status === "fulfilled" ? settingsResult.value.data()?.testDuration || 60 : 60;
-
-  const scheduleDocs =
-    scheduleResult.status === "fulfilled"
-      ? scheduleResult.value.docs.map((item) => ({ id: item.id, ...item.data() }))
-      : [];
-
-  const adminEmails = new Set();
-  if (adminResult.status === "fulfilled") {
-    adminResult.value.forEach((item) => {
-      const nextEmail = toLower(item.data()?.email);
-      if (nextEmail) adminEmails.add(nextEmail);
-    });
-  }
-
-  const allSubmissions =
-    submissionsResult.status === "fulfilled"
-      ? submissionsResult.value.docs
-          .map((item) => ({ id: item.id, ...item.data() }))
-          .filter((submission) => !adminEmails.has(toLower(submission.studentEmail)))
-      : [];
-
-  const leaderboard = buildLeaderboard(allSubmissions);
-  const history = allSubmissions
-    .filter((submission) => toLower(submission.studentEmail) === email)
+  if (!summaryResponse.ok) throw new Error("Unable to load D.PotD summary");
+  const summary = await summaryResponse.json();
+  const scheduleDocs = scheduleResult.docs.map((item) => ({ id: item.id, ...item.data() }));
+  const history = submissionsResult.docs
+    .map((item) => ({ id: item.id, ...item.data() }))
     .sort((left, right) => {
       const leftTime = readDate(left.timestamp)?.getTime() || 0;
       const rightTime = readDate(right.timestamp)?.getTime() || 0;
@@ -148,8 +87,6 @@ async function loadPortalDashboard(user, email) {
     ? history.some((submission) => Number(submission.day) === Number(currentDay))
     : false;
 
-  const userEntry = leaderboard.find((entry) => entry.email === email) || null;
-  const rank = userEntry ? leaderboard.findIndex((entry) => entry.email === email) + 1 : null;
   const bestScore = history.reduce((best, submission) => {
     const score =
       (submission.q1Correct ? 4 : 0) +
@@ -162,13 +99,13 @@ async function loadPortalDashboard(user, email) {
     activeTest,
     bestScore,
     currentDay,
-    durationMinutes,
+    durationMinutes: summary.durationMinutes,
     history,
-    leaderboard: leaderboard.slice(0, 5),
-    rank,
+    leaderboard: summary.leaderboard,
+    rank: summary.rank,
     submittedToday,
     testsCompleted: history.length,
-    totalScore: userEntry?.totalScore || 0,
+    totalScore: summary.totalScore,
   };
 }
 
@@ -193,7 +130,7 @@ export default function DpotdDashboardPanel() {
       setDashboardError("");
 
       try {
-        const nextDashboard = await loadPortalDashboard(user, toLower(profile?.email || user.email));
+        const nextDashboard = await loadPortalDashboard(user);
         if (!cancelled) {
           setDashboard(nextDashboard);
         }
@@ -353,7 +290,7 @@ export default function DpotdDashboardPanel() {
                 <tbody>
                   {dashboard.leaderboard.length ? (
                     dashboard.leaderboard.map((entry, index) => (
-                      <tr key={`${entry.email}-${index}`} className="border-b border-border-subtle/70 last:border-b-0">
+                      <tr key={`${entry.name}-${index}`} className="border-b border-border-subtle/70 last:border-b-0">
                         <td className="px-1 py-3 font-bold text-txt">#{index + 1}</td>
                         <td className="px-1 py-3 text-txt">{entry.name}</td>
                         <td className="px-1 py-3 text-txt-muted">{entry.totalScore}</td>

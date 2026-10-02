@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import FlowSection from "../components/FlowSection";
 import HeroMediaPanel from "../components/HeroMediaPanel";
 import PageHero from "../components/PageHero";
@@ -7,11 +7,6 @@ import SectionHeader from "../components/SectionHeader";
 import SurfaceCard from "../components/SurfaceCard";
 import { useDpotdAuth } from "../context/DpotdAuthContext";
 import { db } from "../lib/dpotdFirebase";
-
-const SETTINGS_COLLECTION = "settings";
-const SETTINGS_DOC = "appSettings";
-const ACCESS_SESSION_KEY = "dtechmathclub.siteAdminPortalAccess";
-const DEFAULT_ADMIN_EMAIL = "dtechmathclub@gmail.com";
 
 const initialDashboard = {
   coachAccounts: [],
@@ -21,10 +16,6 @@ const initialDashboard = {
   puzzleNightRegistrations: [],
   sponsorInquiries: [],
 };
-
-function toLower(value) {
-  return String(value || "").trim().toLowerCase();
-}
 
 function readDate(value) {
   if (!value) return null;
@@ -51,23 +42,6 @@ function compareByLatest(left, right) {
     0;
 
   return rightTime - leftTime;
-}
-
-async function sha256Hex(value) {
-  const encoded = new TextEncoder().encode(String(value || ""));
-  const digest = await window.crypto.subtle.digest("SHA-256", encoded);
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-async function loadAdminConfig() {
-  const snapshot = await getDoc(doc(db, SETTINGS_COLLECTION, SETTINGS_DOC));
-  const data = snapshot.exists() ? snapshot.data() : {};
-
-  return {
-    accessCode: String(data.siteAdminAccessCode || "").trim(),
-    accessCodeHash: String(data.siteAdminAccessCodeHash || "").trim().toLowerCase(),
-    adminEmail: toLower(data.adminEmail) || DEFAULT_ADMIN_EMAIL,
-  };
 }
 
 async function loadAdminDashboard() {
@@ -111,69 +85,20 @@ async function loadAdminDashboard() {
 
 export default function SiteAdminPortal() {
   const { authReady, profile, signInSiteAccount, signOutAccount, user } = useDpotdAuth();
-  const [config, setConfig] = useState(null);
-  const [configError, setConfigError] = useState("");
-  const [configLoading, setConfigLoading] = useState(true);
-  const [accessCode, setAccessCode] = useState("");
-  const [accessMessage, setAccessMessage] = useState("");
-  const [accessVerified, setAccessVerified] = useState(
-    () => window.sessionStorage.getItem(ACCESS_SESSION_KEY) === "ok",
-  );
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginMessage, setLoginMessage] = useState("");
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [dashboardError, setDashboardError] = useState("");
   const [dashboardLoading, setDashboardLoading] = useState(false);
 
-  const adminEmail = config?.adminEmail || DEFAULT_ADMIN_EMAIL;
-  const signedInEmail = toLower(user?.email);
-  const emailMatchesAdmin = Boolean(signedInEmail) && signedInEmail === adminEmail;
-  const isAuthorizedAdmin = Boolean(user) && emailMatchesAdmin;
+  const isAuthorizedAdmin = Boolean(user) && Boolean(profile?.isAdmin);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
-      setConfigLoading(true);
-      setConfigError("");
-
-      try {
-        const nextConfig = await loadAdminConfig();
-        if (!cancelled) {
-          setConfig(nextConfig);
-        }
-      } catch (_) {
-        if (!cancelled) {
-          setConfigError("Unable to load the admin access settings right now.");
-        }
-      } finally {
-        if (!cancelled) {
-          setConfigLoading(false);
-        }
-      }
-    }
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (accessVerified) {
-      window.sessionStorage.setItem(ACCESS_SESSION_KEY, "ok");
-      return;
-    }
-
-    window.sessionStorage.removeItem(ACCESS_SESSION_KEY);
-  }, [accessVerified]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function run() {
-      if (!accessVerified || !authReady || !isAuthorizedAdmin) {
+      if (!authReady || !isAuthorizedAdmin) {
         setDashboard(initialDashboard);
         setDashboardError("");
         setDashboardLoading(false);
@@ -191,7 +116,7 @@ export default function SiteAdminPortal() {
       } catch (_) {
         if (!cancelled) {
           setDashboardError(
-            "Unable to load the admin dashboard data right now. Confirm that the admin email in Firestore also has access to the protected collections.",
+            "Unable to load the admin dashboard data right now. Confirm this account has the admin role in Firestore.",
           );
         }
       } finally {
@@ -206,59 +131,18 @@ export default function SiteAdminPortal() {
     return () => {
       cancelled = true;
     };
-  }, [accessVerified, authReady, isAuthorizedAdmin]);
-
-  async function handleAccessSubmit(event) {
-    event.preventDefault();
-    setAccessMessage("");
-
-    if (!config) {
-      setAccessMessage("The admin access settings have not loaded yet.");
-      return;
-    }
-
-    if (!config.accessCode && !config.accessCodeHash) {
-      setAccessMessage(
-        "Add siteAdminAccessCodeHash or siteAdminAccessCode to settings/appSettings in Firestore before using this page.",
-      );
-      return;
-    }
-
-    const candidate = accessCode.trim();
-    if (!candidate) {
-      setAccessMessage("Enter the admin access code first.");
-      return;
-    }
-
-    let matches = false;
-
-    if (config.accessCodeHash) {
-      const nextHash = await sha256Hex(candidate);
-      matches = nextHash === config.accessCodeHash;
-    } else {
-      matches = candidate === config.accessCode;
-    }
-
-    if (!matches) {
-      setAccessMessage("That admin access code is not correct.");
-      return;
-    }
-
-    setAccessVerified(true);
-    setAccessMessage("");
-    setAccessCode("");
-  }
+  }, [authReady, isAuthorizedAdmin]);
 
   async function handleAdminLogin(event) {
     event.preventDefault();
     setLoginMessage("");
 
     if (!loginPassword) {
-      setLoginMessage("Enter the password for the configured admin email.");
+      setLoginMessage("Enter the admin account password.");
       return;
     }
 
-    const result = await signInSiteAccount(adminEmail, loginPassword);
+    const result = await signInSiteAccount(loginEmail.trim(), loginPassword);
     if (!result.ok) {
       setLoginMessage(result.error);
       return;
@@ -293,62 +177,29 @@ export default function SiteAdminPortal() {
             src="/assets/logos/dtechmathclublogolarger.jpg"
           />
         }
-        description="This internal page is not linked from the public site. It uses a Firestore-stored access code first, then the configured admin email account to unlock the protected data."
-        highlights={["Hidden Route", "Firestore Access Code", "Admin Email Sign-In"]}
+        description="Sign in with an authorized admin account to review registrations and messages."
+        highlights={["Protected Admin Data", "Admin Account Sign-In"]}
         title="Site Admin Portal"
       />
 
       <FlowSection glow="muted">
         <section className="py-16">
           <div className="mx-auto grid w-[min(calc(100%-2rem),1180px)] gap-8">
-            {configLoading ? (
-              <SurfaceCard className="p-8">
-                <p className="text-sm font-semibold text-txt-muted">Loading admin access settings...</p>
-              </SurfaceCard>
-            ) : configError ? (
-              <SurfaceCard className="p-8">
-                <p className="text-sm font-semibold text-red-500">{configError}</p>
-              </SurfaceCard>
-            ) : !accessVerified ? (
-              <SurfaceCard className="p-8">
-                <SectionHeader
-                  title="Step 1: Access Code"
-                  description="Enter the hidden access code stored in settings/appSettings before the admin email login becomes available."
-                />
-                <form className="mt-6 grid gap-4 md:grid-cols-[1fr_auto]" onSubmit={handleAccessSubmit}>
-                  <label className="grid gap-2">
-                    <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
-                      Access Code
-                    </span>
-                    <input
-                      className="rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-sm text-txt outline-none transition-all duration-200 focus:border-brand focus:ring-2 focus:ring-brand/25"
-                      onChange={(event) => setAccessCode(event.target.value)}
-                      placeholder="Enter the hidden site admin code"
-                      type="password"
-                      value={accessCode}
-                    />
-                  </label>
-                  <button
-                    className="inline-flex self-end rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                    type="submit"
-                  >
-                    Continue
-                  </button>
-                </form>
-                <InlineMessage message={accessMessage} />
-              </SurfaceCard>
-            ) : !authReady ? (
+            {!authReady ? (
               <SurfaceCard className="p-8">
                 <p className="text-sm font-semibold text-txt-muted">Checking the current sign-in state...</p>
               </SurfaceCard>
             ) : !user ? (
               <SurfaceCard className="p-8">
                 <SectionHeader
-                  title="Step 2: Admin Email Login"
-                  description="Sign in with the configured admin email after the access code step."
+                  title="Admin Login"
+                  description="Sign in with an account authorized as an admin in Firestore."
                 />
                 <form className="mt-6 grid gap-4" onSubmit={handleAdminLogin}>
-                  <ReadonlyField label="Admin Email" value={adminEmail} />
+                  <label className="grid gap-2">
+                    <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">Admin Email</span>
+                    <input className="rounded-2xl border border-[rgba(234,109,74,0.14)] bg-[#fffaf6] px-4 py-3 text-sm text-txt" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} required />
+                  </label>
                   <label className="grid gap-2">
                     <span className="text-sm font-bold uppercase tracking-[0.14em] text-brand">
                       Account Password
@@ -368,66 +219,31 @@ export default function SiteAdminPortal() {
                     >
                       Sign In
                     </button>
-                    <button
-                      className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                      onClick={() => setAccessVerified(false)}
-                      type="button"
-                    >
-                      Reset Access Step
-                    </button>
                   </div>
                 </form>
                 <InlineMessage message={loginMessage} />
               </SurfaceCard>
-            ) : !emailMatchesAdmin ? (
+            ) : !profile?.isAdmin ? (
               <SurfaceCard className="p-8">
-                <SectionHeader
-                  title="Wrong Account"
-                  description="This page only opens for the admin email stored in settings/appSettings."
-                />
-                <p className="mt-4 text-sm leading-relaxed text-txt-muted">
-                  Signed in as {user.email || "unknown email"}. The configured admin email is{" "}
-                  {adminEmail}.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <button
-                    className="inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:bg-brand-light"
-                    onClick={handleSignOut}
-                    type="button"
-                  >
-                    Sign Out
-                  </button>
-                  <button
-                    className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                    onClick={() => setAccessVerified(false)}
-                    type="button"
-                  >
-                    Reset Access Step
-                  </button>
-                </div>
+                <SectionHeader title="Admin Access Required" description="This account has not been granted the admin role." />
+                <p className="mt-4 text-sm text-txt-muted">Signed in as {user.email || "unknown email"}.</p>
+                <button className="mt-6 rounded-full bg-brand px-6 py-3 font-bold text-white" onClick={handleSignOut} type="button">Sign Out</button>
               </SurfaceCard>
             ) : (
               <>
                 <SurfaceCard className="p-8">
                   <SectionHeader
                     title="Admin Session"
-                    description="This dashboard is currently unlocked for the configured admin email."
+                    description="This dashboard is unlocked for your admin account."
                   />
                   <div className="mt-6 flex flex-wrap gap-3">
-                    <ReadonlyField label="Admin Email" value={adminEmail} />
+                    <ReadonlyField label="Admin Email" value={user.email || ""} />
                     <button
                       className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
                       onClick={handleSignOut}
                       type="button"
                     >
                       Sign Out
-                    </button>
-                    <button
-                      className="inline-flex rounded-full border border-brand px-6 py-3 text-sm font-bold text-brand transition-all duration-200 hover:bg-brand hover:text-white"
-                      onClick={() => setAccessVerified(false)}
-                      type="button"
-                    >
-                      Lock This Page
                     </button>
                   </div>
                 </SurfaceCard>

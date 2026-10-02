@@ -9,29 +9,36 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isConfiguredAdminEmail() {
+    function isAdmin() {
       return isAuthenticated() &&
-        request.auth.token.email != null &&
-        exists(/databases/$(database)/documents/settings/appSettings) &&
-        get(/databases/$(database)/documents/settings/appSettings).data.adminEmail == request.auth.token.email;
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    function isAdmin() {
-      return isConfiguredAdminEmail() ||
-        (
-          isAuthenticated() &&
-          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true
-        );
+    function isGrader() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isGrader == true;
     }
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAdmin() || (isOwner(userId) &&
+        request.resource.data.isAdmin == false &&
+        request.resource.data.isGrader == false);
+      allow update: if isAdmin() || (isOwner(userId) &&
+        request.resource.data.isAdmin == resource.data.isAdmin &&
+        request.resource.data.isGrader == resource.data.isGrader);
+      allow delete: if isAdmin();
     }
 
     match /siteProfiles/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAdmin() || (isOwner(userId) &&
+        request.resource.data.accountType in ['student', 'coach']);
+      allow update: if isAdmin() || (isOwner(userId) &&
+        request.resource.data.accountType == resource.data.accountType);
+      allow delete: if isAdmin();
     }
 
     match /coachAccounts/{coachId} {
@@ -54,10 +61,19 @@ service cloud.firestore {
     }
 
     match /puzzleNightRegistrations/{registrationId} {
-      allow read: if isAdmin() ||
+      allow read: if isAdmin() || isOwner(registrationId) ||
         (isAuthenticated() && resource.data.accountUid == request.auth.uid);
-      allow create: if isAuthenticated() && request.resource.data.accountUid == request.auth.uid;
-      allow update, delete: if isAdmin() || (isAuthenticated() && resource.data.accountUid == request.auth.uid);
+      allow create: if isOwner(registrationId) &&
+        request.resource.data.accountUid == request.auth.uid &&
+        request.resource.data.registrationType == 'student' &&
+        request.resource.data.eventKey == 'puzzle-night-2026' &&
+        request.resource.data.status == 'registered' &&
+        request.resource.data.name is string && request.resource.data.name.size() > 0 &&
+        request.resource.data.grade is string && request.resource.data.grade.size() > 0 &&
+        request.resource.data.parentName is string && request.resource.data.parentName.size() > 0 &&
+        request.resource.data.parentEmail is string && request.resource.data.parentEmail.size() > 0 &&
+        getAfter(/databases/$(database)/documents/siteProfiles/$(request.auth.uid)).data.accountType == 'student';
+      allow update, delete: if isAdmin();
     }
 
     match /dtmtCoachProfiles/{coachId} {
@@ -96,15 +112,23 @@ service cloud.firestore {
     }
 
     match /submissions/{submissionId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if (isAuthenticated() && resource.data.userId == request.auth.uid) ||
-        (isAuthenticated() && resource.data.studentEmail == request.auth.token.email) ||
-        isAdmin();
+      allow read: if isAdmin() ||
+        (isGrader() && resource.data.assignedGrader == request.auth.uid) ||
+        (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.studentEmail == request.auth.token.email;
+      allow update: if isAdmin() ||
+        (isGrader() && resource.data.assignedGrader == request.auth.uid &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'q3Score', 'q3Feedback', 'gradingStatus', 'gradedBy',
+            'gradedByName', 'humanGradedAt'
+          ]));
     }
 
     match /activeTests/{testId} {
-      allow read, create: if isAuthenticated();
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
     }
 
@@ -114,7 +138,7 @@ service cloud.firestore {
     }
 
     match /settings/{setting} {
-      allow read: if true;
+      allow read: if isAdmin();
       allow write: if isAdmin();
     }
 

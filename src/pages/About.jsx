@@ -22,7 +22,7 @@ const competitions = [
 
 const hosted = [
   {
-    name: "Puzzle Night (December)",
+    name: "Puzzle Night",
     copy: "An exploratory event where middle schoolers rotate through logic, modeling, and collaborative puzzle stations.",
   },
   {

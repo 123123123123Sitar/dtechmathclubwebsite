@@ -16,6 +16,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  writeBatch,
   where,
 } from "firebase/firestore";
 import { auth, db } from "../lib/dpotdFirebase";
@@ -816,6 +817,10 @@ export function DpotdAuthProvider({ children }) {
     const notes = String(values.notes || "").trim();
     const accountUid = auth.currentUser.uid;
 
+    if (puzzleNightRegistration) {
+      return { ok: false, error: "This account has already submitted a Puzzle Night registration." };
+    }
+
     if (accountType === "coach" || values.registrationType === "coach") {
       return {
         ok: false,
@@ -890,13 +895,13 @@ export function DpotdAuthProvider({ children }) {
         status: "registered",
         teacherEmail,
         updatedAt: serverTimestamp(),
-        ...(puzzleNightRegistration ? {} : { submittedAt: serverTimestamp() }),
+        submittedAt: serverTimestamp(),
       };
 
-      const writes = [
-        setDoc(doc(db, PUZZLE_NIGHT_COLLECTION, accountUid), payload, { merge: true }),
-        setDoc(
-          doc(db, SITE_PROFILE_COLLECTION, accountUid),
+      const batch = writeBatch(db);
+      batch.set(doc(db, PUZZLE_NIGHT_COLLECTION, accountUid), payload);
+      batch.set(
+        doc(db, SITE_PROFILE_COLLECTION, accountUid),
           {
             ...(siteProfile ? {} : { createdAt: serverTimestamp(), source: "dtechmathclub-site" }),
             accountType: "student",
@@ -911,11 +916,10 @@ export function DpotdAuthProvider({ children }) {
             puzzleNightRegistrationType: registrationType,
             updatedAt: serverTimestamp(),
           },
-          { merge: true },
-        ),
-      ];
+        { merge: true },
+      );
 
-      await Promise.all(writes);
+      await batch.commit();
 
       await refreshProfile();
       return { ok: true };
@@ -1688,10 +1692,6 @@ export function DpotdAuthProvider({ children }) {
             { merge: true },
           ),
         );
-      }
-
-      if (puzzleNightRegistration) {
-        writes.push(setDoc(doc(db, PUZZLE_NIGHT_COLLECTION, uid), sharedProfile, { merge: true }));
       }
 
       if (dtmtStudentRegistration) {

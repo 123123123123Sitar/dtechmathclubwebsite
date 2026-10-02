@@ -109,9 +109,8 @@ export default function PuzzleNightDashboardPanel() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
-                label="School "
+                label="School (optional)"
                 name="schoolName"
-                required
                 onChange={handleStudentChange}
                 placeholder="School name"
                 value={studentForm.schoolName}
